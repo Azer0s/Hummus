@@ -1,15 +1,13 @@
 package com.sim.lbox;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import javafx.util.Pair;
 
-import java.util.HashMap;
+import java.io.File;
 import java.util.Scanner;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Main {
 
@@ -19,15 +17,34 @@ public class Main {
     public static void main(String[] args) {
 	// write your code here
         Scanner sc = new Scanner(System.in);
+
+        if (args.length != 0){
+            File f = new File(args[0]);
+            if (f.exists()){
+                new FileInterpreter().interpreteAllLine(args[0],new Main());
+                sc.next();
+                System.exit(0);
+            }else{
+                System.out.println("File " + args[0] + "does not exist!");
+                sc.next();
+                System.exit(-1);
+            }
+        }
+
         Main m = new Main();
         while(true){
             System.out.print(">");
             String val = sc.nextLine();
-            System.out.println(m.InterpretLine(val).getKey());
+            System.out.println(m.interpretLine(val).getKey());
         }
     }
 
-    public Pair<String,Boolean> InterpretLine(String line){
+    public Pair<String,Boolean> interpretLine(String line){
+
+        if (line == "exit"){
+            System.exit(0);
+        }
+
         if (Cache.getInstance().lExpression.matcher(line).matches()){
             Matcher m = Cache.getInstance().lExpression.matcher(line);
             m.matches();
@@ -52,7 +69,7 @@ public class Main {
 
                 String calculation = Cache.getInstance().expressions.get(m.group(1)).calculation;
                 for (int i = 0; i < args.length; i++){
-                    calculation = calculation.replace(expectedArgs[i],InterpretLine(args[i]).getKey());
+                    calculation = calculation.replace(expectedArgs[i], interpretLine(args[i]).getKey());
                 }
 
                 try {
@@ -64,7 +81,7 @@ public class Main {
         }else if(Cache.getInstance().assignment.matcher(line).matches()){
             Matcher m = Cache.getInstance().assignment.matcher(line);
             m.matches();
-            String result = InterpretLine(m.group(2)).getKey();
+            String result = interpretLine(m.group(2)).getKey();
             Cache.getInstance().variables.put(m.group(1),result);
             return new Pair<>(m.group(1) + " is " + result,false);
         }else if(Cache.getInstance().variables.containsKey(line)){
