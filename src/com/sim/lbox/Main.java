@@ -55,6 +55,14 @@ public class Main {
             String val = sc.nextLine();
 
             if (val.startsWith("help")){
+
+                if(val.equals("help")){
+                    System.out.println( "- functions\n" +
+                                        "- variables\n" +
+                                        "- misc");
+                    continue;
+                }
+
                 String help = val.split(" ")[1];
 
                 if (help.equals("functions")){
