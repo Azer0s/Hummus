@@ -53,14 +53,72 @@ public class Main {
         while(true){
             System.out.print(">");
             String val = sc.nextLine();
-            System.out.println(m.interpretLine(val).getKey());
+
+            if (val.startsWith("help")){
+                String help = val.split(" ")[1];
+
+                if (help.equals("functions")){
+                    System.out.println(
+                            "Function assignment\n" +
+                            "-------------------\n" +
+                            "name:=(arguments - comma separated).(process)\n\n" +
+                            "Use function\n" +
+                            "-------------------\n" +
+                            "name(arguments - comma seperated)\n\n" +
+                            "Examples\n"+
+                            "-------------------\n" +
+                            "y:=(x).(x*x)\n" +
+                            "z:=y(y(x))\n" +
+                            "b:=a(true,false)");
+                    continue;
+                }else if(help.equals("variables")){
+                    System.out.println(
+                            "Variable assignment\n" +
+                            "-------------------\n" +
+                            "name:=value\n\n" +
+                            "Use variable\n" +
+                            "-------------------\n" +
+                            "function(name)\n\n" +
+                            "Print variable\n" +
+                            "-------------------\n" +
+                            "name\n\n" +
+                            "Examples\n"+
+                            "-------------------\n" +
+                            "x:=2\n" +
+                            "z:=y(x)\n" +
+                            "z");
+                    continue;
+                }else if (help.equals("misc")){
+                    System.out.println(
+                            "Quit the application\n" +
+                            "-------------------\n" +
+                            "exit\n\n"+
+                            "Clear the console\n" +
+                            "-------------------\n"+
+                            "clear");
+                    continue;
+                }else{
+                    System.out.println("Invalid input!");
+                    continue;
+                }
+            }
+
+            Pair<String,Boolean> result = m.interpretLine(val);
+            if (result != null){
+                System.out.println(result.getKey());
+            }
         }
     }
 
     public Pair<String,Boolean> interpretLine(String line){
 
-        if (line == "exit"){
+        if (line.equals("exit")){
             System.exit(0);
+        }
+
+        if (line.equals("clear")){
+            clearConsole();
+            return null;
         }
 
         if (Cache.getInstance().lExpression.matcher(line).matches()){
@@ -109,5 +167,27 @@ public class Main {
         }
 
         return new Pair<>("Expression " + line + " is invalid!",true);
+    }
+
+    public final static void clearConsole()
+    {
+        try
+        {
+            final String os = System.getProperty("os.name");
+
+            if (os.contains("Windows"))
+            {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            }
+            else
+            {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        }
+        catch (final Exception e)
+        {
+            //  Handle any exceptions.
+        }
     }
 }
