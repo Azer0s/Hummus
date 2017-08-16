@@ -33,3 +33,6 @@ b:=a(true,false)
 
 ## Get help
 > help
+
+## Enable recursion
+> rec
