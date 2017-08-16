@@ -159,7 +159,8 @@ public class Main {
                 try {
                     return new Pair<String,Boolean>(engine.eval(calculation).toString(),true);
                 } catch (ScriptException e) {
-                    return new Pair<>(e.getMessage(),true);
+                    //Don´t do stupid things just because you can...
+                    return new Pair<String,Boolean>(interpretLine(calculation).getKey(),true);
                 }
             }
         }else if(Cache.getInstance().assignment.matcher(line).matches()){
@@ -174,7 +175,11 @@ public class Main {
             return new Pair<>(line,false);
         }
 
-        return new Pair<>("Expression " + line + " is invalid!",true);
+        try{
+            return new Pair<>(engine.eval(line).toString(),true);
+        }catch (Exception e){
+            return new Pair<>("Expression " + line + " is invalid!",true);
+        }
     }
 
     public final static void clearConsole()
