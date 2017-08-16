@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.rmi.server.ExportException;
 import java.util.*;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngine;
@@ -74,11 +75,15 @@ public class Main {
                             "Use function\n" +
                             "-------------------\n" +
                             "name(arguments - comma seperated)\n\n" +
+                            "Anonymous functions\n"+
+                            "-------------------\n"+
+                            "(arguments - comma separated).(process).(values - comma separated)\n\n"+
                             "Examples\n"+
                             "-------------------\n" +
                             "y:=(x).(x*x)\n" +
                             "z:=y(y(x))\n" +
-                            "b:=a(true,false)\n");
+                            "b:=a(true,false)\n"+
+                            "(y,x).(x-y).(1,2)\n");
                     continue;
                 }else if(help.equals("variables")){
                     System.out.println(
@@ -140,7 +145,17 @@ public class Main {
             }
         }
 
-        if (Cache.getInstance().lExpression.matcher(line).matches()){
+        if (Cache.getInstance().anonymous.matcher(line).matches()){
+            Matcher m = Cache.getInstance().anonymous.matcher(line);
+            m.matches();
+            String calculation = null;
+            try {
+                calculation = GetCalculation(m.group(2), Cache.getInstance().argSplitter.split(m.group(1)),Cache.getInstance().argSplitter.split(m.group(3)));
+            } catch (Exception e) {
+                return new Pair<>(e.getMessage(),true);
+            }
+            return FunctionCalc(calculation);
+        }else if (Cache.getInstance().lExpression.matcher(line).matches()){
             Matcher m = Cache.getInstance().lExpression.matcher(line);
             m.matches();
             String name = m.group(1);
@@ -155,36 +170,13 @@ public class Main {
             m.matches();
 
             if (Cache.getInstance().expressions.containsKey(m.group(1))){
-                String[] args = Cache.getInstance().argSplitter.split(m.group(2));
-                String[] expectedArgs = Cache.getInstance().expressions.get(m.group(1)).input;
-
-                if (args.length != expectedArgs.length){
-                    return new Pair<>("Invalid amount of arguments!", true);
-                }
-
-                String calculation = Cache.getInstance().expressions.get(m.group(1)).calculation;
-                HashMap<String,String> map = new HashMap<String,String >();
-                for (int i = 0; i < args.length; i++){
-                    map.put(expectedArgs[i],interpretLine(args[i]).getKey());
-                }
-
-                SortedSet<String> keys = new TreeSet<String>(aStringComparator);
-                keys.addAll(map.keySet());
-
-                for (String s: keys) {
-                    calculation = calculation.replace(s,map.get(s));
-                }
-
+                String calculation = null;
                 try {
-                    return new Pair<String,Boolean>(engine.eval(calculation).toString(),true);
-                } catch (ScriptException e) {
-                    //Don´t do stupid things just because you can...
-                    if (Cache.getInstance().rec){
-                        return new Pair<String,Boolean>(interpretLine(calculation).getKey(),true);
-                    }else {
-                        return new Pair<String,Boolean>("Operation " + calculation + " is invalid! It might be recursive!",true);
-                    }
+                    calculation = GetCalculation(Cache.getInstance().expressions.get(m.group(1)).calculation, Cache.getInstance().expressions.get(m.group(1)).input,Cache.getInstance().argSplitter.split(m.group(2)));
+                } catch (Exception e) {
+                    return new Pair<>(e.getMessage(),true);
                 }
+                return FunctionCalc(calculation);
             }
         }else if(Cache.getInstance().assignment.matcher(line).matches()){
             Matcher m = Cache.getInstance().assignment.matcher(line);
@@ -202,6 +194,40 @@ public class Main {
             return new Pair<>(engine.eval(line).toString(),true);
         }catch (Exception e){
             return new Pair<>("Expression " + line + " is invalid!",true);
+        }
+    }
+
+    private String GetCalculation(String calculation, String[] expectedArgs,String[] args) throws Exception {
+        if (args.length != expectedArgs.length){
+            throw new Exception("Invalid amount of arguments!");
+        }
+
+        HashMap<String,String> map = new HashMap<String,String >();
+        for (int i = 0; i < args.length; i++){
+            map.put(expectedArgs[i],interpretLine(args[i]).getKey());
+        }
+
+        List<String> keys = new ArrayList<String>();
+        keys.addAll(map.keySet());
+        Collections.sort(keys,aStringComparator);
+
+        for (String s: keys) {
+            calculation = calculation.replace(s,map.get(s));
+        }
+
+        return calculation;
+    }
+
+    private Pair<String,Boolean> FunctionCalc(String calculation) {
+        try {
+            return new Pair<String,Boolean>(engine.eval(calculation).toString(),true);
+        } catch (ScriptException e) {
+            //Don´t do stupid things just because you can...
+            if (Cache.getInstance().rec){
+                return new Pair<String,Boolean>(interpretLine(calculation).getKey(),true);
+            }else {
+                return new Pair<String,Boolean>("Operation " + calculation + " is invalid! It might be recursive!",true);
+            }
         }
     }
 

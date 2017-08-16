@@ -8,6 +8,10 @@ name:=value
 ```r
 name:=(arguments - comma separated).(process)
 ```
+### Anonymous function
+```r
+(arguments - comma separated).(process).(values - comma separated)
+```
 ### Use function
 ```r
 name(arguments - comma seperated)

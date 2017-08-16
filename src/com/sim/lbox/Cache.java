@@ -11,6 +11,7 @@ public class Cache {
     public Pattern argSplitter = Pattern.compile(",(?=([^\\(]*\\([^\\\"]*\\))*[^\\)]*$)");
     public Pattern lExpression = Pattern.compile("(\\w*) *:= *\\(([\\w,]*)\\)\\.\\((.*)\\)");
     public Pattern assignment = Pattern.compile("(\\w*) *:= *(.*)");
+    public Pattern anonymous = Pattern.compile("\\(([\\w,]*)\\)\\.\\((.*)\\)\\.\\((.*)\\)");
     public Pattern lCall = Pattern.compile("(\\w*)\\((.*)\\)");
     public boolean rec = false;
     public HashMap<String,LExpression> expressions = new HashMap<String,LExpression>();
