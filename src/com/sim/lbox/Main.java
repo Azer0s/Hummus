@@ -1,12 +1,13 @@
 package com.sim.lbox;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import javafx.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.Scanner;
+import java.util.*;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -162,8 +163,16 @@ public class Main {
                 }
 
                 String calculation = Cache.getInstance().expressions.get(m.group(1)).calculation;
+                HashMap<String,String> map = new HashMap<String,String >();
                 for (int i = 0; i < args.length; i++){
-                    calculation = calculation.replace(expectedArgs[i], interpretLine(args[i]).getKey());
+                    map.put(expectedArgs[i],interpretLine(args[i]).getKey());
+                }
+
+                SortedSet<String> keys = new TreeSet<String>(aStringComparator);
+                keys.addAll(map.keySet());
+
+                for (String s: keys) {
+                    calculation = calculation.replace(s,map.get(s));
                 }
 
                 try {
@@ -217,4 +226,18 @@ public class Main {
             //  Handle any exceptions.
         }
     }
+
+    static final Comparator<String> aStringComparator = new Comparator<String>() {
+        public int compare(String o1, String o2) {
+            //assumed input are strings in the form axxxx
+            if (o1.length() < o2.length()) {
+                return 1;
+            } else if (o1.length() > o2.length()) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+    };
+
 }
