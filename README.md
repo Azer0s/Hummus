@@ -30,3 +30,6 @@ b:=a(true,false)
 
 ## Clear the console
 > console
+
+## Get help
+> help
