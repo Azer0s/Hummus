@@ -129,6 +129,16 @@ public class Main {
             return null;
         }
 
+        if(line.equals("rec")){
+            Cache.getInstance().rec = !Cache.getInstance().rec;
+
+            if (Cache.getInstance().rec){
+                return new Pair<String,Boolean> ("Recursion is enabled!",false);
+            }else{
+                return new Pair<String,Boolean>("Recursion is disabled!",false);
+            }
+        }
+
         if (Cache.getInstance().lExpression.matcher(line).matches()){
             Matcher m = Cache.getInstance().lExpression.matcher(line);
             m.matches();
@@ -160,7 +170,11 @@ public class Main {
                     return new Pair<String,Boolean>(engine.eval(calculation).toString(),true);
                 } catch (ScriptException e) {
                     //Don´t do stupid things just because you can...
-                    return new Pair<String,Boolean>(interpretLine(calculation).getKey(),true);
+                    if (Cache.getInstance().rec){
+                        return new Pair<String,Boolean>(interpretLine(calculation).getKey(),true);
+                    }else {
+                        return new Pair<String,Boolean>("Operation " + calculation + " is invalid! It might be recursive!",true);
+                    }
                 }
             }
         }else if(Cache.getInstance().assignment.matcher(line).matches()){
