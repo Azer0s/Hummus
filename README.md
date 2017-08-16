@@ -25,5 +25,8 @@ b:=a(true,false)
 ## Open file
 > LBox.exe test.lbox
 
-## Exit
+## Exit the application
 > exit
+
+## Clear the console
+> console
