@@ -1,0 +1,9 @@
+x:=2
+y:=(x).(x*x)
+z:=y(y(x))
+z
+
+a:=true
+b:=(x,y).(x)
+c:=b(true,false)
+c

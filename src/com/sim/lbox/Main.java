@@ -85,7 +85,7 @@ public class Main {
             Cache.getInstance().variables.put(m.group(1),result);
             return new Pair<>(m.group(1) + " is " + result,false);
         }else if(Cache.getInstance().variables.containsKey(line)){
-            return new Pair<>(Cache.getInstance().variables.get(line),false);
+            return new Pair<>(Cache.getInstance().variables.get(line),true);
         }else if(line.matches("\\d*") || line.matches("\\w*")){
             return new Pair<>(line,false);
         }
