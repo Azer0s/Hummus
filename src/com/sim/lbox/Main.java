@@ -3,6 +3,9 @@ package com.sim.lbox;
 import javafx.util.Pair;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngine;
@@ -19,16 +22,31 @@ public class Main {
         Scanner sc = new Scanner(System.in);
 
         if (args.length != 0){
-            File f = new File(args[0]);
-            if (f.exists()){
+            if (new File(args[0]).exists()){
                 new FileInterpreter().interpreteAllLine(args[0],new Main());
-                sc.next();
+                try {
+                    System.in.read();
+                } catch (IOException e) {
+                    // ignored
+                }
                 System.exit(0);
-            }else{
-                System.out.println("File " + args[0] + "does not exist!");
-                sc.next();
-                System.exit(-1);
+            }else try {
+                if(new File(Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath().toString(),args[0]).toString()).exists()){
+                    new FileInterpreter().interpreteAllLine(Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath().toString(),args[0]).toString(),new Main());
+                    System.in.read();
+                    System.exit(0);
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
+
+            System.out.println("File " + args[0] + "does not exist!");
+            try {
+                System.in.read();
+            } catch (IOException e) {
+                // ignored
+            }
+            System.exit(-1);
         }
 
         Main m = new Main();

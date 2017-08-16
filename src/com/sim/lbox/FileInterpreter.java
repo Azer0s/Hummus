@@ -22,7 +22,10 @@ public class FileInterpreter {
             lines = Files.readAllLines(Paths.get(new File(arg).toURI()));
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            new Scanner(System.in).next();
+            try {
+                System.in.read();
+            } catch (Exception e1) {
+            }
             System.exit(-1);
         }
 
