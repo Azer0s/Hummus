@@ -59,7 +59,7 @@ public class Main {
                 if(val.equals("help")){
                     System.out.println( "- functions\n" +
                                         "- variables\n" +
-                                        "- misc");
+                                        "- misc\n");
                     continue;
                 }
 
@@ -77,7 +77,7 @@ public class Main {
                             "-------------------\n" +
                             "y:=(x).(x*x)\n" +
                             "z:=y(y(x))\n" +
-                            "b:=a(true,false)");
+                            "b:=a(true,false)\n");
                     continue;
                 }else if(help.equals("variables")){
                     System.out.println(
@@ -94,7 +94,7 @@ public class Main {
                             "-------------------\n" +
                             "x:=2\n" +
                             "z:=y(x)\n" +
-                            "z");
+                            "z\n");
                     continue;
                 }else if (help.equals("misc")){
                     System.out.println(
@@ -103,7 +103,7 @@ public class Main {
                             "exit\n\n"+
                             "Clear the console\n" +
                             "-------------------\n"+
-                            "clear");
+                            "clear\n");
                     continue;
                 }else{
                     System.out.println("Invalid input!");
