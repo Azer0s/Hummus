@@ -23,7 +23,7 @@ b:=a(true,false)
 ```
 
 ## Open file
-> LBox.jar test.lbox
+> LBox.exe test.lbox
 
 ## Exit
 > exit
