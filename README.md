@@ -1,3 +1,5 @@
+[![Powered by](https://img.shields.io/badge/Powered%20by-Magic-orange.svg)](https://en.wikipedia.org/wiki/Magic_(paranormal))
+
 ## Commands
 
 ### Variable assignment
