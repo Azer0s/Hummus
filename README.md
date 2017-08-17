@@ -1,5 +1,8 @@
-[![Powered by](https://img.shields.io/badge/Powered%20by-Magic-orange.svg)](https://en.wikipedia.org/wiki/Magic_(paranormal))
-[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+![Powered by](https://img.shields.io/badge/Powered%20by-Black%20magic%20and%20lambda%20calculus-orange.svg)
+
+[![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
+
+![Gluten free](http://forthebadge.com/images/badges/gluten-free.svg)
 ## Commands
 
 ### Variable assignment
