@@ -1,8 +1,6 @@
-![Powered by](https://img.shields.io/badge/Powered%20by-Black%20magic%20and%20lambda%20calculus-orange.svg)
-
-[![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
-
-![Gluten free](http://forthebadge.com/images/badges/gluten-free.svg)
+![Powered by](https://img.shields.io/badge/Powered%20by-Black%20magic%20and%20lambda%20calculus-orange.svg?style=flat-square)<br>
+![Open Source Love](https://img.shields.io/badge/Open%20source-%E2%9D%A4%EF%B8%8F-brightgreen.svg?style=flat-square)<br>
+![Gluten free](https://img.shields.io/badge/Gluten-Free-blue.svg?style=flat-square)
 ## Commands
 
 ### Variable assignment
