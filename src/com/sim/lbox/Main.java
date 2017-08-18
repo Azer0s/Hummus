@@ -193,10 +193,6 @@ public class Main {
         try{
             return new Pair<>(engine.eval(line).toString(),true);
         }catch (Exception e){
-            if(!line.contains("(") && !line.contains(")")){
-                return new Pair<>(line,true);
-            }
-
             return new Pair<>("Expression " + line + " is invalid!",true);
         }
     }
@@ -230,6 +226,10 @@ public class Main {
             if (Cache.getInstance().rec){
                 return new Pair<String,Boolean>(interpretLine(calculation).getKey(),true);
             }else {
+                if(!calculation.contains("(") && !calculation.contains(")")){
+                    return new Pair<>(calculation,true);
+                }
+
                 return new Pair<String,Boolean>("Operation " + calculation + " is invalid! It might be recursive!",true);
             }
         }
