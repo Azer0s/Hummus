@@ -193,6 +193,10 @@ public class Main {
         try{
             return new Pair<>(engine.eval(line).toString(),true);
         }catch (Exception e){
+            if(!line.contains("(") && !line.contains(")")){
+                return new Pair<>(line,true);
+            }
+
             return new Pair<>("Expression " + line + " is invalid!",true);
         }
     }
