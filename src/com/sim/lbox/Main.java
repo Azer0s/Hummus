@@ -117,9 +117,14 @@ public class Main {
                 }
             }
 
-            Pair<String,Boolean> result = m.interpretLine(val);
-            if (result != null){
-                System.out.println(result.getKey());
+            try{
+                Pair<String,Boolean> result = m.interpretLine(val);
+
+                if (result != null){
+                    System.out.println(result.getKey());
+                }
+            }catch (Exception e){
+                System.out.println("Operation " + val + " is invalid!");
             }
         }
     }
