@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="LBox:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/jar</output-path>
-    <root id="archive" name="LBox.jar">
-      <element id="module-output" name="LBox" />
-    </root>
-  </artifact>
-</component>

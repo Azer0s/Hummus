@@ -15,8 +15,8 @@ import java.util.Scanner;
 /**
  * Created by ariel on 16.08.2017.
  */
-public class FileInterpreter {
-    public void interpreteAllLine(String arg,Main m) {
+class FileInterpreter {
+    void interpreteAllLine(String arg, Main m) {
         List<String> lines = new ArrayList<String>();
         try {
             lines = Files.readAllLines(Paths.get(new File(arg).toURI()));
@@ -24,7 +24,7 @@ public class FileInterpreter {
             System.out.println(e.getMessage());
             try {
                 System.in.read();
-            } catch (Exception e1) {
+            } catch (Exception ignored) {
             }
             System.exit(-1);
         }

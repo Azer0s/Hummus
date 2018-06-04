@@ -3,23 +3,26 @@ package com.sim.lbox;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+import static java.util.regex.Pattern.*;
+
 /**
  * Created by ariel on 16.08.2017.
  */
-public class Cache {
+class Cache {
 
-    public Pattern argSplitter = Pattern.compile(",(?=([^\\(]*\\([^\\\"]*\\))*[^\\)]*$)");
-    public Pattern lExpression = Pattern.compile("(\\w*) *:= *\\(([\\w,]*)\\)\\.\\((.*)\\)");
-    public Pattern assignment = Pattern.compile("(\\w*) *:= *(.*)");
-    public Pattern anonymous = Pattern.compile("\\(([\\w,]*)\\)\\.\\((.*)\\)\\.\\((.*)\\)");
-    public Pattern lCall = Pattern.compile("(\\w*)\\((.*)\\)");
-    public boolean rec = false;
-    public HashMap<String,LExpression> expressions = new HashMap<String,LExpression>();
-    public HashMap<String,String> variables = new HashMap<String,String >();
+    Pattern argSplitter = compile(",(?=([^\\(]*\\([^\\\"]*\\))*[^\\)]*$)");
+    Pattern lExpression = compile("(\\w*) *:= *\\(([\\w,]*)\\)\\.\\((.*)\\)");
+    Pattern assignment = compile("(\\w*) *:= *(.*)");
+    Pattern anonymous = compile("\\(([\\w,]*)\\)\\.\\((.*)\\)\\.\\((.*)\\)");
+    Pattern ifCondition = compile("(.+)\\?(.+):(.+)");
+    Pattern lCall = compile("(\\w*)\\((.*)\\)");
+    boolean rec = false;
+    HashMap<String,LExpression> expressions = new HashMap<>();
+    HashMap<String,String> variables = new HashMap<>();
     private static Cache instance;
 
     private Cache () {}
-    public static Cache getInstance () {
+    static Cache getInstance() {
         if (Cache.instance == null) {
             Cache.instance = new Cache ();
         }

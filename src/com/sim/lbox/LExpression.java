@@ -5,11 +5,11 @@ import java.util.List;
 /**
  * Created by ariel on 16.08.2017.
  */
-public class LExpression {
-    public String[] input;
-    public String calculation;
+class LExpression {
+    String[] input;
+    String calculation;
 
-    public LExpression(String[] arguments, String process) {
+    LExpression(String[] arguments, String process) {
         input = arguments;
         calculation = process;
     }
