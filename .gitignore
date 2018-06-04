@@ -24,3 +24,7 @@ LBox\.xml
 \.idea/workspace\.xml
 
 src/META-INF/
+
+\.idea/artifacts/LBox_jar\.xml
+
+out/META-INF/MANIFEST\.MF
