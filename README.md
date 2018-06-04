@@ -1,5 +1,5 @@
-![Powered by](https://img.shields.io/badge/Powered%20By-Black%20Magic%20and%20lambda%20calculus-orange.svg?longCache=true&style=flat-square)<br>
-![Open Source Love](https://img.shields.io/badge/Open%20source-%E2%9D%A4%EF%B8%8F-brightgreen.svg?style=flat-square)<br>
+![Powered by](https://img.shields.io/badge/Powered%20By-Black%20Magic-orange.svg?longCache=true&style=flat-square) 
+![Open Source Love](https://img.shields.io/badge/Open%20source-%E2%9D%A4%EF%B8%8F-brightgreen.svg?style=flat-square) 
 ![Gluten free](https://img.shields.io/badge/Gluten-Free-blue.svg?longCache=true&style=flat-square)
 ## Commands
 
