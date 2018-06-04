@@ -1,23 +1,17 @@
-package com.sim.lbox;
-
-import javafx.util.Pair;
+package com.sim.hummus;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * Created by ariel on 16.08.2017.
  */
 class FileInterpreter {
     void interpreteAllLine(String arg, Main m) {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         try {
             lines = Files.readAllLines(Paths.get(new File(arg).toURI()));
         } catch (Exception e) {
