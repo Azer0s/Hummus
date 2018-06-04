@@ -33,9 +33,6 @@ k(true)
 (x).(x ? Hello : World).(true)
 ```
 
-## Open file
-> LBox.exe test.lbox
-
 ## Exit the application
 > exit
 
