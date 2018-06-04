@@ -16,12 +16,22 @@ import static java.lang.System.out;
 @SuppressWarnings({"ResultOfMethodCallIgnored", "InfiniteLoopStatement"})
 public class Main {
 
-    private ScriptEngineManager mgr = new ScriptEngineManager();
-    private ScriptEngine engine = mgr.getEngineByName("JavaScript");
+    private static ScriptEngineManager mgr = new ScriptEngineManager();
+    private static ScriptEngine engine = mgr.getEngineByName("JavaScript");
 
     public static void main(String[] args) {
-	// write your code here
         Scanner sc = new Scanner(System.in);
+
+        //Add standard functions
+        try {
+            engine.eval("rep = function (string, times) {var repeatedString = \"\";while (times > 0) {repeatedString += string;times--;}return repeatedString;}"); //repeat a string
+            engine.eval("len = function (string) { return string.length;}"); //string length
+            engine.eval("add = function (a,b) { return a + b; }");
+            engine.eval("sub = function (a,b) { return a - b; }");
+            engine.eval("rev = function (str) {var newString = \"\";for (var i = str.length - 1; i >= 0; i--) {newString += str[i];}return newString;}");
+        } catch (ScriptException e) {
+            e.printStackTrace();
+        }
 
         if (args.length != 0){
             if (new File(args[0]).exists()){
