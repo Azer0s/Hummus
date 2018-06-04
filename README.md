@@ -27,6 +27,9 @@ z:=y(y(x))
 
 a:=(x,y).(x)
 b:=a(true,false)
+
+k:=(i).(i ? y(10):y(12))
+(x).(x ? Hello : World).(true)
 ```
 
 ## Open file
