@@ -30,3 +30,15 @@ src/META-INF/
 out/META-INF/MANIFEST\.MF
 
 *.iml
+
+out/production/Hummus/com/sim/hummus/Cache\.class
+
+out/production/Hummus/com/sim/hummus/FileInterpreter\.class
+
+out/production/Hummus/com/sim/hummus/LExpression\.class
+
+out/production/Hummus/com/sim/hummus/Main\.class
+
+out/production/Hummus/com/sim/hummus/Pair\.class
+
+out/production/Hummus/stdlib\.js

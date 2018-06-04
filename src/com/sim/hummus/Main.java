@@ -4,6 +4,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
@@ -24,12 +25,10 @@ public class Main {
 
         //Add standard functions
         try {
-            engine.eval("rep = function (string, times) {var repeatedString = \"\";while (times > 0) {repeatedString += string;times--;}return repeatedString;}"); //repeat a string
-            engine.eval("len = function (string) { return string.length;}"); //string length
-            engine.eval("add = function (a,b) { return a + b; }");
-            engine.eval("sub = function (a,b) { return a - b; }");
-            engine.eval("rev = function (str) {var newString = \"\";for (var i = str.length - 1; i >= 0; i--) {newString += str[i];}return newString;}");
-        } catch (ScriptException e) {
+            ClassLoader classLoader = Main.class.getClassLoader();
+            File file = new File(classLoader.getResource("stdlib.js").getFile());
+            engine.eval(new FileReader(file));
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
