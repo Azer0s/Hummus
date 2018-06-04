@@ -87,7 +87,8 @@ public class Main {
                                         "z:=y(y(x))\n" +
                                         "b:=a(true,false)\n" +
                                         "(y,x).(x-y).(1,2)\n" +
-                                        "k:=(i).(i ? y(10):y(12))\n");
+                                        "k:=(i).(i ? y(10):y(12))\n"+
+                                        "k(true)\n");
                         continue;
                     case "variables":
                         out.println(
