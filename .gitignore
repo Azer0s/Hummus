@@ -14,3 +14,11 @@ out/production/LBox/META-INF/MANIFEST\.MF
 LBox\.iml
 
 LBox\.xml
+
+\.idea/misc\.xml
+
+\.idea/modules\.xml
+
+\.idea/vcs\.xml
+
+\.idea/workspace\.xml
