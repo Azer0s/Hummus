@@ -42,3 +42,5 @@ out/production/Hummus/com/sim/hummus/Main\.class
 out/production/Hummus/com/sim/hummus/Pair\.class
 
 out/production/Hummus/stdlib\.js
+
+*.class

@@ -221,7 +221,13 @@ public class Main {
         }
 
         try{
-            return new Pair<>(engine.eval(line).toString(),true);
+            Object result = engine.eval(line);
+
+            if (result != null){
+                return new Pair<>(result.toString(),true);
+            }else {
+                return new Pair<>("",true);
+            }
         }catch (Exception e){
             return new Pair<>("Expression " + line + " is invalid!",true);
         }
