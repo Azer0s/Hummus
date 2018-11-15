@@ -36,11 +36,5 @@ k(true)
 ## Exit the application
 > exit
 
-## Clear the console
-> console
-
 ## Get help
 > help
-
-## Enable recursion
-> rec
