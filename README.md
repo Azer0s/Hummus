@@ -13,7 +13,7 @@ Hummus is a LISPish language written in Go
 ### Function assignment
 ```clojure
 (def square (fn x 
-	(* x x)))
+  (* x x)))
 ```
 ### Anonymous function
 ```clojure
@@ -23,13 +23,52 @@ Hummus is a LISPish language written in Go
 ```clojure
 (out (square 4))
 ```
+### Structs
+
+```clojure
+(def Animal (struct
+  :name
+  :age
+  :race
+))
+
+(def tom (Animal
+  "Tom"
+  1
+  :cat
+))
+
+(out (:name tom) " is a " (` (:race tom))) ;; => Tom is a cat
+```
+
+### Macros
+
+```clojure
+(def dotimes (macro times action (
+  (quote
+    (for (range times)
+      (unquote action))
+  )
+)))
+```
+
 ### Examples
+
 ```clojure
 (def fib (fn n
-	(if (< n 2)
-		1 
-    (+ (fib (- n 2)) (fib (- n 1))))
+  (if (< n 2)
+    1 
+    (+ (fib (- n 2)) (fib (- n 1)))
+  )
 ))
+
+(for (range x (list "Hello" "World"))
+  (out x)
+)
+
+(for true
+  (out "Hello world")
+)
 ```
 
 ## Exit the application
