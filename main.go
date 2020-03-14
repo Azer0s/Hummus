@@ -18,13 +18,13 @@ func main() {
 	fmt.Println(string(b))
 
 	parser.Parse(lexer.LexString(`
-(def Animal (struct
+(def Animal (struct ; Declare struct
   :name
   :age
   :race
 ))
 
-(def tom (Animal
+(def tom (Animal ; use struct
   "Tom"
   1
   :cat

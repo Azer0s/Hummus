@@ -95,6 +95,11 @@ func LexString(code string) []Token {
 					next(&i, &current, code)
 				}
 			}
+		} else if current == ';' {
+			for current != '\n' {
+				next(&i, &current, code)
+			}
+			i--
 		} else if !unicode.IsSpace(current) {
 			tokenType = IDENTIFIER
 
@@ -119,9 +124,7 @@ func LexString(code string) []Token {
 				tokenType = IDENTIFIER_FOR
 				break
 			}
-		}
-
-		if current == '\n' {
+		} else if current == '\n' {
 			line++
 		}
 

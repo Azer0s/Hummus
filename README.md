@@ -38,7 +38,7 @@ Hummus is a LISPish language written in Go
   :cat
 ))
 
-(out (:name tom) " is a " (` (:race tom))) ;; => Tom is a cat
+(out (:name tom) " is a " (` (:race tom))) ; prints Tom is a cat
 ```
 
 ### Macros
@@ -50,6 +50,18 @@ Hummus is a LISPish language written in Go
       (unquote action))
   )
 )))
+
+(dotimes 5 (out "Hello world")) ; prints Hello world 5 times
+
+(def when (macro cond action (
+  (quote 
+    (if (unquote cond)
+      (unquote action))
+  )
+)))
+
+(when (> 4 3) (out "A")) ; prints A
+(when (> 3 4) (out "A")) ; does not print
 ```
 
 ### Examples

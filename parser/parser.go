@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Azer0s/Hummus/lexer"
 )
@@ -25,6 +26,8 @@ func parseParameter(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 }
 
 func Parse(tokens []lexer.Token) []Node {
+	b, _ := json.Marshal(tokens)
+	fmt.Println(string(b))
 	nodes := make([]Node, 0)
 
 	for i := 0; i < len(tokens); i++ {
