@@ -21,6 +21,7 @@ func next(i *int, current *rune, code string) {
 	*current = rune(code[*i])
 }
 
+// LexString tokenizes a string
 func LexString(code string) []Token {
 	tokens := make([]Token, 0)
 	line := uint(1)

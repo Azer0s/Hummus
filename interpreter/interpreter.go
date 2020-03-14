@@ -29,7 +29,7 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 		variable.NodeType = NODETYPE_STRING
 		variable.Value = value.Token.Value
 		break
-	case parser.LITERAL_BOOl:
+	case parser.LITERAL_BOOL:
 		variable.NodeType = NODETYPE_BOOL
 		b, _ := strconv.ParseBool(value.Token.Value)
 		variable.Value = b
@@ -44,6 +44,7 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	return variable
 }
 
+// Run run an AST
 func Run(nodes []parser.Node, variables map[string]Node) (returnVal Node) {
 	for _, node := range nodes {
 		switch node.Type {

@@ -46,7 +46,7 @@ func parseLiteral(current lexer.Token) Node {
 		nodeType = LITERAL_STRING
 		break
 	case lexer.BOOL:
-		nodeType = LITERAL_BOOl
+		nodeType = LITERAL_BOOL
 		break
 	case lexer.ATOM:
 		nodeType = LITERAL_ATOM
@@ -60,6 +60,7 @@ func parseLiteral(current lexer.Token) Node {
 	}
 }
 
+// Parse parse tokens and return an AST
 func Parse(tokens []lexer.Token) []Node {
 	nodes := make([]Node, 0)
 
