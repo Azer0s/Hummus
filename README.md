@@ -7,24 +7,24 @@ Hummus is a LISPish language written in Go
 ## Commands
 
 ### Variable assignment
-```lisp
+```clojure
 (def a "Hello world")
 ```
 ### Function assignment
-```lisp
+```clojure
 (def square (fn x 
 	(* x x)))
 ```
 ### Anonymous function
-```lisp
+```clojure
 ((fn x (* x x)) 4)
 ```
 ### Use function
-```lisp
+```clojure
 (out (square 4))
 ```
 ### Examples
-```lisp
+```clojure
 (def fib (fn n
 	(if (< n 2)
 		1 
@@ -33,11 +33,11 @@ Hummus is a LISPish language written in Go
 ```
 
 ## Exit the application
-```lisp
+```clojure
 (exit)
 ```
 
 ## Get help
-```lisp
+```clojure
 (help)
 ```
