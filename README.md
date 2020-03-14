@@ -1,40 +1,43 @@
 ![Powered by](https://img.shields.io/badge/Powered%20By-Black%20Magic-orange.svg?longCache=true&style=flat-square) 
 ![Open Source Love](https://img.shields.io/badge/Open%20source-%E2%9D%A4%EF%B8%8F-brightgreen.svg?style=flat-square) 
 ![Gluten free](https://img.shields.io/badge/Gluten-Free-blue.svg?longCache=true&style=flat-square)
+
+Hummus is a LISPish language written in Go
+
 ## Commands
 
 ### Variable assignment
-```r
-name:=value
+```lisp
+(def a "Hello world")
 ```
 ### Function assignment
-```r
-name:=(arguments - comma separated).(process)
+```lisp
+(def square (fn x 
+	(* x x)))
 ```
 ### Anonymous function
-```r
-(arguments - comma separated).(process).(values - comma separated)
+```lisp
+((fn x (* x x)) 4)
 ```
 ### Use function
-```r
-name(arguments - comma seperated)
+```lisp
+(out (square 4))
 ```
 ### Examples
-```r
-x:=2
-y:=(x).(x*x)
-z:=y(y(x))
-
-a:=(x,y).(x)
-b:=a(true,false)
-
-k:=(i).(i ? y(10):y(12))
-k(true)
-(x).(x ? Hello : World).(true)
+```lisp
+(def fib (fn n
+	(if (< n 2)
+		1 
+    (+ (fib (- n 2)) (fib (- n 1))))
+))
 ```
 
 ## Exit the application
-> exit
+```lisp
+(exit)
+```
 
 ## Get help
-> help
+```lisp
+(help)
+```
