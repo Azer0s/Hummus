@@ -123,6 +123,12 @@ func LexString(code string) []Token {
 			case "for":
 				tokenType = IDENTIFIER_FOR
 				break
+			case "true":
+				tokenType = BOOL
+				break
+			case "false":
+				tokenType = BOOL
+				break
 			}
 		} else if current == '\n' {
 			line++

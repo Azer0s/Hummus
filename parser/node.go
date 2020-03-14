@@ -7,7 +7,7 @@ type NodeType uint8
 type Node struct {
 	Type      NodeType
 	Arguments []Node
-	Value     lexer.Token
+	Token     lexer.Token
 }
 
 const (
@@ -15,6 +15,11 @@ const (
 	ACTION_CALL    NodeType = 1
 	ACTION_FOR     NodeType = 2
 	ACTION_IF      NodeType = 3
-	LITERAL_FN     NodeType = 4
-	LITERAL_STRING NodeType = 5
+	IDENTIFIER     NodeType = 4
+	LITERAL_FN     NodeType = 5
+	LITERAL_STRING NodeType = 6
+	LITERAL_INT    NodeType = 7
+	LITERAL_FLOAT  NodeType = 8
+	LITERAL_BOOl   NodeType = 9
+	LITERAL_ATOM   NodeType = 10
 )

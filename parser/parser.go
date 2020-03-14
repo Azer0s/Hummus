@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/Azer0s/Hummus/lexer"
 )
@@ -17,17 +16,51 @@ func next(i *int, current *lexer.Token, tokens []lexer.Token) {
 	*current = tokens[*i]
 }
 
-func parseParameter(i *int, current *lexer.Token, tokens []lexer.Token) Node {
+func parseParameters(i *int, current *lexer.Token, tokens []lexer.Token) []Node {
+	nodes := make([]Node, 0)
+
+	for (*current).Type == lexer.IDENTIFIER {
+		nodes = append(nodes, Node{
+			Type:      IDENTIFIER,
+			Arguments: nil,
+			Token:     *current,
+		})
+
+		next(i, current, tokens)
+	}
+
+	return nodes
+}
+
+func parseLiteral(current lexer.Token) Node {
+	var nodeType NodeType
+
+	switch current.Type {
+	case lexer.INT:
+		nodeType = LITERAL_INT
+		break
+	case lexer.FLOAT:
+		nodeType = LITERAL_FLOAT
+		break
+	case lexer.STRING:
+		nodeType = LITERAL_STRING
+		break
+	case lexer.BOOL:
+		nodeType = LITERAL_BOOl
+		break
+	case lexer.ATOM:
+		nodeType = LITERAL_ATOM
+		break
+	}
+
 	return Node{
-		Type:      0,
+		Type:      nodeType,
 		Arguments: nil,
-		Value:     lexer.Token{},
+		Token:     current,
 	}
 }
 
 func Parse(tokens []lexer.Token) []Node {
-	b, _ := json.Marshal(tokens)
-	fmt.Println(string(b))
 	nodes := make([]Node, 0)
 
 	for i := 0; i < len(tokens); i++ {
@@ -43,12 +76,20 @@ func Parse(tokens []lexer.Token) []Node {
 			node := Node{
 				Type:      ACTION_DEF,
 				Arguments: make([]Node, 0),
-				Value:     lexer.Token{},
+				Token:     lexer.Token{},
 			}
 			next(&i, &current, tokens)
 
-			//TODO: Implement assignment
-			node.Arguments = append(node.Arguments, parseParameter(&i, &current, tokens))
+			node.Arguments = append(node.Arguments, parseParameters(&i, &current, tokens)...)
+
+			if current.Type != lexer.OPEN_BRACE {
+				node.Arguments = append(node.Arguments, parseLiteral(current))
+				next(&i, &current, tokens)
+			} else {
+				//TODO: Parse struct, fn or call
+			}
+
+			nodes = append(nodes, node)
 		}
 	}
 

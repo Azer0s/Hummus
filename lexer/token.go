@@ -15,9 +15,10 @@ const (
 	INT               TokenType = 4
 	FLOAT             TokenType = 5
 	STRING            TokenType = 6
-	ATOM              TokenType = 7
-	IDENTIFIER_DEF    TokenType = 8
-	IDENTIFIER_FN     TokenType = 9
-	IDENTIFIER_STRUCT TokenType = 10
-	IDENTIFIER_FOR    TokenType = 11
+	BOOL              TokenType = 7
+	ATOM              TokenType = 8
+	IDENTIFIER_DEF    TokenType = 9
+	IDENTIFIER_FN     TokenType = 10
+	IDENTIFIER_STRUCT TokenType = 11
+	IDENTIFIER_FOR    TokenType = 12
 )
