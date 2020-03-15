@@ -60,7 +60,11 @@
     (unquote action))
 )))
 
-(dotimes 5 (out "Hello world")) ; prints Hello world 5 times
+(dotimes 3 (out "Hello world"))
+; Same as writing
+; (out "Hello world")
+; (out "Hello world")
+; (out "Hello world")
 
 (def when (macro cond action (
   (quote 
@@ -69,8 +73,10 @@
   )
 )))
 
-(when (> 4 3) (out "A")) ; prints A
-(when (> 3 4) (out "A")) ; does not print
+(when (> 4 3) (out "A"))
+; same as writing
+; (if (> 4 3)
+;   (out "A"))
 ```
 
 ### Examples
