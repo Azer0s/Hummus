@@ -1,3 +1,6 @@
 (def out (fn args
-
+  (for (range x args)
+    (--system-do-io! :console-print x)
+  )
+  (--system-do-io! :console-print "\n")
 ))

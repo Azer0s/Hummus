@@ -23,17 +23,17 @@
 ))
 
 (def < (fn first second
-  (--system-do-compare! :< first second)
+  (--system-do-compare-arithmetic! :< first second)
 ))
 
 (def > (fn first second
-  (--system-do-compare! :> first second)
+  (--system-do-compare-arithmetic! :> first second)
 ))
 
 (def <= (fn first second
-  (--system-do-compare! :<= first second)
+  (--system-do-compare-arithmetic! :<= first second)
 ))
 
 (def >= (fn first second
-  (--system-do-compare! :>= first second)
+  (--system-do-compare-arithmetic! :>= first second)
 ))

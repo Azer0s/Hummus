@@ -1,5 +1,8 @@
-(def * (fn elements
-  (--system-do-math! :* elements)
-))
+% use <base>
 
-(* 2 2 2)
+(out (* 2 2 2.5))
+(out (+ 3 2 4))
+
+(def a 11.3)
+
+(out (- a 0.3 6))

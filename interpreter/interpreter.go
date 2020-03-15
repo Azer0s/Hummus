@@ -75,11 +75,86 @@ func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 		args := getArgs(node.Arguments, fn.Parameters, variables, node.Token.Line)
 		//TODO: Set context for function returns (so...if a function was returned, the state of the args shall be saved
 		return Run(fn.Body, args)
-	} else {
-		panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token, node.Token.Line))
 	}
 
-	return Node{}
+	panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token, node.Token.Line))
+}
+
+func doSystemCallMath(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+
+	if mode == "-" && args[1].NodeType == NODETYPE_INT {
+		return Node{
+			Value:    -args[1].Value.(int),
+			NodeType: NODETYPE_INT,
+		}
+	}
+
+	if mode == "-" && args[1].NodeType == NODETYPE_FLOAT {
+		return Node{
+			Value:    -args[1].Value.(float64),
+			NodeType: NODETYPE_FLOAT,
+		}
+	}
+
+	vals := args[1].Value.(ListNode)
+
+	if len(vals.Values) < 2 {
+		panic(fmt.Sprintf("Arithmetic operations expect at least 2 arguments! (line %d)", node.Token.Line))
+	}
+
+	//If any arg is a float, we switch to float mode
+	//Only ints and floats allowed
+
+	floatMode := false
+
+	for _, value := range vals.Values {
+		if value.NodeType != NODETYPE_FLOAT && value.NodeType != NODETYPE_INT {
+			panic(fmt.Sprintf("Only float or int allowed for arithmetic operations! (line %d)", node.Token.Line))
+		}
+
+		if value.NodeType == NODETYPE_FLOAT {
+			floatMode = true
+			break
+		}
+	}
+
+	if floatMode {
+		f := make([]float64, 0)
+
+		for _, value := range vals.Values {
+			if value.NodeType == NODETYPE_INT {
+				f = append(f, float64(value.Value.(int)))
+			} else {
+				f = append(f, value.Value.(float64))
+			}
+		}
+
+		return doFloatCalculation(mode, f)
+	}
+
+	i := make([]int, 0)
+
+	for _, value := range vals.Values {
+		i = append(i, value.Value.(int))
+	}
+
+	return doIntCalculation(mode, i)
+}
+
+func doCall(node parser.Node, variables *map[string]Node) Node {
+	if val, ok := (*variables)[node.Token.Value]; ok {
+		return doVariableCall(node, val, variables)
+	} else if node.Token.Value == SYSTEM_MATH {
+		return doSystemCallMath(node, variables)
+	}
+
+	return Node{
+		Value:    nil,
+		NodeType: 0,
+	}
 }
 
 func resolve(nodes []parser.Node, variables *map[string]Node, line uint) []Node {
@@ -124,55 +199,68 @@ func getArgs(nodes []parser.Node, parameters []string, variables *map[string]Nod
 	return targetMap
 }
 
-func doSystemCallMath(node parser.Node, variables *map[string]Node) Node {
-	args := resolve(node.Arguments, variables, node.Token.Line)
-
-	mode := args[0].Value.(string)
-
-	if mode == "-" && args[1].NodeType == NODETYPE_INT {
-		return Node{
-			Value:    -args[1].Value.(int),
-			NodeType: NODETYPE_INT,
-		}
+func doFloatCalculation(mode string, vals []float64) (node Node) {
+	node = Node{
+		Value:    vals[0],
+		NodeType: NODETYPE_FLOAT,
 	}
-
-	if mode == "-" && args[1].NodeType == NODETYPE_FLOAT {
-		return Node{
-			Value:    -args[1].Value.(float64),
-			NodeType: NODETYPE_FLOAT,
-		}
-	}
-
-	vals := args[1].Value.(ListNode)
-	fmt.Println(vals)
-
-	//TODO: Do calculation
 
 	switch mode {
 	case "*":
+		for i := 1; i < len(vals); i++ {
+			node.Value = vals[i] * node.Value.(float64)
+		}
 		break
 	case "/":
+		for i := 1; i < len(vals); i++ {
+			node.Value = vals[i] / node.Value.(float64)
+		}
 		break
 	case "+":
+		for i := 1; i < len(vals); i++ {
+			node.Value = vals[i] + node.Value.(float64)
+		}
 		break
 	case "-":
+		for i := 1; i < len(vals); i++ {
+			node.Value = vals[i] - node.Value.(float64)
+		}
 		break
 	}
 
-	return Node{}
+	return
 }
 
-func doCall(node parser.Node, variables *map[string]Node) Node {
-	if val, ok := (*variables)[node.Token.Value]; ok {
-		return doVariableCall(node, val, variables)
-	} else if node.Token.Value == SYSTEM_MATH {
-		return doSystemCallMath(node, variables)
+func doIntCalculation(mode string, vals []int) (node Node) {
+	node = Node{
+		Value:    vals[0],
+		NodeType: NODETYPE_INT,
 	}
 
-	return Node{
-		Value:    nil,
-		NodeType: 0,
+	switch mode {
+	case "*":
+		for i := 1; i < len(vals); i++ {
+			node.Value = vals[i] * node.Value.(int)
+		}
+		break
+	case "/":
+		for i := 1; i < len(vals); i++ {
+			node.Value = vals[i] / node.Value.(int)
+		}
+		break
+	case "+":
+		for i := 1; i < len(vals); i++ {
+			node.Value = vals[i] + node.Value.(int)
+		}
+		break
+	case "-":
+		for i := 1; i < len(vals); i++ {
+			node.Value = vals[i] - node.Value.(int)
+		}
+		break
 	}
+
+	return
 }
 
 // Run run an AST
