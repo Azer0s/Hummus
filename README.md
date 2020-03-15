@@ -3,8 +3,7 @@
 ![Gluten free](https://img.shields.io/badge/Gluten-Free-blue.svg?longCache=true&style=flat-square)
 
 
-
-## Commands
+## Examples
 
 ### Variable assignment
 ```clojure
@@ -39,6 +38,18 @@
 ))
 
 (out (:name tom) " is a " (` (:race tom))) ; prints Tom is a cat
+```
+
+### Maps
+
+```clojure
+(def prices ({}
+  (:tea :1.5$)
+  (:coffee :2$)
+  (:cake :3$)
+))
+
+(out "Cake costs " (` (:cake prices)))
 ```
 
 ### Macros
