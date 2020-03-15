@@ -1,0 +1,2 @@
+; Function arguments have to be exactly the same len as function parameters
+; Except for when the len function parameters is 1; then the arguments are interpreted as a list

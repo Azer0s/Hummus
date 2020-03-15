@@ -44,3 +44,5 @@ out/production/Hummus/com/sim/hummus/Pair\.class
 out/production/Hummus/stdlib\.js
 
 *.class
+
+.DS_Store

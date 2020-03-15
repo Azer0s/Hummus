@@ -1,5 +1,7 @@
 package interpreter
 
+import "github.com/Azer0s/Hummus/parser"
+
 // NodeType a variable type
 type NodeType uint8
 
@@ -20,4 +22,17 @@ const (
 	NODETYPE_BOOL NodeType = 3
 	// NODETYPE_ATOM atom variable type
 	NODETYPE_ATOM NodeType = 4
+	// NODETYPE_FN function literal
+	NODETYPE_FN NodeType = 5
+	// NODETYPE_LIST list type
+	NODETYPE_LIST NodeType = 6
 )
+
+type FnLiteral struct {
+	Parameters []string
+	Body       []parser.Node
+}
+
+type ListNode struct {
+	Values []Node
+}

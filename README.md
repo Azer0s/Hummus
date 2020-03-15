@@ -56,10 +56,8 @@
 
 ```clojure
 (def dotimes (macro times action (
-  (quote
-    (for (range times)
-      (unquote action))
-  )
+  (for (range times)
+    (unquote action))
 )))
 
 (dotimes 5 (out "Hello world")) ; prints Hello world 5 times

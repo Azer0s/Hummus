@@ -1,0 +1,17 @@
+(def * (fn elements
+  (--system-do-math! :* elements)
+))
+
+(def out (fn elements
+  (--system-do-io! :out elements)
+))
+
+(def times (fn x y
+  (* x y)
+))
+
+(def hello (fn
+  (out "Hello")
+))
+
+(hello)

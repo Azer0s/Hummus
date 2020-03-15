@@ -1,0 +1,13 @@
+(def Animal (struct
+  :name
+  :age
+  :race
+))
+
+(def tom (Animal
+  "Tom"
+  1
+  :cat
+))
+
+(out (:name tom) " is a " (` (:race tom))) ; prints Tom is a cat

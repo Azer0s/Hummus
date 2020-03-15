@@ -35,4 +35,6 @@ const (
 	LITERAL_BOOL NodeType = 9
 	// LITERAL_ATOM atom literal
 	LITERAL_ATOM NodeType = 10
+	// PARAMETERS a parameter node
+	PARAMETERS NodeType = 11
 )

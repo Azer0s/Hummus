@@ -1,0 +1,5 @@
+(def a 20)
+(def b true)
+(def c "Hello world")
+(def d 3.1414)
+(def e :ok)

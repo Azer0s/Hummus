@@ -1,0 +1,5 @@
+(def * (fn elements
+  (--system-do-math! :* elements)
+))
+
+(* 2 2 2)

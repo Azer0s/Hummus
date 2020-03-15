@@ -35,4 +35,6 @@ const (
 	IDENTIFIER_STRUCT TokenType = 11
 	// IDENTIFIER_FOR "for"
 	IDENTIFIER_FOR TokenType = 12
+	// IDENTIFIER_IF "if"
+	IDENTIFIER_IF TokenType = 13
 )
