@@ -20,6 +20,14 @@ func fail(expected string, got lexer.Token) {
 	panic(fmt.Sprintf("Expected %s, got %s (line %d)!", expected, got.Value, got.Line))
 }
 
+func expectClose(i *int, current *lexer.Token, tokens []lexer.Token) {
+	if current.Type != lexer.CLOSE_BRACE {
+		fail(")", *current)
+	}
+
+	next(i, current, tokens)
+}
+
 func parseParameters(i *int, current *lexer.Token, tokens []lexer.Token) []Node {
 	nodes := make([]Node, 0)
 
@@ -66,15 +74,81 @@ func parseLiteral(current lexer.Token) Node {
 	}
 }
 
+func parseMapAccess(i *int, current *lexer.Token, tokens []lexer.Token, allowLiterals bool) (node Node) {
+	node = Node{
+		Type:      ACTION_MAP_ACCESS,
+		Arguments: make([]Node, 0),
+		Token:     lexer.Token{},
+	}
+	node.Arguments = append(node.Arguments, parseLiteral(*current))
+	next(i, current, tokens)
+
+	if current.Type == lexer.IDENTIFIER {
+		node.Arguments = append(node.Arguments, Node{
+			Type:      IDENTIFIER,
+			Arguments: nil,
+			Token:     *current,
+		})
+		next(i, current, tokens)
+	} else if current.Type == lexer.OPEN_BRACE {
+		next(i, current, tokens)
+		node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
+	} else if current.Type >= lexer.INT && current.Type <= lexer.ATOM && allowLiterals {
+		node.Arguments = append(node.Arguments, parseLiteral(*current))
+		next(i, current, tokens)
+	} else {
+		fail("a valid map access", *current)
+	}
+
+	expectClose(i, current, tokens)
+
+	return
+}
+
+func parseMap(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
+	node = Node{
+		Type:      ACTION_MAP,
+		Arguments: make([]Node, 0),
+		Token:     lexer.Token{},
+	}
+
+	next(i, current, tokens)
+
+	for current.Type != lexer.CLOSE_BRACE {
+		next(i, current, tokens)
+		node.Arguments = append(node.Arguments, parseMapAccess(i, current, tokens, true))
+	}
+
+	expectClose(i, current, tokens)
+
+	return
+}
+
 func parseCall(i *int, current *lexer.Token, tokens []lexer.Token) Node {
-	if current.Type != lexer.IDENTIFIER {
-		fail("identifier", *current)
+	if current.Value == "{}" {
+		return parseMap(i, current, tokens)
 	}
 
 	call := Node{
 		Type:      ACTION_CALL,
 		Arguments: make([]Node, 0),
 		Token:     *current,
+	}
+
+	if current.Type == lexer.OPEN_BRACE {
+		next(i, current, tokens)
+		if current.Type != lexer.IDENTIFIER_FN {
+			fail("fn", *current)
+		}
+
+		call.Arguments = append(call.Arguments, parseFunction(i, current, tokens))
+		*i--
+
+		call.Token = lexer.Token{
+			Type: lexer.ANONYMOUS_FN,
+		}
+	} else if current.Type != lexer.IDENTIFIER {
+		fail("identifier", *current)
 	}
 
 	next(i, current, tokens)
@@ -117,6 +191,29 @@ func parseFunction(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 	fn.Arguments = append(fn.Arguments, parameters)
 
 	for current.Type != lexer.CLOSE_BRACE {
+		if current.Type >= lexer.INT && current.Type <= lexer.ATOM {
+			fn.Arguments = append(fn.Arguments, parseLiteral(*current))
+			next(i, current, tokens)
+
+			if current.Type != lexer.CLOSE_BRACE {
+				fail("a closing brace after a literal return", *current)
+			}
+			continue
+		} else if current.Type == lexer.IDENTIFIER {
+			fn.Arguments = append(fn.Arguments, Node{
+				Type:      IDENTIFIER,
+				Arguments: nil,
+				Token:     *current,
+			})
+
+			next(i, current, tokens)
+
+			if current.Type != lexer.CLOSE_BRACE {
+				fail("a closing brace after an variable return", *current)
+			}
+			continue
+		}
+
 		if current.Type != lexer.OPEN_BRACE {
 			fail("(", *current)
 		}
@@ -124,11 +221,32 @@ func parseFunction(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 		fn.Arguments = append(fn.Arguments, doParse(i, current, tokens))
 	}
 
-	if current.Type != lexer.CLOSE_BRACE {
-		fail(")", *current)
-	}
-	next(i, current, tokens)
+	expectClose(i, current, tokens)
 	return fn
+}
+
+func parseBranch(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
+	node = Node{
+		Type:      ACTION_BRANCH,
+		Arguments: make([]Node, 0),
+		Token:     lexer.Token{},
+	}
+
+	if current.Type >= lexer.INT && current.Type <= lexer.ATOM {
+		node.Arguments = append(node.Arguments, parseLiteral(*current))
+		next(i, current, tokens)
+	} else if current.Type == lexer.IDENTIFIER {
+		node.Arguments = append(node.Arguments, Node{
+			Type:      IDENTIFIER,
+			Arguments: nil,
+			Token:     *current,
+		})
+	} else if current.Type == lexer.OPEN_BRACE {
+		next(i, current, tokens)
+		node.Arguments = append(node.Arguments, doParse(i, current, tokens))
+	}
+
+	return
 }
 
 func doParse(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
@@ -150,21 +268,51 @@ func doParse(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
 
 			if current.Type == lexer.IDENTIFIER_FN {
 				node.Arguments = append(node.Arguments, parseFunction(i, current, tokens))
+			} else {
+				node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
 			}
 
-			//TODO: Parse struct, fn or call
+			//TODO: Parse struct
 		}
 
-		if current.Type != lexer.CLOSE_BRACE {
-			fail(")", *current)
-		}
+		expectClose(i, current, tokens)
+
 		return
 	} else if current.Type == lexer.IDENTIFIER_FOR {
 		//TODO Parse for
 	} else if current.Type == lexer.IDENTIFIER_IF {
-		//TODO Parse if
+		node = Node{
+			Type:      ACTION_IF,
+			Arguments: make([]Node, 0),
+			Token:     lexer.Token{},
+		}
+
+		next(i, current, tokens)
+
+		if current.Type == lexer.BOOL {
+			node.Arguments = append(node.Arguments, parseLiteral(*current))
+			next(i, current, tokens)
+		} else if current.Type == lexer.IDENTIFIER {
+			node.Arguments = append(node.Arguments, Node{
+				Type:      IDENTIFIER,
+				Arguments: nil,
+				Token:     *current,
+			})
+			next(i, current, tokens)
+		} else if current.Type == lexer.OPEN_BRACE {
+			next(i, current, tokens)
+			node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
+		}
+
+		node.Arguments = append(node.Arguments, parseBranch(i, current, tokens))
+
+		if current.Type != lexer.CLOSE_BRACE {
+			node.Arguments = append(node.Arguments, parseBranch(i, current, tokens))
+		}
+
+		expectClose(i, current, tokens)
 	} else if current.Type == lexer.ATOM {
-		//TODO Parse map access
+		node = parseMapAccess(i, current, tokens, false)
 	} else {
 		node = parseCall(i, current, tokens)
 	}
@@ -176,7 +324,7 @@ func doParse(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
 func Parse(tokens []lexer.Token) []Node {
 	nodes := make([]Node, 0)
 
-	for i := 0; i < len(tokens); i++ {
+	for i := 0; i < len(tokens); {
 		current := tokens[i]
 
 		if current.Type != lexer.OPEN_BRACE {

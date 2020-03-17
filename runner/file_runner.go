@@ -1,4 +1,4 @@
-package hummus
+package runner
 
 import (
 	"github.com/Azer0s/Hummus/interpreter"
@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 )
 
+// RunFile runs a file by filename
 func RunFile(filename string) interpreter.Node {
 	b, err := ioutil.ReadFile(filename)
 

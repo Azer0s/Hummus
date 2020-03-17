@@ -37,4 +37,7 @@ const (
 	IDENTIFIER_FOR TokenType = 12
 	// IDENTIFIER_IF "if"
 	IDENTIFIER_IF TokenType = 13
+
+	// ANONYMOUS_FN anonymous fn flag for parse
+	ANONYMOUS_FN TokenType = 14
 )

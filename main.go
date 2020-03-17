@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/Azer0s/Hummus/hummus"
 	"github.com/Azer0s/Hummus/lexer"
+	"github.com/Azer0s/Hummus/runner"
 )
 
 func main() {
@@ -14,5 +14,5 @@ func main() {
 	lexer.LexString("\"Hello world\"")
 	lexer.LexString("((fn x (* x x)) 4)")
 
-	fmt.Println(hummus.RunFile("examples/def_mult.hummus").Value)
+	fmt.Println(runner.RunFile("examples/maps.hummus").Value)
 }

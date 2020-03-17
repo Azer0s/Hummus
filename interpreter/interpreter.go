@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	// SYSTEM_MATH the built in math system function
 	SYSTEM_MATH string = "--system-do-math!"
 )
 

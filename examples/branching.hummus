@@ -1,0 +1,21 @@
+((fn "Hello"))
+
+(def a true)
+
+(def foo (fn "Yo"))
+
+(if ((fn (foo)))
+  "Hello" ; Hummus doesn't allow multiple statements, thus discouraging nesting
+  (foo))
+
+(if (foo)
+  "Hello" ; Hummus doesn't allow multiple statements, thus discouraging nesting
+  (foo))
+
+; If you really want tho, you can do it
+
+(if a
+  ((fn
+    (out "Hello")
+    (out "World")
+  )))

@@ -21,20 +21,26 @@ const (
 	ACTION_FOR NodeType = 2
 	// ACTION_IF if condition
 	ACTION_IF NodeType = 3
+	// ACTION_MAP_ACCESS map access
+	ACTION_MAP_ACCESS = 4
+	// ACTION_MAP map creation
+	ACTION_MAP = 14
+	// ACTION_BRANCH branch statement
+	ACTION_BRANCH = 13
 	// IDENTIFIER identifier
-	IDENTIFIER NodeType = 4
+	IDENTIFIER NodeType = 5
 	// LITERAL_FN function literal
-	LITERAL_FN NodeType = 5
+	LITERAL_FN NodeType = 6
 	// LITERAL_STRING string literal
-	LITERAL_STRING NodeType = 6
+	LITERAL_STRING NodeType = 7
 	// LITERAL_INT int literal
-	LITERAL_INT NodeType = 7
+	LITERAL_INT NodeType = 8
 	// LITERAL_FLOAT float literal
-	LITERAL_FLOAT NodeType = 8
+	LITERAL_FLOAT NodeType = 9
 	// LITERAL_BOOL boolean literal
-	LITERAL_BOOL NodeType = 9
+	LITERAL_BOOL NodeType = 10
 	// LITERAL_ATOM atom literal
-	LITERAL_ATOM NodeType = 10
+	LITERAL_ATOM NodeType = 11
 	// PARAMETERS a parameter node
-	PARAMETERS NodeType = 11
+	PARAMETERS NodeType = 12
 )

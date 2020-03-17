@@ -28,11 +28,13 @@ const (
 	NODETYPE_LIST NodeType = 6
 )
 
+// FnLiteral a function literal (block)
 type FnLiteral struct {
 	Parameters []string
 	Body       []parser.Node
 }
 
+// ListNode a list value
 type ListNode struct {
 	Values []Node
 }

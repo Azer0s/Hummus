@@ -4,3 +4,11 @@
   )
   (--system-do-io! :console-print "\n")
 ))
+
+(def max (fn args
+  (--system-do-compare! :max args)
+))
+
+(def min (fn args
+  (--system-do-compare! :min args)
+))

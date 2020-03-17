@@ -1,0 +1,9 @@
+(def t ({}
+  (:foo "Hello")
+  (:bar a)
+  (:baz (test :OK))
+))
+
+(:foo (t))
+(:foo x)
+(:foo ((fn (x))))
