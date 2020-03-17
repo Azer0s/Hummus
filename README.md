@@ -55,7 +55,9 @@
 ### Macros
 
 ```clojure
-(def dotimes (macro times action (
+(def dotimes (macro times |action| (
+; || tells Hummus to not evaluate this argument but to
+; literally take the AstNode as it's input parameter
   (for (range times)
     (unquote action))
 )))
@@ -66,7 +68,7 @@
 ; (out "Hello world")
 ; (out "Hello world")
 
-(def when (macro cond action (
+(def when (macro |cond| |action| (
   (quote 
     (if (unquote cond)
       (unquote action))
