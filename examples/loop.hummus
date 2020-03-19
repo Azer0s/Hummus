@@ -1,0 +1,44 @@
+(def out (fn x
+  (--system-do-io! :console-print x)
+))
+
+(def list (fn args
+  (--system-do-make! :list args)
+))
+
+(def a (list "Hello" "World"))
+
+(for (range x (list "Hello" "World"))
+  (out x)
+)
+
+(for (range x a)
+  (out x)
+)
+
+(for (range _ (.. 0 12)) ; you can still use the iterator (it's just _), it's just a paradigm that _ means ignored
+  (out "Hi")
+)
+
+(def a 12)
+
+(for (range _ (.. 0 a))
+  (out "Hi")
+)
+
+(def test (fn false))
+
+(for (test)
+  (out "Hello world")
+)
+
+(for false
+  (out "Hello world")
+)
+
+(def a false)
+
+(for a
+  (out "Hello world")
+)
+

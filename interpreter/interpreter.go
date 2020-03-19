@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"fmt"
+	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
 	"strconv"
 )
@@ -9,11 +10,15 @@ import (
 const (
 	// SYSTEM_MATH the built in math system function
 	SYSTEM_MATH string = "--system-do-math!"
+	// SYSTEM_MAKE the built in value make system function
+	SYSTEM_MAKE string = "--system-do-make!"
+	// SYSTEM_IO the built in io function
+	SYSTEM_IO string = "--system-do-io!"
 )
 
-func getLiteralFromNode(parserNode parser.Node) (node Node) {
+func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node Node) {
 	node = Node{
-		Value:    nil,
+		Value:    0,
 		NodeType: 0,
 	}
 
@@ -54,6 +59,17 @@ func getLiteralFromNode(parserNode parser.Node) (node Node) {
 			Body:       parserNode.Arguments[1:],
 		}
 		break
+	case parser.IDENTIFIER:
+		node = (*variables)[parserNode.Token.Value]
+		break
+	case parser.ACTION_CALL:
+		node = doCall(parserNode, variables)
+		break
+	case parser.ACTION_IF:
+		node = doIf(parserNode, variables)
+		break
+
+		//TODO: Map, Map access, struct
 	}
 
 	return
@@ -62,11 +78,11 @@ func getLiteralFromNode(parserNode parser.Node) (node Node) {
 func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	name := node.Arguments[0].Token.Value
 	variable := Node{
-		Value:    nil,
+		Value:    0,
 		NodeType: 0,
 	}
 
-	(*variables)[name] = getLiteralFromNode(node.Arguments[1])
+	(*variables)[name] = getValueFromNode(node.Arguments[1], variables)
 	return variable
 }
 
@@ -145,15 +161,87 @@ func doSystemCallMath(node parser.Node, variables *map[string]Node) Node {
 	return doIntCalculation(mode, i)
 }
 
-func doCall(node parser.Node, variables *map[string]Node) Node {
-	if val, ok := (*variables)[node.Token.Value]; ok {
-		return doVariableCall(node, val, variables)
-	} else if node.Token.Value == SYSTEM_MATH {
-		return doSystemCallMath(node, variables)
+func doSystemCallMake(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+
+	switch mode {
+	case "list":
+		if args[1].NodeType == NODETYPE_LIST {
+			return Node{
+				Value:    args[1],
+				NodeType: NODETYPE_LIST,
+			}
+		}
+
+		return Node{
+			Value:    ListNode{Values: args[1:]},
+			NodeType: NODETYPE_LIST,
+		}
+	default:
+		panic("Unrecognized mode")
+	}
+}
+
+func doSystemCallIo(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+
+	switch mode {
+	case "console-print":
+		if args[1].NodeType == NODETYPE_LIST {
+			panic(SYSTEM_IO + " doesn't accept lists!")
+		} else {
+			fmt.Print(args[1].Value)
+		}
+	default:
+		panic("Unrecognized mode")
 	}
 
 	return Node{
-		Value:    nil,
+		Value:    0,
+		NodeType: 0,
+	}
+}
+
+func doCall(node parser.Node, variables *map[string]Node) Node {
+	if val, ok := (*variables)[node.Token.Value]; ok {
+		return doVariableCall(node, val, variables)
+	} else if node.Token.Type == lexer.ANONYMOUS_FN {
+		fn := getValueFromNode(node.Arguments[0], variables)
+
+		node.Arguments = node.Arguments[1:]
+
+		return doVariableCall(node, fn, variables)
+	} else if node.Token.Value == SYSTEM_MATH {
+		return doSystemCallMath(node, variables)
+	} else if node.Token.Value == SYSTEM_MAKE {
+		return doSystemCallMake(node, variables)
+	} else if node.Token.Value == SYSTEM_IO {
+		return doSystemCallIo(node, variables)
+	}
+
+	return Node{
+		Value:    0,
+		NodeType: 0,
+	}
+}
+
+func doIf(node parser.Node, variables *map[string]Node) Node {
+	cond := getValueFromNode(node.Arguments[0], variables)
+
+	if cond.NodeType == NODETYPE_BOOL && cond.Value.(bool) {
+		return getValueFromNode(node.Arguments[1].Arguments[0], variables)
+	}
+
+	if len(node.Arguments) == 3 {
+		return getValueFromNode(node.Arguments[2].Arguments[0], variables)
+	}
+
+	return Node{
+		Value:    0,
 		NodeType: 0,
 	}
 }
@@ -162,13 +250,7 @@ func resolve(nodes []parser.Node, variables *map[string]Node, line uint) []Node 
 	args := make([]Node, 0)
 
 	for _, node := range nodes {
-		if node.Type >= 5 && node.Type <= 10 {
-			args = append(args, getLiteralFromNode(node))
-		} else if node.Type == parser.IDENTIFIER {
-			args = append(args, (*variables)[node.Token.Value])
-		} else {
-			panic(fmt.Sprintf("Unresolved value %s! (line %d)", node.Token.Value, line))
-		}
+		args = append(args, getValueFromNode(node, variables))
 	}
 
 	return args
@@ -272,8 +354,9 @@ func Run(nodes []parser.Node, variables map[string]Node) (returnVal Node) {
 		case parser.ACTION_DEF:
 			returnVal = defineVariable(node, &variables)
 			break
-		case parser.ACTION_CALL:
-			returnVal = doCall(node, &variables)
+		//TODO: For loop
+		default:
+			returnVal = getValueFromNode(node, &variables)
 			break
 		}
 	}

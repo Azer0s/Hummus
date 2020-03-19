@@ -129,6 +129,10 @@ func parseCall(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 		return parseMap(i, current, tokens)
 	}
 
+	if current.Value == "if" {
+		return parseIf(i, current, tokens)
+	}
+
 	call := Node{
 		Type:      ACTION_CALL,
 		Arguments: make([]Node, 0),
@@ -225,6 +229,41 @@ func parseFunction(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 	return fn
 }
 
+func parseIf(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
+	node = Node{
+		Type:      ACTION_IF,
+		Arguments: make([]Node, 0),
+		Token:     lexer.Token{},
+	}
+
+	next(i, current, tokens)
+
+	if current.Type == lexer.BOOL {
+		node.Arguments = append(node.Arguments, parseLiteral(*current))
+		next(i, current, tokens)
+	} else if current.Type == lexer.IDENTIFIER {
+		node.Arguments = append(node.Arguments, Node{
+			Type:      IDENTIFIER,
+			Arguments: nil,
+			Token:     *current,
+		})
+		next(i, current, tokens)
+	} else if current.Type == lexer.OPEN_BRACE {
+		next(i, current, tokens)
+		node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
+	}
+
+	node.Arguments = append(node.Arguments, parseBranch(i, current, tokens))
+
+	if current.Type != lexer.CLOSE_BRACE {
+		node.Arguments = append(node.Arguments, parseBranch(i, current, tokens))
+	}
+
+	expectClose(i, current, tokens)
+
+	return
+}
+
 func parseBranch(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
 	node = Node{
 		Type:      ACTION_BRANCH,
@@ -249,81 +288,139 @@ func parseBranch(i *int, current *lexer.Token, tokens []lexer.Token) (node Node)
 	return
 }
 
-func doParse(i *int, current *lexer.Token, tokens []lexer.Token, canMacro bool) (node Node) {
-	if current.Type == lexer.IDENTIFIER_DEF {
-		node = Node{
-			Type:      ACTION_DEF,
-			Arguments: make([]Node, 0),
-			Token:     lexer.Token{},
-		}
+func parseFor(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
+	node = Node{
+		Type:      ACTION_WHILE,
+		Arguments: make([]Node, 0),
+		Token:     lexer.Token{},
+	}
+	next(i, current, tokens)
+
+	if current.Type == lexer.IDENTIFIER {
+		node.Arguments = append(node.Arguments, Node{
+			Type:      IDENTIFIER,
+			Arguments: nil,
+			Token:     *current,
+		})
+		next(i, current, tokens)
+	} else if current.Type == lexer.BOOL {
+		node.Arguments = append(node.Arguments, parseLiteral(*current))
+		next(i, current, tokens)
+	} else if current.Type == lexer.OPEN_BRACE {
 		next(i, current, tokens)
 
-		node.Arguments = append(node.Arguments, parseParameters(i, current, tokens)...)
-
-		if current.Type != lexer.OPEN_BRACE {
-			node.Arguments = append(node.Arguments, parseLiteral(*current))
-			next(i, current, tokens)
-		} else {
+		if current.Value == "range" {
+			node.Type = ACTION_FOR
 			next(i, current, tokens)
 
-			if current.Type == lexer.IDENTIFIER_FN {
-				node.Arguments = append(node.Arguments, parseFunction(i, current, tokens))
-			} else if current.Type == lexer.IDENTIFIER_MACRO {
-				if !canMacro {
-					panic(fmt.Sprintf("Macros can only be defined in root scope! (line %d)", current.Line))
-				}
-
-				//TODO: Parse macro
-			} else if current.Type == lexer.IDENTIFIER_STRUCT {
-				//TODO: Parse struct
-			} else {
-				node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
+			if current.Type != lexer.IDENTIFIER {
+				fail("identifier", *current)
 			}
-		}
 
-		expectClose(i, current, tokens)
-
-		return
-	} else if current.Type == lexer.IDENTIFIER_FOR {
-		//TODO Parse for
-	} else if current.Type == lexer.IDENTIFIER_IF {
-		node = Node{
-			Type:      ACTION_IF,
-			Arguments: make([]Node, 0),
-			Token:     lexer.Token{},
-		}
-
-		next(i, current, tokens)
-
-		if current.Type == lexer.BOOL {
-			node.Arguments = append(node.Arguments, parseLiteral(*current))
-			next(i, current, tokens)
-		} else if current.Type == lexer.IDENTIFIER {
 			node.Arguments = append(node.Arguments, Node{
 				Type:      IDENTIFIER,
 				Arguments: nil,
 				Token:     *current,
 			})
 			next(i, current, tokens)
-		} else if current.Type == lexer.OPEN_BRACE {
-			next(i, current, tokens)
+
+			if current.Type == lexer.IDENTIFIER {
+				node.Arguments = append(node.Arguments, Node{
+					Type:      IDENTIFIER,
+					Arguments: nil,
+					Token:     *current,
+				})
+				next(i, current, tokens)
+			} else if current.Type == lexer.OPEN_BRACE {
+				next(i, current, tokens)
+				node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
+			} else {
+				fail("an identifier or a call", *current)
+			}
+
+			expectClose(i, current, tokens)
+		} else {
 			node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
 		}
-
-		node.Arguments = append(node.Arguments, parseBranch(i, current, tokens))
-
-		if current.Type != lexer.CLOSE_BRACE {
-			node.Arguments = append(node.Arguments, parseBranch(i, current, tokens))
-		}
-
-		expectClose(i, current, tokens)
-	} else if current.Type == lexer.ATOM {
-		node = parseMapAccess(i, current, tokens, false)
-	} else {
-		node = parseCall(i, current, tokens)
 	}
 
+	for current.Type != lexer.CLOSE_BRACE {
+		if current.Type != lexer.OPEN_BRACE {
+			fail("(", *current)
+		}
+		next(i, current, tokens)
+		node.Arguments = append(node.Arguments, doParse(i, current, tokens, false))
+	}
+
+	expectClose(i, current, tokens)
+
 	return
+}
+
+func parseDef(i *int, current *lexer.Token, tokens []lexer.Token, canMacro bool) (node Node) {
+	node = Node{
+		Type:      ACTION_DEF,
+		Arguments: make([]Node, 0),
+		Token:     lexer.Token{},
+	}
+	next(i, current, tokens)
+
+	node.Arguments = append(node.Arguments, parseParameters(i, current, tokens)...)
+
+	if current.Type != lexer.OPEN_BRACE {
+		node.Arguments = append(node.Arguments, parseLiteral(*current))
+		next(i, current, tokens)
+	} else {
+		next(i, current, tokens)
+
+		if current.Type == lexer.IDENTIFIER_FN {
+			node.Arguments = append(node.Arguments, parseFunction(i, current, tokens))
+		} else if current.Type == lexer.IDENTIFIER_MACRO {
+			if !canMacro {
+				panic(fmt.Sprintf("Macros can only be defined in root scope! (line %d)", current.Line))
+			}
+
+			//TODO: Parse macro - macros come last (after the interpreter is done)
+		} else if current.Type == lexer.IDENTIFIER_STRUCT {
+			next(i, current, tokens)
+			atoms := Node{
+				Type:      STRUCT_DEF,
+				Arguments: make([]Node, 0),
+				Token:     lexer.Token{},
+			}
+
+			for current.Type != lexer.CLOSE_BRACE {
+				if current.Type != lexer.ATOM {
+					fail("an atom", *current)
+				}
+				next(i, current, tokens)
+				atoms.Arguments = append(atoms.Arguments, parseLiteral(*current))
+			}
+
+			node.Arguments = append(node.Arguments, atoms)
+		} else {
+			node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
+		}
+	}
+
+	expectClose(i, current, tokens)
+
+	return
+}
+
+func doParse(i *int, current *lexer.Token, tokens []lexer.Token, canMacro bool) Node {
+	switch current.Type {
+	case lexer.IDENTIFIER_DEF:
+		return parseDef(i, current, tokens, canMacro)
+	case lexer.IDENTIFIER_FOR:
+		return parseFor(i, current, tokens)
+	case lexer.IDENTIFIER_IF:
+		return parseIf(i, current, tokens)
+	case lexer.ATOM:
+		return parseMapAccess(i, current, tokens, false)
+	default:
+		return parseCall(i, current, tokens)
+	}
 }
 
 // Parse parse tokens and return an AST

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/Azer0s/Hummus/runner"
 )
 
@@ -13,5 +12,5 @@ func main() {
 	//lexer.LexString("\"Hello world\"")
 	//lexer.LexString("((fn x (* x x)) 4)")
 
-	fmt.Println(runner.RunFile("examples/fib.hummus").Value)
+	runner.RunFile("examples/branching.hummus")
 }

@@ -1,12 +1,16 @@
-((fn "Hello"))
+(def out (fn x
+  (--system-do-io! :console-print x)
+))
 
 (def a true)
 
 (def foo (fn "Yo"))
 
-(if ((fn (foo)))
+(out (if ((fn (foo)))
   "Hello" ; Hummus doesn't allow multiple statements, thus discouraging nesting
-  (foo))
+  (foo)))
+
+(out "\n")
 
 (if (foo)
   "Hello" ; Hummus doesn't allow multiple statements, thus discouraging nesting
@@ -17,5 +21,6 @@
 (if a
   ((fn
     (out "Hello")
+    (out " ")
     (out "World")
   )))

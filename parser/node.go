@@ -19,6 +19,8 @@ const (
 	ACTION_CALL NodeType = 1
 	// ACTION_FOR for loop
 	ACTION_FOR NodeType = 2
+	// ACTION_WHILE for loop
+	ACTION_WHILE NodeType = 15
 	// ACTION_IF if condition
 	ACTION_IF NodeType = 3
 	// ACTION_MAP_ACCESS map access
@@ -43,4 +45,6 @@ const (
 	LITERAL_ATOM NodeType = 11
 	// PARAMETERS a parameter node
 	PARAMETERS NodeType = 12
+	// STRUCT_DEF struct definition
+	STRUCT_DEF NodeType = 16
 )
