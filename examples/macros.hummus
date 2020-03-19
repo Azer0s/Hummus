@@ -1,0 +1,17 @@
+(def apply (macro |function| |args|
+  (flat-map
+    (list
+      (unquote function)
+      (map args (fn arg
+        (unquote arg)
+      ))
+    )
+
+    identity
+    ; this is a function from the stdlib
+    ; it returns the identity of an input (the input itself)
+    ; you could also write ≡ or (fn x (identity x)) or (fn x (≡ x))
+  )
+))
+
+(apply IO/out "Hello" "World")

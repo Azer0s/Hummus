@@ -124,6 +124,9 @@ func LexString(code string) []Token {
 			case "struct":
 				tokenType = IDENTIFIER_STRUCT
 				break
+			case "macro":
+				tokenType = IDENTIFIER_FOR
+				break
 			case "for":
 				tokenType = IDENTIFIER_FOR
 				break

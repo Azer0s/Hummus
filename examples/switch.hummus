@@ -1,0 +1,16 @@
+(def switch (macro |value| |statements|
+  (map statements (fn statement
+    (quote
+      (if (= (unquote value) (unquote (nth 0 statament)))
+        (unquote (nth 1 statament))
+      )
+    )
+  ))
+))
+
+(def x (IO/in))
+
+(switch x
+  ("Hello" (IO/out "Hi!"))
+  ("Bye" (IO/out "See ya!"))
+)

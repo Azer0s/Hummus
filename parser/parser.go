@@ -218,7 +218,7 @@ func parseFunction(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 			fail("(", *current)
 		}
 		next(i, current, tokens)
-		fn.Arguments = append(fn.Arguments, doParse(i, current, tokens))
+		fn.Arguments = append(fn.Arguments, doParse(i, current, tokens, false))
 	}
 
 	expectClose(i, current, tokens)
@@ -243,13 +243,13 @@ func parseBranch(i *int, current *lexer.Token, tokens []lexer.Token) (node Node)
 		})
 	} else if current.Type == lexer.OPEN_BRACE {
 		next(i, current, tokens)
-		node.Arguments = append(node.Arguments, doParse(i, current, tokens))
+		node.Arguments = append(node.Arguments, doParse(i, current, tokens, false))
 	}
 
 	return
 }
 
-func doParse(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
+func doParse(i *int, current *lexer.Token, tokens []lexer.Token, canMacro bool) (node Node) {
 	if current.Type == lexer.IDENTIFIER_DEF {
 		node = Node{
 			Type:      ACTION_DEF,
@@ -268,11 +268,17 @@ func doParse(i *int, current *lexer.Token, tokens []lexer.Token) (node Node) {
 
 			if current.Type == lexer.IDENTIFIER_FN {
 				node.Arguments = append(node.Arguments, parseFunction(i, current, tokens))
+			} else if current.Type == lexer.IDENTIFIER_MACRO {
+				if !canMacro {
+					panic(fmt.Sprintf("Macros can only be defined in root scope! (line %d)", current.Line))
+				}
+
+				//TODO: Parse macro
+			} else if current.Type == lexer.IDENTIFIER_STRUCT {
+				//TODO: Parse struct
 			} else {
 				node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
 			}
-
-			//TODO: Parse struct
 		}
 
 		expectClose(i, current, tokens)
@@ -333,7 +339,7 @@ func Parse(tokens []lexer.Token) []Node {
 
 		next(&i, &current, tokens)
 
-		nodes = append(nodes, doParse(&i, &current, tokens))
+		nodes = append(nodes, doParse(&i, &current, tokens, true))
 	}
 
 	return nodes

@@ -58,9 +58,10 @@
 (def dotimes (macro times |action| (
 ; || tells Hummus to not evaluate this argument but to
 ; literally take the AstNode as it's input parameter
-  (for (range times)
-    (unquote action))
-)))
+  (map (range times)
+    (unquote action)
+  )
+))
 
 (dotimes 3 (out "Hello world"))
 ; Same as writing
@@ -68,17 +69,33 @@
 ; (out "Hello world")
 ; (out "Hello world")
 
-(def when (macro |cond| |action| (
+(def when (macro cond action (
   (quote 
     (if (unquote cond)
       (unquote action))
   )
-)))
+))
 
 (when (> 4 3) (out "A"))
 ; same as writing
 ; (if (> 4 3)
 ;   (out "A"))
+```
+
+### Function composition
+
+```clojure
+(def add (fn a b
+  (+ a b)
+))
+
+(def square(fn x
+  (* x x)
+))
+
+(def add-square-out (|> add square IO/out))
+
+(add-square-out 3 1) ; prints 16
 ```
 
 ### Examples

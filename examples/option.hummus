@@ -1,0 +1,18 @@
+(def option (struct
+  :value
+  :error
+))
+
+(def error (fn opt
+  (:error opt)
+))
+
+(def a (option
+  ""
+  true
+))
+
+(if (error a)
+  (out "There was an error!")
+  (out "There was no error!")
+)

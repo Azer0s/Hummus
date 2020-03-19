@@ -181,6 +181,7 @@ func getArgs(nodes []parser.Node, parameters []string, variables *map[string]Nod
 		targetMap[k] = v
 	}
 
+	//TODO: If the args are longer than the parameters, press the rest of the args into the last parameter as list
 	if len(parameters) == 1 && len(nodes) > 1 {
 		arg := ListNode{Values: resolve(nodes, variables, line)}
 
