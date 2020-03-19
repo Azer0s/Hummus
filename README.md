@@ -69,7 +69,7 @@
 ; (out "Hello world")
 ; (out "Hello world")
 
-(def when (macro cond action (
+(def when (macro cond action
   (quote 
     (if (unquote cond)
       (unquote action))
