@@ -1,0 +1,15 @@
+(def a 10)
+
+(def f (fn x
+  (/
+    (* (math/sin (+ (√ x) a)) (^ math/e (√ x)))
+  ; -------------------------------------------
+    (√ x)
+  )
+))
+
+(math/calculus/integrate f)
+
+(fn x c
+  (+ (- (math/sin (+ (√ x) a)) (math/cos (+ (√ x) a))) (* (^ math/e (√ x))) c)
+)

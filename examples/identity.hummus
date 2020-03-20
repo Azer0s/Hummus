@@ -1,3 +1,5 @@
+(use :<base>)
+
 (def a 20)
 
 (out (≡ a)) ; ≡ is an alias for identity

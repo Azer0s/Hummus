@@ -14,4 +14,4 @@
   )
 ))
 
-(apply IO/out "Hello" "World")
+(apply out "Hello" "World")

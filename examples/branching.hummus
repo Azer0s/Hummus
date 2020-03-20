@@ -1,6 +1,4 @@
-(def out (fn x
-  (--system-do-io! :console-print x)
-))
+(use :<base>)
 
 (def a true)
 

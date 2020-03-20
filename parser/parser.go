@@ -129,7 +129,7 @@ func parseCall(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 		return parseMap(i, current, tokens)
 	}
 
-	if current.Value == "if" {
+	if current.Type == lexer.IDENTIFIER_IF {
 		return parseIf(i, current, tokens)
 	}
 
@@ -280,6 +280,7 @@ func parseBranch(i *int, current *lexer.Token, tokens []lexer.Token) (node Node)
 			Arguments: nil,
 			Token:     *current,
 		})
+		next(i, current, tokens)
 	} else if current.Type == lexer.OPEN_BRACE {
 		next(i, current, tokens)
 		node.Arguments = append(node.Arguments, doParse(i, current, tokens, false))

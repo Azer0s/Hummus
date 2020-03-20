@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
+	"io/ioutil"
+	"path"
+	"regexp"
 	"strconv"
 )
 
@@ -14,7 +17,15 @@ const (
 	SYSTEM_MAKE string = "--system-do-make!"
 	// SYSTEM_IO the built in io function
 	SYSTEM_IO string = "--system-do-io!"
+	// SYSTEM_COMPARE comparison functions
+	SYSTEM_COMPARE string = "--system-do-compare!"
+	// SYSTEM_COMPARE_ARITHMETIC arithmetic comparison functions
+	SYSTEM_COMPARE_ARITHMETIC string = "--system-do-compare-arithmetic!"
+	// USE include function
+	USE string = "use"
 )
+
+var globalFns = make(map[string]Node, 0)
 
 func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node Node) {
 	node = Node{
@@ -86,12 +97,41 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	return variable
 }
 
+func doUse(node parser.Node) {
+	if node.Arguments[0].Type != parser.LITERAL_ATOM {
+		panic(fmt.Sprintf("\"use\" only accepts atoms as parameter! (line %d)", node.Token.Line))
+	}
+
+	stdlib, _ := regexp.Compile("<([^>]+)>")
+
+	//TODO: Relative path
+
+	file := node.Arguments[0].Token.Value
+
+	if stdlib.MatchString(file) {
+		file = path.Join("stdlib", stdlib.FindStringSubmatch(file)[1]+".hummus")
+
+		b, err := ioutil.ReadFile(file)
+
+		if err != nil {
+			panic(err)
+		}
+
+		vars := make(map[string]Node, 0)
+		_ = Run(parser.Parse(lexer.LexString(string(b))), &vars)
+
+		for k, v := range vars {
+			globalFns[k] = v
+		}
+	}
+}
+
 func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node {
 	if val.NodeType == NODETYPE_FN {
 		fn := val.Value.(FnLiteral)
 		args := getArgs(node.Arguments, fn.Parameters, variables, node.Token.Line)
 		//TODO: Set context for function returns (so...if a function was returned, the state of the args shall be saved
-		return Run(fn.Body, args)
+		return Run(fn.Body, &args)
 	}
 
 	panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token, node.Token.Line))
@@ -170,7 +210,7 @@ func doSystemCallMake(node parser.Node, variables *map[string]Node) Node {
 	case "list":
 		if args[1].NodeType == NODETYPE_LIST {
 			return Node{
-				Value:    args[1],
+				Value:    args[1].Value,
 				NodeType: NODETYPE_LIST,
 			}
 		}
@@ -179,6 +219,40 @@ func doSystemCallMake(node parser.Node, variables *map[string]Node) Node {
 			Value:    ListNode{Values: args[1:]},
 			NodeType: NODETYPE_LIST,
 		}
+	case "range":
+		from := args[1]
+		to := args[2]
+
+		if from.NodeType != NODETYPE_INT || to.NodeType != NODETYPE_INT {
+			panic("Expected an int as parameter for ")
+		}
+
+		f := from.Value.(int)
+		t := to.Value.(int)
+
+		list := ListNode{Values: make([]Node, 0)}
+
+		if f > t {
+			for i := t; i >= t; i-- {
+				list.Values = append(list.Values, Node{
+					Value:    i,
+					NodeType: NODETYPE_INT,
+				})
+			}
+		} else {
+			for i := f; i <= t; i++ {
+				list.Values = append(list.Values, Node{
+					Value:    i,
+					NodeType: NODETYPE_INT,
+				})
+			}
+		}
+
+		return Node{
+			Value:    list,
+			NodeType: NODETYPE_LIST,
+		}
+
 	default:
 		panic("Unrecognized mode")
 	}
@@ -206,8 +280,122 @@ func doSystemCallIo(node parser.Node, variables *map[string]Node) Node {
 	}
 }
 
+func doSystemCallCompare(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+
+	switch mode {
+	case "/=":
+		return Node{
+			Value:    args[1].Value != args[2].Value,
+			NodeType: NODETYPE_BOOL,
+		}
+	case "=":
+		return Node{
+			Value:    args[1].Value == args[2].Value,
+			NodeType: NODETYPE_BOOL,
+		}
+	default:
+		panic("Unrecognized mode")
+	}
+}
+
+func doSystemCallCompareArithmetic(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+	//If any arg is a float, we switch to float mode
+	//Only ints and floats allowed
+
+	floatMode := false
+
+	for _, value := range args[1:] {
+		if value.NodeType != NODETYPE_FLOAT && value.NodeType != NODETYPE_INT {
+			panic(fmt.Sprintf("Only float or int allowed for arithmetic operations! (line %d)", node.Token.Line))
+		}
+
+		if value.NodeType == NODETYPE_FLOAT {
+			floatMode = true
+			break
+		}
+	}
+
+	if floatMode {
+		f := make([]float64, 0)
+
+		for _, value := range args[1:] {
+			if value.NodeType == NODETYPE_INT {
+				f = append(f, float64(value.Value.(int)))
+			} else {
+				f = append(f, value.Value.(float64))
+			}
+		}
+
+		switch mode {
+		case "<":
+			return Node{
+				Value:    f[0] < f[1],
+				NodeType: NODETYPE_BOOL,
+			}
+		case ">":
+			return Node{
+				Value:    f[0] > f[1],
+				NodeType: NODETYPE_BOOL,
+			}
+		case "<=":
+			return Node{
+				Value:    f[0] <= f[1],
+				NodeType: NODETYPE_BOOL,
+			}
+		case ">=":
+			return Node{
+				Value:    f[0] >= f[1],
+				NodeType: NODETYPE_BOOL,
+			}
+		default:
+			panic("Unrecognized mode")
+		}
+	}
+
+	i := make([]int, 0)
+
+	for _, value := range args[1:] {
+		i = append(i, value.Value.(int))
+	}
+
+	switch mode {
+	case "<":
+		return Node{
+			Value:    i[0] < i[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	case ">":
+		return Node{
+			Value:    i[0] > i[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	case "<=":
+		return Node{
+			Value:    i[0] <= i[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	case ">=":
+		return Node{
+			Value:    i[0] >= i[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	default:
+		panic("Unrecognized mode")
+	}
+}
+
 func doCall(node parser.Node, variables *map[string]Node) Node {
-	if val, ok := (*variables)[node.Token.Value]; ok {
+	if node.Token.Value == USE {
+		doUse(node)
+	} else if val, ok := globalFns[node.Token.Value]; ok {
+		return doVariableCall(node, val, variables)
+	} else if val, ok := (*variables)[node.Token.Value]; ok {
 		return doVariableCall(node, val, variables)
 	} else if node.Token.Type == lexer.ANONYMOUS_FN {
 		fn := getValueFromNode(node.Arguments[0], variables)
@@ -215,17 +403,27 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 		node.Arguments = node.Arguments[1:]
 
 		return doVariableCall(node, fn, variables)
-	} else if node.Token.Value == SYSTEM_MATH {
-		return doSystemCallMath(node, variables)
-	} else if node.Token.Value == SYSTEM_MAKE {
-		return doSystemCallMake(node, variables)
-	} else if node.Token.Value == SYSTEM_IO {
-		return doSystemCallIo(node, variables)
 	}
 
-	return Node{
-		Value:    0,
-		NodeType: 0,
+	switch node.Token.Value {
+	case USE:
+		doUse(node)
+		return Node{
+			Value:    0,
+			NodeType: NODETYPE_INT,
+		}
+	case SYSTEM_MATH:
+		return doSystemCallMath(node, variables)
+	case SYSTEM_MAKE:
+		return doSystemCallMake(node, variables)
+	case SYSTEM_IO:
+		return doSystemCallIo(node, variables)
+	case SYSTEM_COMPARE:
+		return doSystemCallCompare(node, variables)
+	case SYSTEM_COMPARE_ARITHMETIC:
+		return doSystemCallCompareArithmetic(node, variables)
+	default:
+		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
 	}
 }
 
@@ -243,6 +441,28 @@ func doIf(node parser.Node, variables *map[string]Node) Node {
 	return Node{
 		Value:    0,
 		NodeType: 0,
+	}
+}
+
+func doForLoop(node parser.Node, variables *map[string]Node) {
+	context := make(map[string]Node, 0)
+
+	for k, v := range *variables {
+		context[k] = v
+	}
+
+	list := Run([]parser.Node{
+		node.Arguments[1],
+	}, variables)
+
+	if list.NodeType != NODETYPE_LIST {
+		list.Value = ListNode{Values: []Node{list}}
+		list.NodeType = NODETYPE_LIST
+	}
+
+	for _, value := range list.Value.(ListNode).Values {
+		context[node.Arguments[0].Token.Value] = value
+		Run(node.Arguments[2:], &context)
 	}
 }
 
@@ -292,22 +512,22 @@ func doFloatCalculation(mode string, vals []float64) (node Node) {
 	switch mode {
 	case "*":
 		for i := 1; i < len(vals); i++ {
-			node.Value = vals[i] * node.Value.(float64)
+			node.Value = node.Value.(float64) * vals[i]
 		}
 		break
 	case "/":
 		for i := 1; i < len(vals); i++ {
-			node.Value = vals[i] / node.Value.(float64)
+			node.Value = node.Value.(float64) / vals[i]
 		}
 		break
 	case "+":
 		for i := 1; i < len(vals); i++ {
-			node.Value = vals[i] + node.Value.(float64)
+			node.Value = node.Value.(float64) + vals[i]
 		}
 		break
 	case "-":
 		for i := 1; i < len(vals); i++ {
-			node.Value = vals[i] - node.Value.(float64)
+			node.Value = node.Value.(float64) - vals[i]
 		}
 		break
 	}
@@ -324,22 +544,22 @@ func doIntCalculation(mode string, vals []int) (node Node) {
 	switch mode {
 	case "*":
 		for i := 1; i < len(vals); i++ {
-			node.Value = vals[i] * node.Value.(int)
+			node.Value = node.Value.(int) * vals[i]
 		}
 		break
 	case "/":
 		for i := 1; i < len(vals); i++ {
-			node.Value = vals[i] / node.Value.(int)
+			node.Value = node.Value.(int) / vals[i]
 		}
 		break
 	case "+":
 		for i := 1; i < len(vals); i++ {
-			node.Value = vals[i] + node.Value.(int)
+			node.Value = node.Value.(int) + vals[i]
 		}
 		break
 	case "-":
 		for i := 1; i < len(vals); i++ {
-			node.Value = vals[i] - node.Value.(int)
+			node.Value = node.Value.(int) - vals[i]
 		}
 		break
 	}
@@ -348,15 +568,23 @@ func doIntCalculation(mode string, vals []int) (node Node) {
 }
 
 // Run run an AST
-func Run(nodes []parser.Node, variables map[string]Node) (returnVal Node) {
+func Run(nodes []parser.Node, variables *map[string]Node) (returnVal Node) {
+	returnVal = Node{
+		Value:    0,
+		NodeType: 0,
+	}
+
 	for _, node := range nodes {
 		switch node.Type {
 		case parser.ACTION_DEF:
-			returnVal = defineVariable(node, &variables)
+			returnVal = defineVariable(node, variables)
 			break
-		//TODO: For loop
+		//TODO: While loop
+		case parser.ACTION_FOR:
+			doForLoop(node, variables)
+			break
 		default:
-			returnVal = getValueFromNode(node, &variables)
+			returnVal = getValueFromNode(node, variables)
 			break
 		}
 	}

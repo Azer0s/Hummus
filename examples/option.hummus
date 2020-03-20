@@ -1,3 +1,5 @@
+(use :<base>)
+
 (def option (struct
   :value
   :error

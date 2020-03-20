@@ -1,6 +1,10 @@
+(use :<base>)
+
 (def fib (fn n
   (if (< n 2)
-    1
+    n
     (+ (fib (- n 2)) (fib (- n 1)))
   )
 ))
+
+(out (fib 20))

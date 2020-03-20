@@ -12,5 +12,5 @@ func main() {
 	//lexer.LexString("\"Hello world\"")
 	//lexer.LexString("((fn x (* x x)) 4)")
 
-	runner.RunFile("examples/branching.hummus")
+	runner.RunFile("examples/fib.hummus")
 }

@@ -1,10 +1,4 @@
-(def out (fn x
-  (--system-do-io! :console-print x)
-))
-
-(def list (fn args
-  (--system-do-make! :list args)
-))
+(use :<base>)
 
 (def a (list "Hello" "World"))
 
@@ -20,10 +14,12 @@
   (out "Hi")
 )
 
+(out "----")
+
 (def a 12)
 
-(for (range _ (.. 0 a))
-  (out "Hi")
+(for (range i (.. 0 a))
+  (out i)
 )
 
 (def test (fn false))

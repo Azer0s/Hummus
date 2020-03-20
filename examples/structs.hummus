@@ -1,3 +1,5 @@
+(use :<base>)
+
 (def Animal (struct
   :name
   :age

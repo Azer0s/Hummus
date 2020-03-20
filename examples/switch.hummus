@@ -8,9 +8,9 @@
   ))
 ))
 
-(def x (IO/in))
+(def x (in))
 
 (switch x
-  ("Hello" (IO/out "Hi!"))
-  ("Bye" (IO/out "See ya!"))
+  ("Hello" (out "Hi!"))
+  ("Bye" (out "See ya!"))
 )

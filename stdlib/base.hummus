@@ -1,4 +1,4 @@
 ; Definitions for operators, standard functions, etc
 
-% use <base/operators>
-% use <base/functions>
+(use :<base/operators>)
+(use :<base/functions>)

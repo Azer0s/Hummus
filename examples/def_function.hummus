@@ -1,10 +1,4 @@
-(def * (fn elements
-  (--system-do-math! :* elements)
-))
-
-(def out (fn elements
-  (--system-do-io! :out elements)
-))
+(use :<base>)
 
 (def times (fn x y
   (* x y)

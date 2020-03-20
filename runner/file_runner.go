@@ -15,5 +15,6 @@ func RunFile(filename string) interpreter.Node {
 		panic(err)
 	}
 
-	return interpreter.Run(parser.Parse(lexer.LexString(string(b))), make(map[string]interpreter.Node, 0))
+	vars := make(map[string]interpreter.Node, 0)
+	return interpreter.Run(parser.Parse(lexer.LexString(string(b))), &vars)
 }
