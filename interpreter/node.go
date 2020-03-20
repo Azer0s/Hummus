@@ -32,6 +32,7 @@ const (
 type FnLiteral struct {
 	Parameters []string
 	Body       []parser.Node
+	Context    map[string]Node
 }
 
 // ListNode a list value

@@ -222,7 +222,19 @@ func parseFunction(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 			fail("(", *current)
 		}
 		next(i, current, tokens)
-		fn.Arguments = append(fn.Arguments, doParse(i, current, tokens, false))
+
+		if current.Type == lexer.IDENTIFIER_FN {
+			fn.Arguments = append(fn.Arguments, parseFunction(i, current, tokens))
+			*i--
+			next(i, current, tokens)
+
+			if current.Type != lexer.CLOSE_BRACE {
+				fail("a closing brace after an variable return", *current)
+			}
+			continue
+		} else {
+			fn.Arguments = append(fn.Arguments, doParse(i, current, tokens, false))
+		}
 	}
 
 	expectClose(i, current, tokens)
@@ -283,7 +295,12 @@ func parseBranch(i *int, current *lexer.Token, tokens []lexer.Token) (node Node)
 		next(i, current, tokens)
 	} else if current.Type == lexer.OPEN_BRACE {
 		next(i, current, tokens)
-		node.Arguments = append(node.Arguments, doParse(i, current, tokens, false))
+
+		if current.Type == lexer.IDENTIFIER_FN {
+			node.Arguments = append(node.Arguments, parseFunction(i, current, tokens))
+		} else {
+			node.Arguments = append(node.Arguments, doParse(i, current, tokens, false))
+		}
 	}
 
 	return

@@ -130,8 +130,39 @@ func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 	if val.NodeType == NODETYPE_FN {
 		fn := val.Value.(FnLiteral)
 		args := getArgs(node.Arguments, fn.Parameters, variables, node.Token.Line)
-		//TODO: Set context for function returns (so...if a function was returned, the state of the args shall be saved
-		return Run(fn.Body, &args)
+
+		if fn.Context != nil {
+			for k, v := range fn.Context {
+				args[k] = v
+			}
+		}
+
+		ret := Run(fn.Body, &args)
+
+		if ret.NodeType == NODETYPE_FN {
+			arg := resolve(node.Arguments, variables, node.Token.Line)
+
+			// set context in case of currying
+			ctx := make(map[string]Node, 0)
+
+			if fn.Context != nil {
+				for k, v := range fn.Context {
+					ctx[k] = v
+				}
+			}
+
+			for i := range arg {
+				ctx[fn.Parameters[i]] = arg[i]
+			}
+
+			ret.Value = FnLiteral{
+				Parameters: ret.Value.(FnLiteral).Parameters,
+				Body:       ret.Value.(FnLiteral).Body,
+				Context:    ctx,
+			}
+		}
+
+		return ret
 	}
 
 	panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token, node.Token.Line))

@@ -1,0 +1,33 @@
+(use :<base>)
+
+(if true
+  (fn (out "true"))
+  (fn (out "false"))
+)
+
+(def a 13)
+
+(def add (fn x
+  (fn y
+    (fn z
+      (+ x y z)
+    )
+  )
+))
+
+(def add3 (add 3))
+(def add2 (add3 2))
+
+(out (add2 5))
+
+(def a 10)
+
+(def printA (fn
+  (out a)
+))
+
+(printA)
+
+(def a 20)
+
+(printA)
