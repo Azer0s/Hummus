@@ -21,8 +21,12 @@ const (
 	SYSTEM_COMPARE string = "--system-do-compare!"
 	// SYSTEM_COMPARE_ARITHMETIC arithmetic comparison functions
 	SYSTEM_COMPARE_ARITHMETIC string = "--system-do-compare-arithmetic!"
+	// SYSTEM_CONVERT conversion functions
+	SYSTEM_CONVERT string = "--system-do-convert!"
 	// USE include function
 	USE string = "use"
+	// MAP_ACCESS map access function
+	MAP_ACCESS string = "[]"
 )
 
 var globalFns = make(map[string]Node, 0)
@@ -80,10 +84,44 @@ func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node 
 		node = doIf(parserNode, variables)
 		break
 
-		//TODO: Map, Map access, struct
+	case parser.ACTION_MAP:
+		node = createMap(parserNode, variables)
+		break
+
+	case parser.ACTION_MAP_ACCESS:
+		node = accessMap(parserNode, variables)
+		break
+		//TODO: Map access, struct
 	}
 
 	return
+}
+
+func accessMap(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	if args[0].NodeType != NODETYPE_ATOM {
+		panic(fmt.Sprintf("First argument in map access must be an atom! (line %d)", node.Arguments[0].Token.Line))
+	}
+
+	if args[1].NodeType != NODETYPE_MAP {
+		panic(fmt.Sprintf("Second argument in map access must be a list! (line %d)", node.Arguments[0].Token.Line))
+	}
+
+	return args[1].Value.(MapNode).Values[args[0].Value.(string)]
+}
+
+func createMap(node parser.Node, variables *map[string]Node) Node {
+	mapNode := MapNode{Values: make(map[string]Node, 0)}
+
+	for _, argument := range node.Arguments {
+		mapNode.Values[argument.Arguments[0].Token.Value] = getValueFromNode(argument.Arguments[1], variables)
+	}
+
+	return Node{
+		Value:    mapNode,
+		NodeType: NODETYPE_MAP,
+	}
 }
 
 func defineVariable(node parser.Node, variables *map[string]Node) Node {
@@ -421,6 +459,26 @@ func doSystemCallCompareArithmetic(node parser.Node, variables *map[string]Node)
 	}
 }
 
+func doSystemCallConvert(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+
+	switch mode {
+	case "string":
+		if args[1].NodeType == NODETYPE_LIST {
+			panic(SYSTEM_CONVERT + " doesn't accept lists!")
+		}
+
+		return Node{
+			Value:    fmt.Sprintf("%v", args[1].Value),
+			NodeType: NODETYPE_STRING,
+		}
+	default:
+		panic("Unrecognized mode")
+	}
+}
+
 func doCall(node parser.Node, variables *map[string]Node) Node {
 	if node.Token.Value == USE {
 		doUse(node)
@@ -443,6 +501,12 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 			Value:    0,
 			NodeType: NODETYPE_INT,
 		}
+	case MAP_ACCESS:
+		return accessMap(parser.Node{
+			Type:      parser.ACTION_MAP_ACCESS,
+			Arguments: node.Arguments,
+			Token:     lexer.Token{},
+		}, variables)
 	case SYSTEM_MATH:
 		return doSystemCallMath(node, variables)
 	case SYSTEM_MAKE:
@@ -453,6 +517,8 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 		return doSystemCallCompare(node, variables)
 	case SYSTEM_COMPARE_ARITHMETIC:
 		return doSystemCallCompareArithmetic(node, variables)
+	case SYSTEM_CONVERT:
+		return doSystemCallConvert(node, variables)
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
 	}

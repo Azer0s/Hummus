@@ -5,6 +5,10 @@
   (--system-do-io! :console-print "\n")
 ))
 
+(def ` (fn arg
+  (--system-do-convert! :string arg)
+))
+
 (def .. (fn from to
   (--system-do-make! :range from to)
 ))

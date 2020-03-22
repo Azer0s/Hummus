@@ -133,6 +133,10 @@ func parseCall(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 		return parseIf(i, current, tokens)
 	}
 
+	if current.Type == lexer.ATOM {
+		return parseMapAccess(i, current, tokens, false)
+	}
+
 	call := Node{
 		Type:      ACTION_CALL,
 		Arguments: make([]Node, 0),

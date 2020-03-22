@@ -1,9 +1,10 @@
-(def t ({}
-  (:foo "Hello")
-  (:bar a)
-  (:baz (test :OK))
+(use :<base>)
+
+(def prices ({}
+  (:tea :1.5$)
+  (:coffee :2$)
+  (:cake :3$)
 ))
 
-(:foo (t))
-(:foo x)
-(:foo ((fn (x))))
+(out "Cake costs " (` (:cake prices)))
+(out "Tea costs " (` ([] :tea prices)))

@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	runner.RunFile("examples/fib.hummus")
+	runner.RunFile("examples/maps.hummus")
 }
