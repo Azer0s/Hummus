@@ -6,5 +6,23 @@
   (--system-do-compare! :min args)
 ))
 
+; TODO
+(def nth (fn vals
+  (--system-do-enumerate! :nth vals)
+))
+
+(def each (fn vals func
+  (--system-do-enumerate! :each vals func)
+))
+
 (def map (fn vals func
+  (--system-do-enumerate! :map vals func)
+))
+
+(def filter (fn vals func
+  (--system-do-enumerate! :filter vals func)
+))
+
+(def reduce (fn vals func init
+  (--system-do-enumerate! :reduce vals func init)
 ))

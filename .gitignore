@@ -48,3 +48,5 @@ out/production/Hummus/stdlib\.js
 .DS_Store
 
 bin/
+
+.idea/codeStyles/

@@ -83,6 +83,56 @@
 ;   (out "A"))
 ```
 
+### Map ⇄ Filter ⇄ Reduce
+
+```clojure
+(def pilots (list
+  ({}
+    (:id 2)
+    (:name "Wedge Antilles")
+    (:faction "Rebels")
+  )
+  ({}
+    (:id 8)
+    (:name "Ciena Ree")
+    (:faction "Empire")
+  )
+  ({}
+    (:id 40)
+    (:name "Iden Versio")
+    (:faction "Empire")
+  )
+  ({}
+    (:id 66)
+    (:name "Thane Kyrell")
+    (:faction "Rebels")
+  )
+))
+
+(each
+  (map pilots (fn x
+    (str/concat (` (:name x)) " => " (` (:faction x)))
+  ))
+(fn x
+  (out x)
+))
+
+(each
+  (filter pilots (fn x
+    (= (:faction x) "Empire")
+  ))
+(fn x
+  (out (:name x))
+))
+
+(out (reduce pilots (fn x acc
+  (if (= (:faction x) "Empire")
+    (+ acc 1)
+    acc
+  )
+) 0))
+```
+
 ### Function composition
 
 ```clojure

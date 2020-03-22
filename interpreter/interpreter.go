@@ -29,6 +29,10 @@ const (
 	SYSTEM_BOOL string = "--system-do-bool!"
 	// SYSTEM_BITWISE bitwise functions
 	SYSTEM_BITWISE string = "--system-do-bitwise!"
+	// SYSTEM_ENUMERATE enumeration functions
+	SYSTEM_ENUMERATE string = "--system-do-enumerate!"
+	// SYSTEM_STRING string functions
+	SYSTEM_STRING string = "--system-do-strings!"
 	// USE include function
 	USE string = "use"
 	// MAP_ACCESS map access function
@@ -311,6 +315,10 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 		return doSystemCallBool(node, variables)
 	case SYSTEM_BITWISE:
 		return doSystemCallBitwise(node, variables)
+	case SYSTEM_ENUMERATE:
+		return doSystemCallEnumerate(node, variables)
+	case SYSTEM_STRING:
+		return doSystemCallStrings(node, variables)
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
 	}

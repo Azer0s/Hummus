@@ -7,6 +7,7 @@ import (
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
 	"os"
+	"path/filepath"
 )
 
 func printHelp() {
@@ -56,6 +57,18 @@ func getParserType(tokenType lexer.TokenType) parser.NodeType {
 // RunRepl runs the run-eval-print-loop
 func RunRepl() {
 	vars := make(map[string]interpreter.Node, 0)
+
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+
+	if err != nil {
+		panic(err)
+	}
+
+	vars[interpreter.EXEC_FILE] = interpreter.Node{
+		Value:    dir,
+		NodeType: interpreter.NODETYPE_STRING,
+	}
+
 	reader := bufio.NewReader(os.Stdin)
 
 	for {

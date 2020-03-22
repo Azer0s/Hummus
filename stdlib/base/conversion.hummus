@@ -6,18 +6,22 @@
   (` arg)
 ))
 
+; TODO
 (def int (fn arg
   (--system-do-convert! :int arg)
 ))
 
+; TODO
 (def float (fn arg
   (--system-do-convert! :float arg)
 ))
 
+; TODO
 (def bool (fn arg
   (--system-do-convert! :int arg)
 ))
 
+; TODO
 (def atom (fn arg
   (--system-do-convert! :int arg)
 ))

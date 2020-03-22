@@ -3,6 +3,7 @@ package interpreter
 import (
 	"bufio"
 	"fmt"
+	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
 	"os"
 	"strings"
@@ -144,7 +145,7 @@ func doSystemCallMake(node parser.Node, variables *map[string]Node) Node {
 		to := args[2]
 
 		if from.NodeType != NODETYPE_INT || to.NodeType != NODETYPE_INT {
-			panic("Expected an int as parameter for ")
+			panic("Expected an int as parameter for range!")
 		}
 
 		f := from.Value.(int)
@@ -241,7 +242,7 @@ func doSystemCallCompare(node parser.Node, variables *map[string]Node) Node {
 		return min
 	case "max":
 		if args[1].NodeType != NODETYPE_LIST {
-			panic(SYSTEM_COMPARE + " :min only accepts lists!")
+			panic(SYSTEM_COMPARE + " :max only accepts lists!")
 		}
 
 		list := args[1].Value.(ListNode).Values
@@ -400,6 +401,230 @@ func doSystemCallBitwise(node parser.Node, variables *map[string]Node) Node {
 		return Node{
 			Value:    int(uint(args[1].Value.(int)) >> uint(args[2].Value.(int))),
 			NodeType: NODETYPE_INT,
+		}
+	default:
+		panic("Unrecognized mode")
+	}
+}
+
+func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+
+	if args[1].NodeType != NODETYPE_LIST {
+		panic(SYSTEM_ENUMERATE + " expects a list as first argument!")
+	}
+
+	if args[2].NodeType != NODETYPE_FN {
+		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
+	}
+
+	ctx := make(map[string]Node, 0)
+	for k, v := range *variables {
+		ctx[k] = v
+	}
+
+	const SYSTEM_ENUMERATE_VAL = "--system-do-enumerate-val"
+	const SYSTEM_ACCUMULATE_VAL = "--system-do-accumulate-val"
+
+	fn := args[2].Value.(FnLiteral)
+	list := args[1].Value.(ListNode)
+
+	switch mode {
+	case "each":
+		if len(fn.Parameters) != 1 {
+			panic("Enumerate each should have one parameter in execution function!")
+		}
+
+		for _, value := range list.Values {
+			ctx[SYSTEM_ENUMERATE_VAL] = value
+
+			doVariableCall(parser.Node{
+				Type: 0,
+				Arguments: []parser.Node{
+					{
+						Type:      parser.IDENTIFIER,
+						Arguments: nil,
+						Token: lexer.Token{
+							Value: SYSTEM_ENUMERATE_VAL,
+							Type:  0,
+							Line:  0,
+						},
+					},
+				},
+				Token: lexer.Token{},
+			}, args[2], &ctx)
+		}
+
+		return Node{
+			Value:    0,
+			NodeType: 0,
+		}
+	case "map":
+		if len(fn.Parameters) != 1 {
+			panic("Enumerate map should have one parameter in execution function!")
+		}
+
+		mapResult := ListNode{Values: make([]Node, 0)}
+
+		for _, value := range list.Values {
+			ctx[SYSTEM_ENUMERATE_VAL] = value
+
+			mapResult.Values = append(mapResult.Values, doVariableCall(parser.Node{
+				Type: 0,
+				Arguments: []parser.Node{
+					{
+						Type:      parser.IDENTIFIER,
+						Arguments: nil,
+						Token: lexer.Token{
+							Value: SYSTEM_ENUMERATE_VAL,
+							Type:  0,
+							Line:  0,
+						},
+					},
+				},
+				Token: lexer.Token{},
+			}, args[2], &ctx))
+		}
+
+		return Node{
+			Value:    mapResult,
+			NodeType: NODETYPE_LIST,
+		}
+	case "filter":
+		if len(fn.Parameters) != 1 {
+			panic("Enumerate filter should have one parameter in execution function!")
+		}
+
+		mapResult := ListNode{Values: make([]Node, 0)}
+
+		for _, value := range list.Values {
+			ctx[SYSTEM_ENUMERATE_VAL] = value
+
+			res := doVariableCall(parser.Node{
+				Type: 0,
+				Arguments: []parser.Node{
+					{
+						Type:      parser.IDENTIFIER,
+						Arguments: nil,
+						Token: lexer.Token{
+							Value: SYSTEM_ENUMERATE_VAL,
+							Type:  0,
+							Line:  0,
+						},
+					},
+				},
+				Token: lexer.Token{},
+			}, args[2], &ctx)
+
+			if res.NodeType != NODETYPE_BOOL {
+				panic("Enumerate filter result must be a bool!")
+			}
+
+			if res.Value.(bool) {
+				mapResult.Values = append(mapResult.Values, value)
+			}
+		}
+
+		return Node{
+			Value:    mapResult,
+			NodeType: NODETYPE_LIST,
+		}
+	case "reduce":
+		if len(fn.Parameters) != 2 {
+			panic("Enumerate reduce should have two parameters in execution function!")
+		}
+
+		ctx[SYSTEM_ACCUMULATE_VAL] = args[3]
+
+		for _, value := range list.Values {
+			ctx[SYSTEM_ENUMERATE_VAL] = value
+
+			res := doVariableCall(parser.Node{
+				Type: 0,
+				Arguments: []parser.Node{
+					{
+						Type:      parser.IDENTIFIER,
+						Arguments: nil,
+						Token: lexer.Token{
+							Value: SYSTEM_ENUMERATE_VAL,
+							Type:  0,
+							Line:  0,
+						},
+					},
+					{
+						Type:      parser.IDENTIFIER,
+						Arguments: nil,
+						Token: lexer.Token{
+							Value: SYSTEM_ACCUMULATE_VAL,
+							Type:  0,
+							Line:  0,
+						},
+					},
+				},
+				Token: lexer.Token{},
+			}, args[2], &ctx)
+
+			if res.NodeType != args[3].NodeType {
+				panic("Enumerate reduce result type must be the same as the init type!")
+			}
+
+			ctx[SYSTEM_ACCUMULATE_VAL] = res
+		}
+
+		return ctx[SYSTEM_ACCUMULATE_VAL]
+	default:
+		panic("Unrecognized mode")
+	}
+}
+
+func doSystemCallStrings(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+
+	switch mode {
+	case "concat":
+		if args[1].NodeType != NODETYPE_LIST {
+			panic(SYSTEM_STRING + " :concat only accepts lists!")
+		}
+
+		str := make([]string, 0)
+
+		for _, value := range args[1].Value.(ListNode).Values {
+			if value.NodeType != NODETYPE_STRING {
+				panic(SYSTEM_STRING + " :concat only accepts lists of string!")
+			}
+
+			str = append(str, value.Value.(string))
+		}
+
+		return Node{
+			Value:    strings.Join(str, ""),
+			NodeType: NODETYPE_STRING,
+		}
+	case "len":
+		if args[1].NodeType != NODETYPE_STRING {
+			panic(SYSTEM_STRING + " :len only accepts strings!")
+		}
+
+		return Node{
+			Value:    len(args[1].Value.(string)),
+			NodeType: NODETYPE_INT,
+		}
+	case "nth":
+		if args[1].NodeType != NODETYPE_STRING {
+			panic(SYSTEM_STRING + " :nth expects a string as the first argument!")
+		}
+
+		if args[2].NodeType != NODETYPE_INT {
+			panic(SYSTEM_STRING + " :nth expects an int as the second argument!")
+		}
+
+		return Node{
+			Value:    string(args[1].Value.(string)[args[2].Value.(int)]),
+			NodeType: NODETYPE_STRING,
 		}
 	default:
 		panic("Unrecognized mode")
