@@ -1,9 +1,61 @@
 package interpreter
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/Azer0s/Hummus/parser"
+	"os"
+	"strings"
 )
+
+var reader = bufio.NewReader(os.Stdin)
+
+// DumpNode returns the string representation of a node
+func DumpNode(node Node) string {
+	ret := ""
+
+	if node.NodeType == NODETYPE_LIST {
+		ret += "("
+
+		for _, value := range node.Value.(ListNode).Values {
+			ret += DumpNode(value) + " "
+		}
+
+		ret = strings.TrimSuffix(ret, " ")
+		ret += ")"
+	} else if node.NodeType == NODETYPE_MAP {
+		ret += "("
+
+		for k, v := range node.Value.(MapNode).Values {
+			ret += fmt.Sprintf("%s => %s ", k, DumpNode(v))
+		}
+
+		ret = strings.TrimSuffix(ret, " ")
+		ret += ")"
+	} else if node.NodeType == NODETYPE_FN {
+		ret += "[fn "
+
+		for _, parameter := range node.Value.(FnLiteral).Parameters {
+			ret += parameter + " "
+		}
+
+		ret = strings.TrimSuffix(ret, " ")
+		ret += "]"
+	} else if node.NodeType == NODETYPE_STRUCT {
+		ret += "[struct "
+
+		for _, parameter := range node.Value.(StructDef).Parameters {
+			ret += parameter + " "
+		}
+
+		ret = strings.TrimSuffix(ret, " ")
+		ret += "]"
+	} else {
+		ret = fmt.Sprintf("%v", node.Value)
+	}
+
+	return ret
+}
 
 func doSystemCallMath(node parser.Node, variables *map[string]Node) Node {
 	args := resolve(node.Arguments, variables, node.Token.Line)
@@ -132,12 +184,20 @@ func doSystemCallIo(node parser.Node, variables *map[string]Node) Node {
 	mode := args[0].Value.(string)
 
 	switch mode {
-	case "console-print":
-		if args[1].NodeType == NODETYPE_LIST {
-			panic(SYSTEM_IO + " doesn't accept lists!")
-		} else {
+	case "console-out":
+		if args[1].NodeType <= NODETYPE_ATOM {
 			fmt.Print(args[1].Value)
+		} else {
+			panic(SYSTEM_IO + " :console-out only accepts int, float, bool, string or atom!")
 		}
+	case "console-in":
+		t, _ := reader.ReadString('\n')
+		return Node{
+			Value:    t,
+			NodeType: NODETYPE_STRING,
+		}
+	case "console-clear":
+		print("\033[H\033[2J")
 	default:
 		panic("Unrecognized mode")
 	}
@@ -164,6 +224,36 @@ func doSystemCallCompare(node parser.Node, variables *map[string]Node) Node {
 			Value:    args[1].Value == args[2].Value,
 			NodeType: NODETYPE_BOOL,
 		}
+	case "min":
+		if args[1].NodeType != NODETYPE_LIST {
+			panic(SYSTEM_COMPARE + " :min only accepts lists!")
+		}
+
+		list := args[1].Value.(ListNode).Values
+		min := list[0]
+
+		for i := 1; i < len(list); i++ {
+			if list[i].smaller(min) {
+				min = list[i]
+			}
+		}
+
+		return min
+	case "max":
+		if args[1].NodeType != NODETYPE_LIST {
+			panic(SYSTEM_COMPARE + " :min only accepts lists!")
+		}
+
+		list := args[1].Value.(ListNode).Values
+		max := list[0]
+
+		for i := 1; i < len(list); i++ {
+			if list[i].bigger(max) {
+				max = list[i]
+			}
+		}
+
+		return max
 	default:
 		panic("Unrecognized mode")
 	}
@@ -217,18 +307,100 @@ func doSystemCallConvert(node parser.Node, variables *map[string]Node) Node {
 
 	mode := args[0].Value.(string)
 
+	if args[1].NodeType == NODETYPE_LIST {
+		panic(SYSTEM_CONVERT + " doesn't accept lists!")
+	}
+
 	switch mode {
 	case "string":
-		if args[1].NodeType == NODETYPE_LIST {
-			panic(SYSTEM_CONVERT + " doesn't accept lists!")
-		}
-
 		return Node{
-			Value:    fmt.Sprintf("%v", args[1].Value),
+			Value:    DumpNode(args[1]),
 			NodeType: NODETYPE_STRING,
 		}
 	case "identity":
 		return args[1]
+	default:
+		panic("Unrecognized mode")
+	}
+}
+
+func doSystemCallBool(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+
+	if mode == "not" {
+		if args[1].NodeType != NODETYPE_BOOL {
+			panic(SYSTEM_BOOL + " only accepts bools!")
+		}
+
+		return Node{
+			Value:    !args[1].Value.(bool),
+			NodeType: NODETYPE_BOOL,
+		}
+	}
+
+	if args[1].NodeType != NODETYPE_BOOL || args[2].NodeType != NODETYPE_BOOL {
+		panic(SYSTEM_BOOL + " only accepts bools!")
+	}
+
+	switch mode {
+	case "and":
+		return Node{
+			Value:    args[1].Value.(bool) && args[2].Value.(bool),
+			NodeType: NODETYPE_BOOL,
+		}
+	case "or":
+		return Node{
+			Value:    args[1].Value.(bool) || args[2].Value.(bool),
+			NodeType: NODETYPE_BOOL,
+		}
+	default:
+		panic("Unrecognized mode")
+	}
+}
+
+func doSystemCallBitwise(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	mode := args[0].Value.(string)
+
+	if mode == "not" {
+		if args[1].NodeType != NODETYPE_INT {
+			panic(SYSTEM_BITWISE + " only accepts ints!")
+		}
+
+		return Node{
+			Value:    int(^uint(args[1].Value.(int))),
+			NodeType: NODETYPE_INT,
+		}
+	}
+
+	if args[1].NodeType != NODETYPE_INT || args[2].NodeType != NODETYPE_INT {
+		panic(SYSTEM_BITWISE + " only accepts ints!")
+	}
+
+	switch mode {
+	case "and":
+		return Node{
+			Value:    int(uint(args[1].Value.(int)) & uint(args[2].Value.(int))),
+			NodeType: NODETYPE_INT,
+		}
+	case "or":
+		return Node{
+			Value:    int(uint(args[1].Value.(int)) | uint(args[2].Value.(int))),
+			NodeType: NODETYPE_INT,
+		}
+	case "shiftl":
+		return Node{
+			Value:    int(uint(args[1].Value.(int)) << uint(args[2].Value.(int))),
+			NodeType: NODETYPE_INT,
+		}
+	case "shiftr":
+		return Node{
+			Value:    int(uint(args[1].Value.(int)) >> uint(args[2].Value.(int))),
+			NodeType: NODETYPE_INT,
+		}
 	default:
 		panic("Unrecognized mode")
 	}

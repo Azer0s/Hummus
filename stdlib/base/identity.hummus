@@ -1,0 +1,7 @@
+(def ≡ (fn arg
+  (identity arg)
+))
+
+(def identity (fn arg
+  (--system-do-convert! :identity arg)
+))

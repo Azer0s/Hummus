@@ -1,0 +1,10 @@
+(def max (fn args
+  (--system-do-compare! :max args)
+))
+
+(def min (fn args
+  (--system-do-compare! :min args)
+))
+
+(def map (fn vals func
+))

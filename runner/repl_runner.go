@@ -95,7 +95,7 @@ func RunRepl() {
 		} else if len(nodes) == 1 && nodes[0].Type == parser.ACTION_CALL && nodes[0].Token.Value == "help" {
 			printHelp()
 		} else {
-			fmt.Println(fmt.Sprintf("%v", interpreter.Run(nodes, &vars).Value))
+			fmt.Println(interpreter.DumpNode(interpreter.Run(nodes, &vars)))
 		}
 	}
 }

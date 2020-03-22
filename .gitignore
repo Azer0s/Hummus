@@ -46,3 +46,5 @@ out/production/Hummus/stdlib\.js
 *.class
 
 .DS_Store
+
+bin/

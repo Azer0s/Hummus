@@ -164,7 +164,12 @@ func parseCall(i *int, current *lexer.Token, tokens []lexer.Token) Node {
 	for current.Type != lexer.CLOSE_BRACE {
 		if current.Type == lexer.OPEN_BRACE {
 			next(i, current, tokens)
-			call.Arguments = append(call.Arguments, parseCall(i, current, tokens))
+
+			if current.Type == lexer.IDENTIFIER_FN {
+				call.Arguments = append(call.Arguments, parseFunction(i, current, tokens))
+			} else {
+				call.Arguments = append(call.Arguments, parseCall(i, current, tokens))
+			}
 		} else if current.Type == lexer.IDENTIFIER {
 			call.Arguments = append(call.Arguments, parseParameters(i, current, tokens)...)
 		} else if current.Type >= lexer.INT && current.Type <= lexer.ATOM {

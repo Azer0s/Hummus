@@ -1,0 +1,23 @@
+(def ` (fn arg
+  (--system-do-convert! :string arg)
+))
+
+(def string (fn arg
+  (` arg)
+))
+
+(def int (fn arg
+  (--system-do-convert! :int arg)
+))
+
+(def float (fn arg
+  (--system-do-convert! :float arg)
+))
+
+(def bool (fn arg
+  (--system-do-convert! :int arg)
+))
+
+(def atom (fn arg
+  (--system-do-convert! :int arg)
+))

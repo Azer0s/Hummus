@@ -59,9 +59,9 @@
 (def dotimes (macro times |action| (
 ; || tells Hummus to not evaluate this argument but to
 ; literally take the AstNode as it's input parameter
-  (map (range times)
+  (map (range times) (fn
     (unquote action)
-  )
+  ))
 ))
 
 (dotimes 3 (out "Hello world"))

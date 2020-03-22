@@ -1,6 +1,9 @@
 package interpreter
 
-import "github.com/Azer0s/Hummus/parser"
+import (
+	"fmt"
+	"github.com/Azer0s/Hummus/parser"
+)
 
 // NodeType a variable type
 type NodeType uint8
@@ -52,4 +55,42 @@ type MapNode struct {
 // StructDef struct definition
 type StructDef struct {
 	Parameters []string
+}
+
+func (node *Node) smaller(compareTo Node) bool {
+	if node.NodeType != compareTo.NodeType {
+		panic("Can't compare nodes of two different types!")
+	}
+
+	switch node.NodeType {
+	case NODETYPE_INT:
+		return node.Value.(int) < compareTo.Value.(int)
+	case NODETYPE_FLOAT:
+		return node.Value.(float64) < compareTo.Value.(float64)
+	case NODETYPE_STRING:
+		return node.Value.(string) < compareTo.Value.(string)
+	case NODETYPE_ATOM:
+		return node.Value.(string) < compareTo.Value.(string)
+	default:
+		panic(fmt.Sprintf("Nodetype %d cannot be compared!", node.NodeType))
+	}
+}
+
+func (node *Node) bigger(compareTo Node) bool {
+	if node.NodeType != compareTo.NodeType {
+		panic("Can't compare nodes of two different types!")
+	}
+
+	switch node.NodeType {
+	case NODETYPE_INT:
+		return node.Value.(int) > compareTo.Value.(int)
+	case NODETYPE_FLOAT:
+		return node.Value.(float64) > compareTo.Value.(float64)
+	case NODETYPE_STRING:
+		return node.Value.(string) > compareTo.Value.(string)
+	case NODETYPE_ATOM:
+		return node.Value.(string) > compareTo.Value.(string)
+	default:
+		panic(fmt.Sprintf("Nodetype %d cannot be compared!", node.NodeType))
+	}
 }

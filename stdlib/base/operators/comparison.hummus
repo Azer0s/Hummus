@@ -1,21 +1,9 @@
-(def * (fn elements
-  (--system-do-math! :* elements)
-))
-
-(def / (fn elements
-  (--system-do-math! :/ elements)
-))
-
-(def + (fn elements
-  (--system-do-math! :+ elements)
-))
-
-(def - (fn elements
-  (--system-do-math! :- elements)
-))
-
 (def = (fn first second
   (--system-do-compare! := first second)
+))
+
+(def != (fn first second
+  (--system-do-compare! :/= first second)
 ))
 
 (def /= (fn first second

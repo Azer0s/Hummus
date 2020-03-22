@@ -1,0 +1,14 @@
+(def out (fn args
+  (for (range x args)
+    (--system-do-io! :console-out x)
+  )
+  (--system-do-io! :console-out "\n")
+))
+
+(def in (fn
+  (--system-do-io! :console-in "\n")
+))
+
+(def clear (fn
+  (--system-do-io! :console-clear "\n")
+))

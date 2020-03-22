@@ -5,7 +5,9 @@ import (
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
 	"io/ioutil"
+	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strconv"
 )
@@ -23,10 +25,16 @@ const (
 	SYSTEM_COMPARE_ARITHMETIC string = "--system-do-compare-arithmetic!"
 	// SYSTEM_CONVERT conversion functions
 	SYSTEM_CONVERT string = "--system-do-convert!"
+	// SYSTEM_BOOL boolean algebra functions
+	SYSTEM_BOOL string = "--system-do-bool!"
+	// SYSTEM_BITWISE bitwise functions
+	SYSTEM_BITWISE string = "--system-do-bitwise!"
 	// USE include function
 	USE string = "use"
 	// MAP_ACCESS map access function
 	MAP_ACCESS string = "[]"
+	// EXEC_FILE current file
+	EXEC_FILE string = "EXEC-FILE"
 )
 
 var globalFns = make(map[string]Node, 0)
@@ -154,32 +162,54 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	return variable
 }
 
-func doUse(node parser.Node) {
+func doUse(node parser.Node, currentFile string) Node {
 	if node.Arguments[0].Type != parser.LITERAL_ATOM {
 		panic(fmt.Sprintf("\"use\" only accepts atoms as parameter! (line %d)", node.Token.Line))
 	}
 
 	stdlib, _ := regexp.Compile("<([^>]+)>")
 
-	//TODO: Relative path
-
 	file := node.Arguments[0].Token.Value
 
 	if stdlib.MatchString(file) {
-		file = path.Join("stdlib", stdlib.FindStringSubmatch(file)[1]+".hummus")
-
-		b, err := ioutil.ReadFile(file)
+		dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 
 		if err != nil {
 			panic(err)
 		}
 
-		vars := make(map[string]Node, 0)
-		_ = Run(parser.Parse(lexer.LexString(string(b))), &vars)
+		file = path.Join(dir, "./stdlib", stdlib.FindStringSubmatch(file)[1]+".hummus")
+	} else {
+		//Let's try a relative path
+		dir, err := filepath.Abs(filepath.Dir(currentFile))
 
-		for k, v := range vars {
-			globalFns[k] = v
+		if err != nil {
+			panic(err)
 		}
+
+		file = path.Join(dir, file+".hummus")
+	}
+
+	b, err := ioutil.ReadFile(file)
+
+	if err != nil {
+		panic(err)
+	}
+
+	vars := make(map[string]Node, 0)
+	vars[EXEC_FILE] = Node{
+		Value:    file,
+		NodeType: NODETYPE_STRING,
+	}
+	_ = Run(parser.Parse(lexer.LexString(string(b))), &vars)
+
+	for k, v := range vars {
+		globalFns[k] = v
+	}
+
+	return Node{
+		Value:    0,
+		NodeType: 0,
 	}
 }
 
@@ -245,7 +275,7 @@ func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 
 func doCall(node parser.Node, variables *map[string]Node) Node {
 	if node.Token.Value == USE {
-		doUse(node)
+		return doUse(node, (*variables)[EXEC_FILE].Value.(string))
 	} else if val, ok := globalFns[node.Token.Value]; ok {
 		return doVariableCall(node, val, variables)
 	} else if val, ok := (*variables)[node.Token.Value]; ok {
@@ -259,12 +289,6 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 	}
 
 	switch node.Token.Value {
-	case USE:
-		doUse(node)
-		return Node{
-			Value:    0,
-			NodeType: NODETYPE_INT,
-		}
 	case MAP_ACCESS:
 		return accessMap(parser.Node{
 			Type:      parser.ACTION_MAP_ACCESS,
@@ -283,6 +307,10 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 		return doSystemCallCompareArithmetic(node, variables)
 	case SYSTEM_CONVERT:
 		return doSystemCallConvert(node, variables)
+	case SYSTEM_BOOL:
+		return doSystemCallBool(node, variables)
+	case SYSTEM_BITWISE:
+		return doSystemCallBitwise(node, variables)
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
 	}

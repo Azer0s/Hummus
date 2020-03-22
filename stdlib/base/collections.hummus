@@ -1,0 +1,12 @@
+(def .. (fn from to
+  (--system-do-make! :range from to)
+))
+
+(def range (fn times
+  (--system-do-make! :range 0 times)
+))
+
+
+(def list (fn args
+  (--system-do-make! :list args)
+))

@@ -1,0 +1,15 @@
+(def * (fn elements
+  (--system-do-math! :* elements)
+))
+
+(def / (fn elements
+  (--system-do-math! :/ elements)
+))
+
+(def + (fn elements
+  (--system-do-math! :+ elements)
+))
+
+(def - (fn elements
+  (--system-do-math! :- elements)
+))

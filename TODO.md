@@ -1,7 +1,7 @@
 - [x] Maps
 - [x] Structs
 - [x] REPL
-- [ ] Relative file import
+- [x] Relative file import
 - [ ] Function composition
 - [ ] Add functionality to stdlib
 - [ ] Macros

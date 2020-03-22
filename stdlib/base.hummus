@@ -1,4 +1,11 @@
 ; Definitions for operators, standard functions, etc
 
-(use :<base/operators>)
-(use :<base/functions>)
+(use :./operators/arithmetic)
+(use :./operators/bitwise)
+(use :./operators/boolean)
+(use :./operators/comparison)
+(use :./collections)
+(use :./conversion)
+(use :./enumerable)
+(use :./identity)
+(use :./io)

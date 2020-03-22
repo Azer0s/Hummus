@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	runner.RunRepl()
-	runner.RunFile("examples/identity.hummus")
+	//runner.RunRepl()
+	runner.RunFile("examples/import.hummus")
 }
