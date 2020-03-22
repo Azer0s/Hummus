@@ -1,0 +1,52 @@
+(use :<pipe>)
+
+(def pilots (list
+  ({}
+    (:id 2)
+    (:name "Wedge Antilles")
+    (:faction "Rebels")
+  )
+  ({}
+    (:id 8)
+    (:name "Ciena Ree")
+    (:faction "Empire")
+  )
+  ({}
+    (:id 40)
+    (:name "Iden Versio")
+    (:faction "Empire")
+  )
+  ({}
+    (:id 66)
+    (:name "Thane Kyrell")
+    (:faction "Rebels")
+  )
+))
+
+; Will be in pipe stdlib
+(def map.. (fn func
+  (fn x
+    (map x func)
+  )
+))
+
+(pipe/do pilots
+  (map.. (fn x
+    (str/concat (` (:name x)) " => " (` (:faction x)))
+  ))
+  (each.. (fn x
+    (out x)
+  ))
+)
+
+(pipe/do pilots
+  (filter.. (fn x
+    (= (:faction x) "Empire")
+  ))
+  (map.. (fn x
+    (:name x)
+  ))
+  (each.. (fn x
+    (out x)
+  ))
+)

@@ -147,6 +147,27 @@
 (def add-square-out (|> add square out))
 
 (add-square-out 3 1) ; prints 16
+
+(pipe/do pilots
+  (map.. (fn x
+    (str/concat (` (:name x)) " => " (` (:faction x)))
+  ))
+  (each.. (fn x
+    (out x)
+  ))
+)
+
+(pipe/do pilots
+  (filter.. (fn x
+    (= (:faction x) "Empire")
+  ))
+  (map.. (fn x
+    (:name x)
+  ))
+  (each.. (fn x
+    (out x)
+  ))
+)
 ```
 
 ### Examples

@@ -42,6 +42,16 @@ const (
 )
 
 var globalFns = make(map[string]Node, 0)
+var imports = make([]string, 0)
+
+func contains(arr []string, str string) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
+		}
+	}
+	return false
+}
 
 func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node Node) {
 	node = Node{
@@ -194,6 +204,13 @@ func doUse(node parser.Node, currentFile string) Node {
 		file = path.Join(dir, file+".hummus")
 	}
 
+	if contains(imports, file) {
+		return Node{
+			Value:    0,
+			NodeType: 0,
+		}
+	}
+
 	b, err := ioutil.ReadFile(file)
 
 	if err != nil {
@@ -210,6 +227,8 @@ func doUse(node parser.Node, currentFile string) Node {
 	for k, v := range vars {
 		globalFns[k] = v
 	}
+
+	imports = append(imports, file)
 
 	return Node{
 		Value:    0,
