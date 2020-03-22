@@ -94,7 +94,7 @@
   (* x x)
 ))
 
-(def add-square-out (|> add square IO/out))
+(def add-square-out (|> add square out))
 
 (add-square-out 3 1) ; prints 16
 ```
