@@ -50,6 +50,7 @@
 ))
 
 (out "Cake costs " (` (:cake prices)))
+(out "Tea costs " (` ([] :tea prices)))
 ```
 
 ### Macros
