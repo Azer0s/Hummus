@@ -438,30 +438,7 @@ func doSystemCallCompareArithmetic(node parser.Node, variables *map[string]Node)
 			}
 		}
 
-		switch mode {
-		case "<":
-			return Node{
-				Value:    f[0] < f[1],
-				NodeType: NODETYPE_BOOL,
-			}
-		case ">":
-			return Node{
-				Value:    f[0] > f[1],
-				NodeType: NODETYPE_BOOL,
-			}
-		case "<=":
-			return Node{
-				Value:    f[0] <= f[1],
-				NodeType: NODETYPE_BOOL,
-			}
-		case ">=":
-			return Node{
-				Value:    f[0] >= f[1],
-				NodeType: NODETYPE_BOOL,
-			}
-		default:
-			panic("Unrecognized mode")
-		}
+		return doFloatCompare(mode, f)
 	}
 
 	i := make([]int, 0)
@@ -470,30 +447,7 @@ func doSystemCallCompareArithmetic(node parser.Node, variables *map[string]Node)
 		i = append(i, value.Value.(int))
 	}
 
-	switch mode {
-	case "<":
-		return Node{
-			Value:    i[0] < i[1],
-			NodeType: NODETYPE_BOOL,
-		}
-	case ">":
-		return Node{
-			Value:    i[0] > i[1],
-			NodeType: NODETYPE_BOOL,
-		}
-	case "<=":
-		return Node{
-			Value:    i[0] <= i[1],
-			NodeType: NODETYPE_BOOL,
-		}
-	case ">=":
-		return Node{
-			Value:    i[0] >= i[1],
-			NodeType: NODETYPE_BOOL,
-		}
-	default:
-		panic("Unrecognized mode")
-	}
+	return doIntCompare(mode, i)
 }
 
 func doSystemCallConvert(node parser.Node, variables *map[string]Node) Node {
@@ -701,6 +655,60 @@ func doIntCalculation(mode string, vals []int) (node Node) {
 	}
 
 	return
+}
+
+func doFloatCompare(mode string, f []float64) Node {
+	switch mode {
+	case "<":
+		return Node{
+			Value:    f[0] < f[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	case ">":
+		return Node{
+			Value:    f[0] > f[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	case "<=":
+		return Node{
+			Value:    f[0] <= f[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	case ">=":
+		return Node{
+			Value:    f[0] >= f[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	default:
+		panic("Unrecognized mode")
+	}
+}
+
+func doIntCompare(mode string, i []int) Node {
+	switch mode {
+	case "<":
+		return Node{
+			Value:    i[0] < i[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	case ">":
+		return Node{
+			Value:    i[0] > i[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	case "<=":
+		return Node{
+			Value:    i[0] <= i[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	case ">=":
+		return Node{
+			Value:    i[0] >= i[1],
+			NodeType: NODETYPE_BOOL,
+		}
+	default:
+		panic("Unrecognized mode")
+	}
 }
 
 // Run run an AST
