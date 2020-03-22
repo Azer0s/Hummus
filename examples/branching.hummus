@@ -11,7 +11,7 @@
 (out "\n")
 
 (if (foo)
-  "Hello" ; Hummus doesn't allow multiple statements, thus discouraging nesting
+  "Hello"
   (foo))
 
 ; If you really want tho, you can do it

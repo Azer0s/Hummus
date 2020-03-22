@@ -124,6 +124,16 @@ func createMap(node parser.Node, variables *map[string]Node) Node {
 	}
 }
 
+func getStructDef(node parser.Node) StructDef {
+	structDef := StructDef{Parameters: make([]string, 0)}
+
+	for _, argument := range node.Arguments[1].Arguments {
+		structDef.Parameters = append(structDef.Parameters, argument.Token.Value)
+	}
+
+	return structDef
+}
+
 func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	name := node.Arguments[0].Token.Value
 	variable := Node{
@@ -131,7 +141,16 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 		NodeType: 0,
 	}
 
-	(*variables)[name] = getValueFromNode(node.Arguments[1], variables)
+	//I am doing this here, just like I do macros here because you can only define macros and structs in `def`
+	if node.Arguments[1].Type == parser.STRUCT_DEF {
+		(*variables)[name] = Node{
+			Value:    getStructDef(node),
+			NodeType: NODETYPE_STRUCT,
+		}
+	} else {
+		(*variables)[name] = getValueFromNode(node.Arguments[1], variables)
+	}
+
 	return variable
 }
 
@@ -201,9 +220,27 @@ func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 		}
 
 		return ret
+	} else if val.NodeType == NODETYPE_STRUCT {
+		structDef := val.Value.(StructDef)
+		arg := resolve(node.Arguments, variables, node.Token.Line)
+
+		if len(structDef.Parameters) != len(arg) {
+			panic(fmt.Sprintf("Struct argument mismatch! (line %d)", node.Token.Line))
+		}
+
+		mapNode := MapNode{Values: make(map[string]Node, 0)}
+
+		for i := range structDef.Parameters {
+			mapNode.Values[structDef.Parameters[i]] = arg[i]
+		}
+
+		return Node{
+			Value:    mapNode,
+			NodeType: NODETYPE_MAP,
+		}
 	}
 
-	panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token, node.Token.Line))
+	panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token.Value, node.Token.Line))
 }
 
 func doSystemCallMath(node parser.Node, variables *map[string]Node) Node {
@@ -474,6 +511,8 @@ func doSystemCallConvert(node parser.Node, variables *map[string]Node) Node {
 			Value:    fmt.Sprintf("%v", args[1].Value),
 			NodeType: NODETYPE_STRING,
 		}
+	case "identity":
+		return args[1]
 	default:
 		panic("Unrecognized mode")
 	}

@@ -415,11 +415,12 @@ func parseDef(i *int, current *lexer.Token, tokens []lexer.Token, canMacro bool)
 				if current.Type != lexer.ATOM {
 					fail("an atom", *current)
 				}
-				next(i, current, tokens)
 				atoms.Arguments = append(atoms.Arguments, parseLiteral(*current))
+				next(i, current, tokens)
 			}
 
 			node.Arguments = append(node.Arguments, atoms)
+			expectClose(i, current, tokens)
 		} else {
 			node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
 		}

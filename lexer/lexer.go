@@ -97,7 +97,7 @@ func LexString(code string) []Token {
 				}
 			}
 		} else if current == ';' {
-			for current != '\n' {
+			for current != '\n' && current != math.MaxInt32 {
 				next(&i, &current, code)
 			}
 			i--

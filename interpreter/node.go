@@ -28,6 +28,8 @@ const (
 	NODETYPE_LIST NodeType = 6
 	// NODETYPE_MAP map type
 	NODETYPE_MAP NodeType = 7
+	// NODETYPE_STRUCT struct type
+	NODETYPE_STRUCT NodeType = 8
 )
 
 // FnLiteral a function literal (block)
@@ -45,4 +47,9 @@ type ListNode struct {
 // MapNode a map node
 type MapNode struct {
 	Values map[string]Node
+}
+
+// StructDef struct definition
+type StructDef struct {
+	Parameters []string
 }

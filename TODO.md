@@ -1,5 +1,5 @@
 - [x] Maps
-- [ ] Structs
+- [x] Structs
 - [ ] Function composition
 - [ ] REPL
 - [ ] Add functionality to stdlib
