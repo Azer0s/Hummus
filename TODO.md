@@ -3,5 +3,6 @@
 - [x] REPL
 - [x] Relative file import
 - [ ] Function composition
+- [ ] Nested calls
 - [ ] Add functionality to stdlib
 - [ ] Macros

@@ -92,7 +92,11 @@ func parseMapAccess(i *int, current *lexer.Token, tokens []lexer.Token, allowLit
 		next(i, current, tokens)
 	} else if current.Type == lexer.OPEN_BRACE {
 		next(i, current, tokens)
-		node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
+		if current.Type == lexer.IDENTIFIER_FN && allowLiterals {
+			node.Arguments = append(node.Arguments, parseFunction(i, current, tokens))
+		} else {
+			node.Arguments = append(node.Arguments, parseCall(i, current, tokens))
+		}
 	} else if current.Type >= lexer.INT && current.Type <= lexer.ATOM && allowLiterals {
 		node.Arguments = append(node.Arguments, parseLiteral(*current))
 		next(i, current, tokens)
