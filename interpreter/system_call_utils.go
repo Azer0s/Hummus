@@ -28,6 +28,8 @@ const (
 	SYSTEM_ENUMERATE string = "--system-do-enumerate!"
 	// SYSTEM_STRING string functions
 	SYSTEM_STRING string = "--system-do-strings!"
+	// SYSTEM_DEBUG debug functions
+	SYSTEM_DEBUG string = "--system-do-debug!"
 )
 
 var reader = bufio.NewReader(os.Stdin)

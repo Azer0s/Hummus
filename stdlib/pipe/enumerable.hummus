@@ -6,7 +6,7 @@
 ;; map.. Takes in a function and returns a function that takes
 ;; in a list to apply `map` with the taken in function on
 ;; in:
-;; * func .. the `map` execution function
+;; * func/1 .. the `map` execution function
 ;; out: the mapper function
 (def map.. (fn func
   (fn x
@@ -17,7 +17,7 @@
 ;; filter.. Takes in a function and returns a function that takes
 ;; in a list to apply `filter` with the taken in function on
 ;; in:
-;; * func .. the `filter` execution function
+;; * func/1 .. the `filter` execution function
 ;; out: the filter function
 (def filter.. (fn func
   (fn x
@@ -29,7 +29,7 @@
 ;; returns a function that takes in a list to apply `reduce`
 ;; with the taken in function and initial value on
 ;; in:
-;; * func .. the `reduce` execution function
+;; * func/2 .. the `reduce` execution function
 ;; * init .. the initial value for `reduce`
 ;; out: the reducer function
 (def reduce.. (fn func init
@@ -41,7 +41,7 @@
 ;; each.. Takes in a function and returns a function that takes
 ;; in a list to apply `each` with the taken in function on
 ;; in:
-;; * func .. the `each` execution function
+;; * func/1 .. the `each` execution function
 ;; out: 0
 (def each.. (fn func
   (fn x

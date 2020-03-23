@@ -364,10 +364,6 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 		panic(SYSTEM_ENUMERATE + " expects a list as first argument!")
 	}
 
-	if args[2].NodeType != NODETYPE_FN {
-		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
-	}
-
 	ctx := make(map[string]Node, 0)
 	for k, v := range *variables {
 		ctx[k] = v
@@ -376,11 +372,20 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 	const SYSTEM_ENUMERATE_VAL = "--system-do-enumerate-val"
 	const SYSTEM_ACCUMULATE_VAL = "--system-do-accumulate-val"
 
-	fn := args[2].Value.(FnLiteral)
 	list := args[1].Value.(ListNode)
 
 	switch mode {
+	case "nth":
+		if args[2].NodeType != NODETYPE_INT {
+			panic(SYSTEM_ENUMERATE + " :nth expects an int as second argument!")
+		}
+
+		return list.Values[args[2].Value.(int)]
 	case "each":
+		if args[2].NodeType != NODETYPE_FN {
+			panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
+		}
+		fn := args[2].Value.(FnLiteral)
 		if len(fn.Parameters) != 1 {
 			panic("Enumerate each should have one parameter in execution function!")
 		}
@@ -410,6 +415,11 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 			NodeType: 0,
 		}
 	case "map":
+		if args[2].NodeType != NODETYPE_FN {
+			panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
+		}
+		fn := args[2].Value.(FnLiteral)
+
 		if len(fn.Parameters) != 1 {
 			panic("Enumerate map should have one parameter in execution function!")
 		}
@@ -441,6 +451,10 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 			NodeType: NODETYPE_LIST,
 		}
 	case "filter":
+		if args[2].NodeType != NODETYPE_FN {
+			panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
+		}
+		fn := args[2].Value.(FnLiteral)
 		if len(fn.Parameters) != 1 {
 			panic("Enumerate filter should have one parameter in execution function!")
 		}
@@ -480,6 +494,10 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 			NodeType: NODETYPE_LIST,
 		}
 	case "reduce":
+		if args[2].NodeType != NODETYPE_FN {
+			panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
+		}
+		fn := args[2].Value.(FnLiteral)
 		if len(fn.Parameters) != 2 {
 			panic("Enumerate reduce should have two parameters in execution function!")
 		}

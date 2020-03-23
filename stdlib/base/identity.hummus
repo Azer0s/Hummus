@@ -1,10 +1,21 @@
 ;; Copyright (c) Ariel Simulevski
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
+;; ≡ Alias for identity
+;; in:
+;; * arg .. the value to return
+;; out: arg
 (def ≡ (fn arg
   (identity arg)
 ))
 
+;; identity In mathematics, an identity function,
+;; also called an identity relation or identity map
+;; or identity transformation, is a function that
+;; always returns the same value that was used as its argument.
+;; in:
+;; * arg .. the value to return
+;; out: arg
 (def identity (fn arg
   (--system-do-convert! :identity arg)
 ))

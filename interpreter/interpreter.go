@@ -93,7 +93,6 @@ func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node 
 	case parser.ACTION_MAP_ACCESS:
 		node = accessMap(parserNode, variables)
 		break
-		//TODO: Map access, struct
 	}
 
 	return
@@ -318,6 +317,8 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 		return doSystemCallEnumerate(node, variables)
 	case SYSTEM_STRING:
 		return doSystemCallStrings(node, variables)
+	case SYSTEM_DEBUG:
+		return doSystemCallDebug(node, variables)
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
 	}

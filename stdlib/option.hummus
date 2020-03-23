@@ -69,7 +69,7 @@
 ;; the result
 ;; in:
 ;; * opt .. the option map
-;; * func .. the alternative function
+;; * func/0 .. the alternative function
 ;; out: a value
 (def option/or_else_do (fn opt func
   (if (option/is_okay? opt)
