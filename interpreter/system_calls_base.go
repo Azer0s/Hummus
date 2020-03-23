@@ -369,9 +369,6 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 		ctx[k] = v
 	}
 
-	const SYSTEM_ENUMERATE_VAL = "--system-do-enumerate-val"
-	const SYSTEM_ACCUMULATE_VAL = "--system-do-accumulate-val"
-
 	list := args[1].Value.(ListNode)
 
 	switch mode {
@@ -382,167 +379,183 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 
 		return list.Values[args[2].Value.(int)]
 	case "each":
-		if args[2].NodeType != NODETYPE_FN {
-			panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
-		}
-		fn := args[2].Value.(FnLiteral)
-		if len(fn.Parameters) != 1 {
-			panic("Enumerate each should have one parameter in execution function!")
-		}
-
-		for _, value := range list.Values {
-			ctx[SYSTEM_ENUMERATE_VAL] = value
-
-			doVariableCall(parser.Node{
-				Type: 0,
-				Arguments: []parser.Node{
-					{
-						Type:      parser.IDENTIFIER,
-						Arguments: nil,
-						Token: lexer.Token{
-							Value: SYSTEM_ENUMERATE_VAL,
-							Type:  0,
-							Line:  0,
-						},
-					},
-				},
-				Token: lexer.Token{},
-			}, args[2], &ctx)
-		}
-
-		return Node{
-			Value:    0,
-			NodeType: 0,
-		}
+		return doEach(ctx, args, list)
 	case "map":
-		if args[2].NodeType != NODETYPE_FN {
-			panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
-		}
-		fn := args[2].Value.(FnLiteral)
-
-		if len(fn.Parameters) != 1 {
-			panic("Enumerate map should have one parameter in execution function!")
-		}
-
-		mapResult := ListNode{Values: make([]Node, 0)}
-
-		for _, value := range list.Values {
-			ctx[SYSTEM_ENUMERATE_VAL] = value
-
-			mapResult.Values = append(mapResult.Values, doVariableCall(parser.Node{
-				Type: 0,
-				Arguments: []parser.Node{
-					{
-						Type:      parser.IDENTIFIER,
-						Arguments: nil,
-						Token: lexer.Token{
-							Value: SYSTEM_ENUMERATE_VAL,
-							Type:  0,
-							Line:  0,
-						},
-					},
-				},
-				Token: lexer.Token{},
-			}, args[2], &ctx))
-		}
-
-		return Node{
-			Value:    mapResult,
-			NodeType: NODETYPE_LIST,
-		}
+		return doMap(ctx, args, list)
 	case "filter":
-		if args[2].NodeType != NODETYPE_FN {
-			panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
-		}
-		fn := args[2].Value.(FnLiteral)
-		if len(fn.Parameters) != 1 {
-			panic("Enumerate filter should have one parameter in execution function!")
-		}
-
-		mapResult := ListNode{Values: make([]Node, 0)}
-
-		for _, value := range list.Values {
-			ctx[SYSTEM_ENUMERATE_VAL] = value
-
-			res := doVariableCall(parser.Node{
-				Type: 0,
-				Arguments: []parser.Node{
-					{
-						Type:      parser.IDENTIFIER,
-						Arguments: nil,
-						Token: lexer.Token{
-							Value: SYSTEM_ENUMERATE_VAL,
-							Type:  0,
-							Line:  0,
-						},
-					},
-				},
-				Token: lexer.Token{},
-			}, args[2], &ctx)
-
-			if res.NodeType != NODETYPE_BOOL {
-				panic("Enumerate filter result must be a bool!")
-			}
-
-			if res.Value.(bool) {
-				mapResult.Values = append(mapResult.Values, value)
-			}
-		}
-
-		return Node{
-			Value:    mapResult,
-			NodeType: NODETYPE_LIST,
-		}
+		return doFilter(ctx, args, list)
 	case "reduce":
-		if args[2].NodeType != NODETYPE_FN {
-			panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
-		}
-		fn := args[2].Value.(FnLiteral)
-		if len(fn.Parameters) != 2 {
-			panic("Enumerate reduce should have two parameters in execution function!")
-		}
-
-		ctx[SYSTEM_ACCUMULATE_VAL] = args[3]
-
-		for _, value := range list.Values {
-			ctx[SYSTEM_ENUMERATE_VAL] = value
-
-			res := doVariableCall(parser.Node{
-				Type: 0,
-				Arguments: []parser.Node{
-					{
-						Type:      parser.IDENTIFIER,
-						Arguments: nil,
-						Token: lexer.Token{
-							Value: SYSTEM_ENUMERATE_VAL,
-							Type:  0,
-							Line:  0,
-						},
-					},
-					{
-						Type:      parser.IDENTIFIER,
-						Arguments: nil,
-						Token: lexer.Token{
-							Value: SYSTEM_ACCUMULATE_VAL,
-							Type:  0,
-							Line:  0,
-						},
-					},
-				},
-				Token: lexer.Token{},
-			}, args[2], &ctx)
-
-			if res.NodeType != args[3].NodeType {
-				panic("Enumerate reduce result type must be the same as the init type!")
-			}
-
-			ctx[SYSTEM_ACCUMULATE_VAL] = res
-		}
-
-		return ctx[SYSTEM_ACCUMULATE_VAL]
+		return doReduce(ctx, args, list)
 	default:
 		panic("Unrecognized mode")
 	}
+}
+
+func doEach(ctx map[string]Node, args []Node, list ListNode) Node {
+	if args[2].NodeType != NODETYPE_FN {
+		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
+	}
+	fn := args[2].Value.(FnLiteral)
+	if len(fn.Parameters) != 1 {
+		panic("Enumerate each should have one parameter in execution function!")
+	}
+
+	for _, value := range list.Values {
+		ctx[SYSTEM_ENUMERATE_VAL] = value
+
+		doVariableCall(parser.Node{
+			Type: 0,
+			Arguments: []parser.Node{
+				{
+					Type:      parser.IDENTIFIER,
+					Arguments: nil,
+					Token: lexer.Token{
+						Value: SYSTEM_ENUMERATE_VAL,
+						Type:  0,
+						Line:  0,
+					},
+				},
+			},
+			Token: lexer.Token{},
+		}, args[2], &ctx)
+	}
+
+	return Node{
+		Value:    0,
+		NodeType: 0,
+	}
+}
+
+func doMap(ctx map[string]Node, args []Node, list ListNode) Node {
+	if args[2].NodeType != NODETYPE_FN {
+		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
+	}
+	fn := args[2].Value.(FnLiteral)
+
+	if len(fn.Parameters) != 1 {
+		panic("Enumerate map should have one parameter in execution function!")
+	}
+
+	mapResult := ListNode{Values: make([]Node, 0)}
+
+	for _, value := range list.Values {
+		ctx[SYSTEM_ENUMERATE_VAL] = value
+
+		mapResult.Values = append(mapResult.Values, doVariableCall(parser.Node{
+			Type: 0,
+			Arguments: []parser.Node{
+				{
+					Type:      parser.IDENTIFIER,
+					Arguments: nil,
+					Token: lexer.Token{
+						Value: SYSTEM_ENUMERATE_VAL,
+						Type:  0,
+						Line:  0,
+					},
+				},
+			},
+			Token: lexer.Token{},
+		}, args[2], &ctx))
+	}
+
+	return Node{
+		Value:    mapResult,
+		NodeType: NODETYPE_LIST,
+	}
+}
+
+func doFilter(ctx map[string]Node, args []Node, list ListNode) Node {
+	if args[2].NodeType != NODETYPE_FN {
+		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
+	}
+	fn := args[2].Value.(FnLiteral)
+	if len(fn.Parameters) != 1 {
+		panic("Enumerate filter should have one parameter in execution function!")
+	}
+
+	filterResult := ListNode{Values: make([]Node, 0)}
+
+	for _, value := range list.Values {
+		ctx[SYSTEM_ENUMERATE_VAL] = value
+
+		res := doVariableCall(parser.Node{
+			Type: 0,
+			Arguments: []parser.Node{
+				{
+					Type:      parser.IDENTIFIER,
+					Arguments: nil,
+					Token: lexer.Token{
+						Value: SYSTEM_ENUMERATE_VAL,
+						Type:  0,
+						Line:  0,
+					},
+				},
+			},
+			Token: lexer.Token{},
+		}, args[2], &ctx)
+
+		if res.NodeType != NODETYPE_BOOL {
+			panic("Enumerate filter result must be a bool!")
+		}
+
+		if res.Value.(bool) {
+			filterResult.Values = append(filterResult.Values, value)
+		}
+	}
+
+	return Node{
+		Value:    filterResult,
+		NodeType: NODETYPE_LIST,
+	}
+}
+
+func doReduce(ctx map[string]Node, args []Node, list ListNode) Node {
+	if args[2].NodeType != NODETYPE_FN {
+		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
+	}
+	fn := args[2].Value.(FnLiteral)
+	if len(fn.Parameters) != 2 {
+		panic("Enumerate reduce should have two parameters in execution function!")
+	}
+
+	ctx[SYSTEM_ACCUMULATE_VAL] = args[3]
+
+	for _, value := range list.Values {
+		ctx[SYSTEM_ENUMERATE_VAL] = value
+
+		res := doVariableCall(parser.Node{
+			Type: 0,
+			Arguments: []parser.Node{
+				{
+					Type:      parser.IDENTIFIER,
+					Arguments: nil,
+					Token: lexer.Token{
+						Value: SYSTEM_ENUMERATE_VAL,
+						Type:  0,
+						Line:  0,
+					},
+				},
+				{
+					Type:      parser.IDENTIFIER,
+					Arguments: nil,
+					Token: lexer.Token{
+						Value: SYSTEM_ACCUMULATE_VAL,
+						Type:  0,
+						Line:  0,
+					},
+				},
+			},
+			Token: lexer.Token{},
+		}, args[2], &ctx)
+
+		if res.NodeType != args[3].NodeType {
+			panic("Enumerate reduce result type must be the same as the init type!")
+		}
+
+		ctx[SYSTEM_ACCUMULATE_VAL] = res
+	}
+
+	return ctx[SYSTEM_ACCUMULATE_VAL]
 }
 
 func doFloatCalculation(mode string, vals []float64) (node Node) {
