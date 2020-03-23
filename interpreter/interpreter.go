@@ -363,6 +363,30 @@ func doForLoop(node parser.Node, variables *map[string]Node) {
 	}
 }
 
+func doWhileLoop(node parser.Node, variables *map[string]Node) {
+	context := make(map[string]Node, 0)
+
+	for k, v := range *variables {
+		context[k] = v
+	}
+
+	for {
+		val := Run([]parser.Node{
+			node.Arguments[0],
+		}, variables)
+
+		if val.NodeType != NODETYPE_BOOL {
+			panic(fmt.Sprintf("Expected a bool for loop! (line %d)", node.Arguments[0].Token.Line))
+		}
+
+		if !val.Value.(bool) {
+			break
+		}
+
+		Run(node.Arguments[1:], &context)
+	}
+}
+
 func resolve(nodes []parser.Node, variables *map[string]Node, line uint) []Node {
 	args := make([]Node, 0)
 
@@ -412,7 +436,9 @@ func Run(nodes []parser.Node, variables *map[string]Node) (returnVal Node) {
 		case parser.ACTION_DEF:
 			returnVal = defineVariable(node, variables)
 			break
-		//TODO: While loop
+		case parser.ACTION_WHILE:
+			doWhileLoop(node, variables)
+			break
 		case parser.ACTION_FOR:
 			doForLoop(node, variables)
 			break
