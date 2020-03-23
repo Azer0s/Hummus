@@ -1,3 +1,6 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
 (def out (fn args
   (for (range x args)
     (--system-do-io! :console-out x)

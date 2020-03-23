@@ -1,5 +1,5 @@
 (use :<base>)
-(use :<strings>)
+(use :<str>)
 
 (def a (list "Hello" "World"))
 

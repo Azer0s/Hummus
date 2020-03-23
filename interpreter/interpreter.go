@@ -13,26 +13,6 @@ import (
 )
 
 const (
-	// SYSTEM_MATH the built in math system function
-	SYSTEM_MATH string = "--system-do-math!"
-	// SYSTEM_MAKE the built in value make system function
-	SYSTEM_MAKE string = "--system-do-make!"
-	// SYSTEM_IO the built in io function
-	SYSTEM_IO string = "--system-do-io!"
-	// SYSTEM_COMPARE comparison functions
-	SYSTEM_COMPARE string = "--system-do-compare!"
-	// SYSTEM_COMPARE_ARITHMETIC arithmetic comparison functions
-	SYSTEM_COMPARE_ARITHMETIC string = "--system-do-compare-arithmetic!"
-	// SYSTEM_CONVERT conversion functions
-	SYSTEM_CONVERT string = "--system-do-convert!"
-	// SYSTEM_BOOL boolean algebra functions
-	SYSTEM_BOOL string = "--system-do-bool!"
-	// SYSTEM_BITWISE bitwise functions
-	SYSTEM_BITWISE string = "--system-do-bitwise!"
-	// SYSTEM_ENUMERATE enumeration functions
-	SYSTEM_ENUMERATE string = "--system-do-enumerate!"
-	// SYSTEM_STRING string functions
-	SYSTEM_STRING string = "--system-do-strings!"
 	// USE include function
 	USE string = "use"
 	// MAP_ACCESS map access function

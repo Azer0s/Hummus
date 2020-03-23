@@ -1,0 +1,79 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :<base/operators/boolean>)
+
+;; option The option struct
+;; in:
+;; * :value .. the optional value
+;; * :error .. flag, set to true if error has occurred
+;; out: the option map
+(def option (struct
+  :value
+  :error
+))
+
+;; option/is_error? Returns true if an error has occurred
+;; in:
+;; * opt .. the option to check
+;; out: a bool
+(def option/is_error? (fn opt
+  (:error opt)
+))
+
+;; option/is_okay? Returns false if an error has occurred
+;; in:
+;; * opt .. the option to check
+;; out: a bool
+(def option/is_okay? (fn opt
+  (! (:error opt))
+))
+
+;; option/error! Creates an errored option map from a message
+;; in:
+;; * value .. the error message to create the option from
+;; out: an option map
+(def option/error! (fn value
+  (option
+    value
+    true
+  )
+))
+
+;; option/okay! Creates an option map from a value
+;; in:
+;; * value .. the value to create the option from
+;; out: an option map
+(def option/okay! (fn value
+  (option
+    value
+    false
+  )
+))
+
+;; option/or_else Returns the option value if the option did
+;; not error, else return an alternative value
+;; in:
+;; * opt .. the option map
+;; * val .. the alternative value
+;; out: a value
+(def option/or_else (fn opt val
+  (if (option/is_okay? opt)
+    (:value opt)
+    val
+  )
+))
+
+;; option/or_else_do Returns the option value if the option did
+;; not error, else executes an alternative function and returns
+;; the result
+;; in:
+;; * opt .. the option map
+;; * func .. the alternative function
+;; out: a value
+(def option/or_else_do (fn opt func
+  (if (option/is_okay? opt)
+    (:value opt)
+    (func)
+  )
+))

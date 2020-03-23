@@ -1,0 +1,26 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+;; debug/dump Dumps any value to the console
+;; in:
+;; * x .. the value to dump
+;; out: 0
+; TODO
+(def debug/dump (fn x
+  (--system-do-debug! :dump x)
+))
+
+;; debug/dump Dumps the current variable state
+;; to the console
+;; out: 0
+; TODO
+(def debug/dump_state (fn
+  (--system-do-debug! :dump_state)
+))
+
+;; debug/dump Returns the line number of the file
+;; out: the line number
+; TODO
+(def debug/line (fn
+  (--system-do-debug! :line)
+))

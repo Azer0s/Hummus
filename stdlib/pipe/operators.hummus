@@ -1,0 +1,10 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+;; |> Combines two or more functions and returns a function
+;; in:
+;; * args .. the functions to combine
+;; out: the combined function
+(def |> (fn args
+  (--system-do-pipe! :combine args)
+))

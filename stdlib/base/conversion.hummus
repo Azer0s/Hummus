@@ -1,3 +1,6 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
 (def ` (fn arg
   (--system-do-convert! :string arg)
 ))

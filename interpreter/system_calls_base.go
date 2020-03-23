@@ -1,62 +1,10 @@
 package interpreter
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
-	"os"
-	"strings"
 )
-
-var reader = bufio.NewReader(os.Stdin)
-
-// DumpNode returns the string representation of a node
-func DumpNode(node Node) string {
-	ret := ""
-
-	if node.NodeType == NODETYPE_LIST {
-		ret += "("
-
-		for _, value := range node.Value.(ListNode).Values {
-			ret += DumpNode(value) + " "
-		}
-
-		ret = strings.TrimSuffix(ret, " ")
-		ret += ")"
-	} else if node.NodeType == NODETYPE_MAP {
-		ret += "("
-
-		for k, v := range node.Value.(MapNode).Values {
-			ret += fmt.Sprintf("%s => %s ", k, DumpNode(v))
-		}
-
-		ret = strings.TrimSuffix(ret, " ")
-		ret += ")"
-	} else if node.NodeType == NODETYPE_FN {
-		ret += "[fn "
-
-		for _, parameter := range node.Value.(FnLiteral).Parameters {
-			ret += parameter + " "
-		}
-
-		ret = strings.TrimSuffix(ret, " ")
-		ret += "]"
-	} else if node.NodeType == NODETYPE_STRUCT {
-		ret += "[struct "
-
-		for _, parameter := range node.Value.(StructDef).Parameters {
-			ret += parameter + " "
-		}
-
-		ret = strings.TrimSuffix(ret, " ")
-		ret += "]"
-	} else {
-		ret = fmt.Sprintf("%v", node.Value)
-	}
-
-	return ret
-}
 
 func doSystemCallMath(node parser.Node, variables *map[string]Node) Node {
 	args := resolve(node.Arguments, variables, node.Token.Line)
@@ -574,58 +522,6 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 		}
 
 		return ctx[SYSTEM_ACCUMULATE_VAL]
-	default:
-		panic("Unrecognized mode")
-	}
-}
-
-func doSystemCallStrings(node parser.Node, variables *map[string]Node) Node {
-	args := resolve(node.Arguments, variables, node.Token.Line)
-
-	mode := args[0].Value.(string)
-
-	switch mode {
-	case "concat":
-		if args[1].NodeType != NODETYPE_LIST {
-			panic(SYSTEM_STRING + " :concat only accepts lists!")
-		}
-
-		str := make([]string, 0)
-
-		for _, value := range args[1].Value.(ListNode).Values {
-			if value.NodeType != NODETYPE_STRING {
-				panic(SYSTEM_STRING + " :concat only accepts lists of string!")
-			}
-
-			str = append(str, value.Value.(string))
-		}
-
-		return Node{
-			Value:    strings.Join(str, ""),
-			NodeType: NODETYPE_STRING,
-		}
-	case "len":
-		if args[1].NodeType != NODETYPE_STRING {
-			panic(SYSTEM_STRING + " :len only accepts strings!")
-		}
-
-		return Node{
-			Value:    len(args[1].Value.(string)),
-			NodeType: NODETYPE_INT,
-		}
-	case "nth":
-		if args[1].NodeType != NODETYPE_STRING {
-			panic(SYSTEM_STRING + " :nth expects a string as the first argument!")
-		}
-
-		if args[2].NodeType != NODETYPE_INT {
-			panic(SYSTEM_STRING + " :nth expects an int as the second argument!")
-		}
-
-		return Node{
-			Value:    string(args[1].Value.(string)[args[2].Value.(int)]),
-			NodeType: NODETYPE_STRING,
-		}
 	default:
 		panic("Unrecognized mode")
 	}

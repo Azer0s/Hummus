@@ -1,3 +1,6 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
 ; Definitions for operators, standard functions, etc
 
 (use :./base/operators/arithmetic)

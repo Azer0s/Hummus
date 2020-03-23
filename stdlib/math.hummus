@@ -1,6 +1,18 @@
-(def math/fac (fn n
-  (if (< n 2)
-    1
-    (* n (fac (- n 1)))
-  )
-))
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+; Near mirror of https://en.wikipedia.org/wiki/C_mathematical_functions
+
+(use :./math/exponential)
+(use :./math/power)
+(use :./math/trigonometry/trigonometric)
+(use :./math/trigonometry/hyperbolic)
+(use :./math/error)
+(use :./math/gamma)
+(use :./math/nearest)
+(use :./math/float)
+
+(use :./math/complex/base)
+(use :./math/complex/exponential)
+(use :./math/complex/trigonometry/trigonometric)
+(use :./math/complex/trigonometry/hyperbolic)

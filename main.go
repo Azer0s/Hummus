@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
+	runner.RunRepl()
 	runner.RunFile("examples/map_filter_reduce.hummus")
 }
