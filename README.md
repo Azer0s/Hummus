@@ -95,7 +95,7 @@
     (if (= type :pong)
       ((fn
         (out "PONG")
-        (sleep 1 :s)
+        (sync/sleep 1 :s)
         (send sender (list :ping self))
       ))
       (out "Invalid message!")
@@ -112,7 +112,7 @@
     (if (= type :ping)
       ((fn
         (out "PING")
-        (sleep 1 :s)
+        (sync/sleep 1 :s)
         (send sender (list :pong self))
       ))
       (out "Invalid message!")
@@ -124,6 +124,7 @@
 (def pongPid (spawn pong))
 
 (send pongPid (list :ping pingPid))
+(in)
 ```
 
 ### Map ⇄ Filter ⇄ Reduce
