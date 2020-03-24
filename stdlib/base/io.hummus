@@ -20,6 +20,6 @@
 
 ;; clear Clears the console
 ;; out: 0
-(def clear (fn
+(def io/clear (fn
   (--system-do-io! :console-clear "\n")
 ))

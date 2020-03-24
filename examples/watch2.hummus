@@ -1,0 +1,20 @@
+(use :<sync>)
+(use :<base>)
+
+(def test (fn
+  (for true
+    (identity 10)
+  )
+))
+
+(def a (spawn test))
+(def b (spawn test))
+(def c (spawn test))
+(def d (spawn test))
+
+(sync/watch a)
+(sync/watch b)
+(sync/watch c)
+(sync/watch d)
+
+(sync/unwatch b)

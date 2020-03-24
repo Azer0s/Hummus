@@ -83,6 +83,49 @@
 ;   (out "A"))
 ```
 
+### Actor model
+
+```clojure
+(def ping (fn
+  (for true
+    (def msg (receive))
+    (def type (nth msg 0))
+    (def sender (nth msg 1))
+
+    (if (= type :pong)
+      ((fn
+        (out "PONG")
+        (sleep 1 :s)
+        (send sender (list :ping self))
+      ))
+      (out "Invalid message!")
+    )
+  )
+))
+
+(def pong (fn
+  (for true
+    (def msg (receive))
+    (def type (nth msg 0))
+    (def sender (nth msg 1))
+
+    (if (= type :ping)
+      ((fn
+        (out "PING")
+        (sleep 1 :s)
+        (send sender (list :pong self))
+      ))
+      (out "Invalid message!")
+    )
+  )
+))
+
+(def pingPid (spawn ping))
+(def pongPid (spawn pong))
+
+(send pongPid (list :ping pingPid))
+```
+
 ### Map ⇄ Filter ⇄ Reduce
 
 ```clojure

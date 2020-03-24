@@ -30,6 +30,8 @@ const (
 	SYSTEM_STRING string = "--system-do-strings!"
 	// SYSTEM_DEBUG debug functions
 	SYSTEM_DEBUG string = "--system-do-debug!"
+	// SYSTEM_SYNC concurrency functions
+	SYSTEM_SYNC string = "--system-do-sync!"
 
 	// SYSTEM_ENUMERATE_VAL variable where mfr values are stored
 	SYSTEM_ENUMERATE_VAL string = "--system-do-enumerate-val"

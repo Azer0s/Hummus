@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"sync"
 )
 
 const (
@@ -19,9 +20,11 @@ const (
 	MAP_ACCESS string = "[]"
 	// EXEC_FILE current file
 	EXEC_FILE string = "EXEC-FILE"
+	// SELF current process id
+	SELF string = "self"
 )
 
-var globalFns = make(map[string]Node, 0)
+var globalFns = sync.Map{}
 var imports = make([]string, 0)
 
 func contains(arr []string, str string) bool {
@@ -77,7 +80,11 @@ func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node 
 		}
 		break
 	case parser.IDENTIFIER:
-		node = (*variables)[parserNode.Token.Value]
+		if val, ok := (*variables)[parserNode.Token.Value]; ok {
+			node = val
+		} else {
+			panic(fmt.Sprintf("Unknown variable %s! (line %d)", parserNode.Token.Value, parserNode.Token.Line))
+		}
 		break
 	case parser.ACTION_CALL:
 		node = doCall(parserNode, variables)
@@ -155,7 +162,7 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	return variable
 }
 
-func doUse(node parser.Node, currentFile string) Node {
+func doUse(node parser.Node, currentFile string, pid int) Node {
 	if node.Arguments[0].Type != parser.LITERAL_ATOM {
 		panic(fmt.Sprintf("\"use\" only accepts atoms as parameter! (line %d)", node.Token.Line))
 	}
@@ -201,10 +208,14 @@ func doUse(node parser.Node, currentFile string) Node {
 		Value:    file,
 		NodeType: NODETYPE_STRING,
 	}
+	vars[SELF] = Node{
+		Value:    pid,
+		NodeType: NODETYPE_INT,
+	}
 	_ = Run(parser.Parse(lexer.LexString(string(b))), &vars)
 
 	for k, v := range vars {
-		globalFns[k] = v
+		globalFns.Store(k, v)
 	}
 
 	imports = append(imports, file)
@@ -277,9 +288,9 @@ func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 
 func doCall(node parser.Node, variables *map[string]Node) Node {
 	if node.Token.Value == USE {
-		return doUse(node, (*variables)[EXEC_FILE].Value.(string))
-	} else if val, ok := globalFns[node.Token.Value]; ok {
-		return doVariableCall(node, val, variables)
+		return doUse(node, (*variables)[EXEC_FILE].Value.(string), (*variables)[SELF].Value.(int))
+	} else if val, ok := globalFns.Load(node.Token.Value); ok {
+		return doVariableCall(node, val.(Node), variables)
 	} else if val, ok := (*variables)[node.Token.Value]; ok {
 		return doVariableCall(node, val, variables)
 	} else if node.Token.Type == lexer.ANONYMOUS_FN {
@@ -319,6 +330,9 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 		return doSystemCallStrings(node, variables)
 	case SYSTEM_DEBUG:
 		return doSystemCallDebug(node, variables)
+	case SYSTEM_SYNC:
+		return doSystemCallSync(node, variables)
+
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
 	}

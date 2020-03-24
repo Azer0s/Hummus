@@ -54,61 +54,66 @@ func getParserType(tokenType lexer.TokenType) parser.NodeType {
 	return 0
 }
 
+func doFailsafeRepl(reader *bufio.Reader, vars *map[string]interpreter.Node) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Error:", r)
+		}
+	}()
+
+	fmt.Print("=> ")
+
+	text := ""
+	var tokens []lexer.Token
+
+	for {
+		t, _ := reader.ReadString('\n')
+
+		text += t
+		tokens = lexer.LexString(text)
+
+		if checkClose(tokens) {
+			break
+		}
+		fmt.Print(" ..")
+	}
+
+	var nodes []parser.Node
+
+	if len(tokens) == 1 && tokens[0].Type == lexer.IDENTIFIER || tokens[0].Type >= lexer.INT && tokens[0].Type <= lexer.ATOM {
+		nodes = []parser.Node{
+			{
+				Type:      getParserType(tokens[0].Type),
+				Arguments: nil,
+				Token:     tokens[0],
+			},
+		}
+	} else {
+		nodes = parser.Parse(tokens)
+	}
+
+	if len(nodes) == 1 && nodes[0].Type == parser.ACTION_CALL && nodes[0].Token.Value == "exit" {
+		os.Exit(0)
+	} else if len(nodes) == 1 && nodes[0].Type == parser.ACTION_CALL && nodes[0].Token.Value == "help" {
+		printHelp()
+	} else {
+		fmt.Println(interpreter.DumpNode(interpreter.Run(nodes, vars)))
+	}
+}
+
 // RunRepl runs the run-eval-print-loop
 func RunRepl() {
-	vars := make(map[string]interpreter.Node, 0)
-
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	vars := make(map[string]interpreter.Node, 0)
+	setupVars(&vars, dir)
 
 	if err != nil {
 		panic(err)
 	}
 
-	vars[interpreter.EXEC_FILE] = interpreter.Node{
-		Value:    dir,
-		NodeType: interpreter.NODETYPE_STRING,
-	}
-
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Print("=> ")
-
-		text := ""
-		var tokens []lexer.Token
-
-		for {
-			t, _ := reader.ReadString('\n')
-
-			text += t
-			tokens = lexer.LexString(text)
-
-			if checkClose(tokens) {
-				break
-			}
-			fmt.Print(" ..")
-		}
-
-		var nodes []parser.Node
-
-		if len(tokens) == 1 && tokens[0].Type == lexer.IDENTIFIER || tokens[0].Type >= lexer.INT && tokens[0].Type <= lexer.ATOM {
-			nodes = []parser.Node{
-				{
-					Type:      getParserType(tokens[0].Type),
-					Arguments: nil,
-					Token:     tokens[0],
-				},
-			}
-		} else {
-			nodes = parser.Parse(tokens)
-		}
-
-		if len(nodes) == 1 && nodes[0].Type == parser.ACTION_CALL && nodes[0].Token.Value == "exit" {
-			os.Exit(0)
-		} else if len(nodes) == 1 && nodes[0].Type == parser.ACTION_CALL && nodes[0].Token.Value == "help" {
-			printHelp()
-		} else {
-			fmt.Println(interpreter.DumpNode(interpreter.Run(nodes, &vars)))
-		}
+		doFailsafeRepl(reader, &vars)
 	}
 }

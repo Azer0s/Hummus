@@ -25,11 +25,7 @@ func RunFile(filename string) interpreter.Node {
 	execFile := path.Join(p, filename)
 
 	vars := make(map[string]interpreter.Node, 0)
-
-	vars[interpreter.EXEC_FILE] = interpreter.Node{
-		Value:    execFile,
-		NodeType: interpreter.NODETYPE_STRING,
-	}
+	setupVars(&vars, execFile)
 
 	return interpreter.Run(parser.Parse(lexer.LexString(string(b))), &vars)
 }
