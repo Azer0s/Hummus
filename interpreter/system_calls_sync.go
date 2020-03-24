@@ -13,22 +13,32 @@ var channelParent = make(map[int]int, 0)
 var watcheeToWatcher = make(map[int]map[int]int, 0)
 var watcherToWatchee = make(map[int]map[int]int, 0)
 var currentPid = 0
-var mu = &sync.Mutex{}
+var pidIdMu = &sync.Mutex{}
+var watcheeToWatcherMu = &sync.RWMutex{}
+var watcherToWatcheeMu = &sync.RWMutex{}
 
 const MAILBOX_BUFFER = 1024
 
 // CreatePidChannel creates a pid and a channel for a new process
 func CreatePidChannel(self int) (pid int) {
-	mu.Lock()
+	pidIdMu.Lock()
 
 	channel := make(chan Node, MAILBOX_BUFFER)
 	pid = currentPid
 
 	channelParent[pid] = self
 
+	for {
+		if _, ok := channelMap[currentPid]; !ok {
+			break
+		}
+		currentPid++
+	}
+
 	channelMap[currentPid] = channel
 	currentPid++
-	mu.Unlock()
+
+	pidIdMu.Unlock()
 
 	return
 }
@@ -38,16 +48,26 @@ func createWatch(watcher, watchee int) {
 		panic(fmt.Sprintf("Process %d does not exist!", watchee))
 	}
 
+	watcheeToWatcherMu.Lock()
 	if _, ok := watcheeToWatcher[watchee]; !ok {
 		watcheeToWatcher[watchee] = make(map[int]int, 0)
 	}
+	watcheeToWatcherMu.Unlock()
 
+	watcherToWatcheeMu.Lock()
 	if _, ok := watcherToWatchee[watcher]; !ok {
 		watcherToWatchee[watcher] = make(map[int]int, 0)
 	}
+	watcherToWatcheeMu.Unlock()
 
+	watcheeToWatcherMu.Lock()
 	watcheeToWatcher[watchee][watcher] = 1
+	watcheeToWatcherMu.Unlock()
+
+	watcherToWatcheeMu.Lock()
 	watcherToWatchee[watcher][watchee] = 1
+	watcherToWatcheeMu.Lock()
+
 }
 
 func doWatch(arg Node, variables *map[string]Node) Node {
@@ -90,9 +110,12 @@ func doReceive(variables *map[string]Node) Node {
 }
 
 func doCleanup(p int, r Node) {
+	pidIdMu.Lock()
 	delete(channelParent, p)
 	delete(channelMap, p)
+	pidIdMu.Unlock()
 
+	watcheeToWatcherMu.RLock()
 	for watcher, doSend := range watcheeToWatcher[p] {
 		if doSend != 1 {
 			continue
@@ -113,27 +136,41 @@ func doCleanup(p int, r Node) {
 			NodeType: NODETYPE_LIST,
 		}
 	}
+	watcheeToWatcherMu.RUnlock()
 
+	watcheeToWatcherMu.RLock()
 	watchedByProcess := make([]int, 0)
 	for k, _ := range watcheeToWatcher[p] {
 		watchedByProcess = append(watchedByProcess, k)
 	}
+	watcheeToWatcherMu.RUnlock()
 
+	watcherToWatcheeMu.RLock()
 	watchingProcess := make([]int, 0)
 	for k, _ := range watcherToWatchee[p] {
 		watchingProcess = append(watchingProcess, k)
 	}
+	watcherToWatcheeMu.RUnlock()
 
+	watcherToWatcheeMu.Lock()
 	delete(watcherToWatchee, p)
-	delete(watcheeToWatcher, p)
+	watcherToWatcheeMu.Unlock()
 
+	watcheeToWatcherMu.Lock()
+	delete(watcheeToWatcher, p)
+	watcheeToWatcherMu.Unlock()
+
+	watcherToWatcheeMu.Lock()
 	for _, process := range watchedByProcess {
 		delete(watcherToWatchee[process], p)
 	}
+	watcherToWatcheeMu.Unlock()
 
+	watcheeToWatcherMu.Lock()
 	for _, process := range watchingProcess {
 		delete(watcheeToWatcher[process], p)
 	}
+	watcheeToWatcherMu.Unlock()
 }
 
 func doSpawn(arg Node, variables *map[string]Node) Node {
@@ -213,8 +250,13 @@ func doUnwatch(watchee Node, self int) Node {
 	}
 
 	w := watchee.Value.(int)
+	watcheeToWatcherMu.Lock()
 	delete(watcheeToWatcher[w], self)
+	watcheeToWatcherMu.Unlock()
+
+	watcherToWatcheeMu.Lock()
 	delete(watcherToWatchee[self], w)
+	watcherToWatcheeMu.Unlock()
 
 	return Node{
 		Value:    0,
