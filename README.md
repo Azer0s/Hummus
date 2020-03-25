@@ -212,6 +212,16 @@
     (out x)
   ))
 )
+
+(pipe/do pilots
+  (reduce.. (fn x acc
+    (if (= (:faction x) "Empire")
+      (+ acc 1)
+      acc
+    )
+  ) 0)
+  out
+)
 ```
 
 ### Examples

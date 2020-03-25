@@ -3,3 +3,4 @@
 
 (use :./pipe/operators)
 (use :./pipe/enumerable)
+(use :./pipe/functions)

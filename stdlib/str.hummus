@@ -19,9 +19,9 @@
 
 ;; str/nth Returns a character of a string
 ;; in:
-;; * arg .. the lookup string
 ;; * idx .. the index of the character
+;; * arg .. the lookup string
 ;; out: the character
-(def str/nth (fn arg idx
-  (--system-do-strings! :nth arg idx)
+(def str/nth (fn idx arg
+  (--system-do-strings! :nth idx arg)
 ))

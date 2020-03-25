@@ -82,6 +82,8 @@ func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node 
 	case parser.IDENTIFIER:
 		if val, ok := (*variables)[parserNode.Token.Value]; ok {
 			node = val
+		} else if val, ok := globalFns.Load(parserNode.Token.Value); ok {
+			node = val.(Node)
 		} else {
 			panic(fmt.Sprintf("Unknown variable %s! (line %d)", parserNode.Token.Value, parserNode.Token.Line))
 		}
@@ -240,8 +242,6 @@ func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 		ret := Run(fn.Body, &args)
 
 		if ret.NodeType == NODETYPE_FN {
-			arg := resolve(node.Arguments, variables, node.Token.Line)
-
 			// set context in case of currying
 			ctx := make(map[string]Node, 0)
 
@@ -251,9 +251,14 @@ func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 				}
 			}
 
-			for i := range arg {
-				ctx[fn.Parameters[i]] = arg[i]
+			retFn := ret.Value.(FnLiteral)
+			if retFn.Context != nil {
+				for k, v := range retFn.Context {
+					ctx[k] = v
+				}
 			}
+
+			getArgsByParameterList(node.Arguments, variables, fn.Parameters, &ctx, node.Token.Line)
 
 			ret.Value = FnLiteral{
 				Parameters: ret.Value.(FnLiteral).Parameters,
@@ -332,6 +337,8 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 		return doSystemCallDebug(node, variables)
 	case SYSTEM_SYNC:
 		return doSystemCallSync(node, variables)
+	case SYSTEM_PIPE:
+		return doSystemCallPipe(node, variables)
 
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
@@ -411,6 +418,35 @@ func resolve(nodes []parser.Node, variables *map[string]Node, line uint) []Node 
 	return args
 }
 
+func getArgsByParameterList(nodes []parser.Node, variables *map[string]Node, parameters []string, targetMap *map[string]Node, line uint) {
+	if len(parameters) == 1 && len(nodes) > 1 {
+		arg := ListNode{Values: resolve(nodes, variables, line)}
+
+		(*targetMap)[parameters[0]] = Node{
+			Value:    arg,
+			NodeType: NODETYPE_LIST,
+		}
+	} else if len(parameters) == len(nodes) {
+		arg := resolve(nodes, variables, line)
+		for i := range nodes {
+			(*targetMap)[parameters[i]] = arg[i]
+		}
+	} else if len(parameters) < len(nodes) {
+		arg := resolve(nodes, variables, line)
+		i := 0
+		for i = range parameters[:len(parameters)-1] {
+			(*targetMap)[parameters[i]] = arg[i]
+		}
+
+		(*targetMap)[parameters[i+1]] = Node{
+			Value:    ListNode{Values: arg[i+1:]},
+			NodeType: NODETYPE_LIST,
+		}
+	} else {
+		panic(fmt.Sprintf("Argument mismatch! (line %d)", line))
+	}
+}
+
 func getArgs(nodes []parser.Node, parameters []string, variables *map[string]Node, line uint) map[string]Node {
 	targetMap := make(map[string]Node, 0)
 
@@ -418,22 +454,7 @@ func getArgs(nodes []parser.Node, parameters []string, variables *map[string]Nod
 		targetMap[k] = v
 	}
 
-	//TODO: If the args are longer than the parameters, press the rest of the args into the last parameter as list
-	if len(parameters) == 1 && len(nodes) > 1 {
-		arg := ListNode{Values: resolve(nodes, variables, line)}
-
-		targetMap[parameters[0]] = Node{
-			Value:    arg,
-			NodeType: NODETYPE_LIST,
-		}
-	} else if len(parameters) == len(nodes) {
-		arg := resolve(nodes, variables, line)
-		for i := range nodes {
-			targetMap[parameters[i]] = arg[i]
-		}
-	} else {
-		panic(fmt.Sprintf("Argument mismatch! (line %d)", line))
-	}
+	getArgsByParameterList(nodes, variables, parameters, &targetMap, line)
 
 	return targetMap
 }

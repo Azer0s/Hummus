@@ -368,12 +368,12 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 	switch mode {
 	case "nth":
 		if args[2].NodeType != NODETYPE_LIST {
-			panic(SYSTEM_ENUMERATE + " expects a list as first argument!")
+			panic(SYSTEM_ENUMERATE + " expects a list as second argument!")
 		}
 		list := args[2].Value.(ListNode)
 
 		if args[1].NodeType != NODETYPE_INT {
-			panic(SYSTEM_ENUMERATE + " :nth expects an int as second argument!")
+			panic(SYSTEM_ENUMERATE + " :nth expects an int as first argument!")
 		}
 
 		return list.Values[args[1].Value.(int)]

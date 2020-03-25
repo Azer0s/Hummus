@@ -1,0 +1,7 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(def pipe/do (fn value fns
+  (def func (--system-do-pipe! :combine fns))
+  (func value)
+))

@@ -1,5 +1,6 @@
 (use :<base>)
 (use :<pipe>)
+(use :<str>)
 
 (def pilots (list
   ({}
@@ -24,13 +25,6 @@
   )
 ))
 
-; Will be in pipe stdlib
-(def map.. (fn func
-  (fn x
-    (map x func)
-  )
-))
-
 (pipe/do pilots
   (map.. (fn x
     (str/concat (` (:name x)) " => " (` (:faction x)))
@@ -50,4 +44,14 @@
   (each.. (fn x
     (out x)
   ))
+)
+
+(pipe/do pilots
+  (reduce.. (fn x acc
+    (if (= (:faction x) "Empire")
+      (+ acc 1)
+      acc
+    )
+  ) 0)
+  out
 )

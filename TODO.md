@@ -2,7 +2,6 @@
 - [x] Structs
 - [x] REPL
 - [x] Relative file import
-- [ ] Function composition
-- [ ] Nested calls
-- [ ] Add functionality to stdlib
+- [x] Function composition
 - [ ] Macros
+- [ ] Add functionality to stdlib

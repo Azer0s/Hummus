@@ -2,12 +2,12 @@
 (use :<base>)
 (use :<debug>)
 
-(spawn (fn
+(def t (spawn (fn
   (sync/sleep 2 :s)
   (sync/watch 0)
   (die "I am ded")
-))
+)))
 
-(sync/watch 1)
+(sync/watch t)
 
 (debug/dump (receive))

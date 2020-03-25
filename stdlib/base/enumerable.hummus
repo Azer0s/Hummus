@@ -27,7 +27,7 @@
 ;; out: the value on the given index
 ;;      of the list
 (def nth (fn idx vals
-  (--system-do-enumerate! :nth vals idx)
+  (--system-do-enumerate! :nth idx vals)
 ))
 
 ;; each Executes an action for each value

@@ -40,16 +40,16 @@ func doSystemCallStrings(node parser.Node, variables *map[string]Node) Node {
 			NodeType: NODETYPE_INT,
 		}
 	case "nth":
-		if args[1].NodeType != NODETYPE_STRING {
-			panic(SYSTEM_STRING + " :nth expects a string as the first argument!")
-		}
-
-		if args[2].NodeType != NODETYPE_INT {
+		if args[1].NodeType != NODETYPE_INT {
 			panic(SYSTEM_STRING + " :nth expects an int as the second argument!")
 		}
 
+		if args[2].NodeType != NODETYPE_STRING {
+			panic(SYSTEM_STRING + " :nth expects a string as the first argument!")
+		}
+
 		return Node{
-			Value:    string(args[1].Value.(string)[args[2].Value.(int)]),
+			Value:    string(args[2].Value.(string)[args[1].Value.(int)]),
 			NodeType: NODETYPE_STRING,
 		}
 	default:
