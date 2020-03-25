@@ -13,7 +13,10 @@ var channelParent = make(map[int]int, 0)
 var watcheeToWatcher = make(map[int]map[int]int, 0)
 var watcherToWatchee = make(map[int]map[int]int, 0)
 var currentPid = 0
-var pidIdMu = &sync.Mutex{}
+
+var currentPidMu = &sync.RWMutex{}
+var channelMapMu = &sync.RWMutex{}
+var channelParentMu = &sync.RWMutex{}
 var watcheeToWatcherMu = &sync.RWMutex{}
 var watcherToWatcheeMu = &sync.RWMutex{}
 
@@ -21,32 +24,43 @@ const MAILBOX_BUFFER = 1024
 
 // CreatePidChannel creates a pid and a channel for a new process
 func CreatePidChannel(self int) (pid int) {
-	pidIdMu.Lock()
-
 	channel := make(chan Node, MAILBOX_BUFFER)
-	pid = currentPid
 
-	channelParent[pid] = self
+	currentPidMu.Lock()
 
+	channelMapMu.RLock()
 	for {
 		if _, ok := channelMap[currentPid]; !ok {
+			channelMapMu.RUnlock()
 			break
 		}
+
 		currentPid++
 	}
 
-	channelMap[currentPid] = channel
+	pid = currentPid
+
+	channelParentMu.Lock()
+	channelParent[pid] = self
+	channelParentMu.Unlock()
+
+	channelMapMu.Lock()
+	channelMap[pid] = channel
+	channelMapMu.Unlock()
+
 	currentPid++
 
-	pidIdMu.Unlock()
+	currentPidMu.Unlock()
 
 	return
 }
 
 func createWatch(watcher, watchee int) {
+	channelMapMu.RLock()
 	if _, ok := channelMap[watchee]; !ok {
 		panic(fmt.Sprintf("Process %d does not exist!", watchee))
 	}
+	channelMapMu.RUnlock()
 
 	watcheeToWatcherMu.Lock()
 	if _, ok := watcheeToWatcher[watchee]; !ok {
@@ -66,7 +80,7 @@ func createWatch(watcher, watchee int) {
 
 	watcherToWatcheeMu.Lock()
 	watcherToWatchee[watcher][watchee] = 1
-	watcherToWatcheeMu.Lock()
+	watcherToWatcheeMu.Unlock()
 
 }
 
@@ -103,17 +117,23 @@ func doSend(pid, val Node) Node {
 
 func doReceive(variables *map[string]Node) Node {
 	self := (*variables)[SELF].Value.(int)
+
+	channelMapMu.RLock()
 	channel := channelMap[self]
+	channelMapMu.RUnlock()
 
 	val := <-channel
 	return val
 }
 
 func doCleanup(p int, r Node) {
-	pidIdMu.Lock()
+	channelParentMu.Lock()
 	delete(channelParent, p)
+	channelParentMu.Unlock()
+
+	channelMapMu.Lock()
 	delete(channelMap, p)
-	pidIdMu.Unlock()
+	channelMapMu.Unlock()
 
 	watcheeToWatcherMu.RLock()
 	for watcher, doSend := range watcheeToWatcher[p] {
@@ -194,6 +214,15 @@ func doSpawn(arg Node, variables *map[string]Node) Node {
 		defer func() {
 			if r := recover(); r != nil {
 				doCleanup(p, r.(Node))
+				return
+				if val, ok := r.(string); ok {
+					doCleanup(p, Node{
+						Value:    val,
+						NodeType: NODETYPE_STRING,
+					})
+				} else {
+					doCleanup(p, r.(Node))
+				}
 			}
 		}()
 

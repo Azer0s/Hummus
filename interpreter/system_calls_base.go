@@ -360,38 +360,42 @@ func doSystemCallEnumerate(node parser.Node, variables *map[string]Node) Node {
 
 	mode := args[0].Value.(string)
 
-	if args[1].NodeType != NODETYPE_LIST {
-		panic(SYSTEM_ENUMERATE + " expects a list as first argument!")
-	}
-
 	ctx := make(map[string]Node, 0)
 	for k, v := range *variables {
 		ctx[k] = v
 	}
 
-	list := args[1].Value.(ListNode)
-
 	switch mode {
 	case "nth":
-		if args[2].NodeType != NODETYPE_INT {
+		if args[2].NodeType != NODETYPE_LIST {
+			panic(SYSTEM_ENUMERATE + " expects a list as first argument!")
+		}
+		list := args[2].Value.(ListNode)
+
+		if args[1].NodeType != NODETYPE_INT {
 			panic(SYSTEM_ENUMERATE + " :nth expects an int as second argument!")
 		}
 
-		return list.Values[args[2].Value.(int)]
+		return list.Values[args[1].Value.(int)]
 	case "each":
-		return doEach(ctx, args, list)
+		return doEach(ctx, args)
 	case "map":
-		return doMap(ctx, args, list)
+		return doMap(ctx, args)
 	case "filter":
-		return doFilter(ctx, args, list)
+		return doFilter(ctx, args)
 	case "reduce":
-		return doReduce(ctx, args, list)
+		return doReduce(ctx, args)
 	default:
 		panic("Unrecognized mode")
 	}
 }
 
-func doEach(ctx map[string]Node, args []Node, list ListNode) Node {
+func doEach(ctx map[string]Node, args []Node) Node {
+	if args[1].NodeType != NODETYPE_LIST {
+		panic(SYSTEM_ENUMERATE + " expects a list as first argument!")
+	}
+	list := args[1].Value.(ListNode)
+
 	if args[2].NodeType != NODETYPE_FN {
 		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
 	}
@@ -426,7 +430,12 @@ func doEach(ctx map[string]Node, args []Node, list ListNode) Node {
 	}
 }
 
-func doMap(ctx map[string]Node, args []Node, list ListNode) Node {
+func doMap(ctx map[string]Node, args []Node) Node {
+	if args[1].NodeType != NODETYPE_LIST {
+		panic(SYSTEM_ENUMERATE + " expects a list as first argument!")
+	}
+	list := args[1].Value.(ListNode)
+
 	if args[2].NodeType != NODETYPE_FN {
 		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
 	}
@@ -464,7 +473,12 @@ func doMap(ctx map[string]Node, args []Node, list ListNode) Node {
 	}
 }
 
-func doFilter(ctx map[string]Node, args []Node, list ListNode) Node {
+func doFilter(ctx map[string]Node, args []Node) Node {
+	if args[1].NodeType != NODETYPE_LIST {
+		panic(SYSTEM_ENUMERATE + " expects a list as first argument!")
+	}
+	list := args[1].Value.(ListNode)
+
 	if args[2].NodeType != NODETYPE_FN {
 		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
 	}
@@ -509,7 +523,12 @@ func doFilter(ctx map[string]Node, args []Node, list ListNode) Node {
 	}
 }
 
-func doReduce(ctx map[string]Node, args []Node, list ListNode) Node {
+func doReduce(ctx map[string]Node, args []Node) Node {
+	if args[1].NodeType != NODETYPE_LIST {
+		panic(SYSTEM_ENUMERATE + " expects a list as first argument!")
+	}
+	list := args[1].Value.(ListNode)
+
 	if args[2].NodeType != NODETYPE_FN {
 		panic(SYSTEM_ENUMERATE + " expects a function as second argument!")
 	}

@@ -22,11 +22,11 @@
 ;; nth Returns the nth value from
 ;; a given list of values
 ;; in:
-;; * vals .. the list of values
 ;; * idx .. the index to get
+;; * vals .. the list of values
 ;; out: the value on the given index
 ;;      of the list
-(def nth (fn vals idx
+(def nth (fn idx vals
   (--system-do-enumerate! :nth vals idx)
 ))
 

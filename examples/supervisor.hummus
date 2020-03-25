@@ -1,0 +1,33 @@
+(use :<sync>)
+(use :<base>)
+
+(def work (fn
+  (out "Henlo")
+  (sync/sleep 1 :ms)
+))
+
+(def do_supervise (fn func
+  (def setup (fn func
+    (def toWatch (spawn func))
+    (sync/watch toWatch)
+    (out toWatch)
+  ))
+
+  (setup work)
+
+  (for true
+    (def msg (receive))
+
+    (if (= (nth 0 msg) :dead)
+      (setup work)
+    )
+  )
+))
+
+(def supervise (fn func
+  (spawn (fn
+    (do_supervise work)
+  ))
+))
+
+(supervise work)
