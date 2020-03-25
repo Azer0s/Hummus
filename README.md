@@ -53,6 +53,7 @@
 (out "Tea costs " (` ([] :tea prices)))
 ```
 
+<!---
 ### Macros
 
 ```clojure
@@ -82,6 +83,7 @@
 ; (if (> 4 3)
 ;   (out "A"))
 ```
+-->
 
 ### Actor model
 
