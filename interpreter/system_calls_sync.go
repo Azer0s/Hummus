@@ -20,6 +20,7 @@ var channelParentMu = &sync.RWMutex{}
 var watcheeToWatcherMu = &sync.RWMutex{}
 var watcherToWatcheeMu = &sync.RWMutex{}
 
+// MAILBOX_BUFFER buffer for channel mailboxes
 const MAILBOX_BUFFER = 1024
 
 // CreatePidChannel creates a pid and a channel for a new process
@@ -160,14 +161,14 @@ func doCleanup(p int, r Node) {
 
 	watcheeToWatcherMu.RLock()
 	watchedByProcess := make([]int, 0)
-	for k, _ := range watcheeToWatcher[p] {
+	for k := range watcheeToWatcher[p] {
 		watchedByProcess = append(watchedByProcess, k)
 	}
 	watcheeToWatcherMu.RUnlock()
 
 	watcherToWatcheeMu.RLock()
 	watchingProcess := make([]int, 0)
-	for k, _ := range watcherToWatchee[p] {
+	for k := range watcherToWatchee[p] {
 		watchingProcess = append(watchingProcess, k)
 	}
 	watcherToWatcheeMu.RUnlock()
@@ -213,8 +214,6 @@ func doSpawn(arg Node, variables *map[string]Node) Node {
 	go func(p int) {
 		defer func() {
 			if r := recover(); r != nil {
-				doCleanup(p, r.(Node))
-				return
 				if val, ok := r.(string); ok {
 					doCleanup(p, Node{
 						Value:    val,

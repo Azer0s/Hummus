@@ -16,6 +16,8 @@ import (
 const (
 	// USE include function
 	USE string = "use"
+	// TYPE type function
+	TYPE string = "type"
 	// MAP_ACCESS map access function
 	MAP_ACCESS string = "[]"
 	// EXEC_FILE current file
@@ -291,10 +293,44 @@ func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 	panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token.Value, node.Token.Line))
 }
 
+func doType(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables, node.Token.Line)
+
+	if len(args) != 1 {
+		panic(fmt.Sprintf("Expected one argument for type! (line %d)", node.Token.Line))
+	}
+
+	t := ""
+
+	switch args[0].NodeType {
+	case NODETYPE_INT:
+		t = "int"
+	case NODETYPE_FLOAT:
+		t = "float"
+	case NODETYPE_STRING:
+		t = "string"
+	case NODETYPE_BOOL:
+		t = "bool"
+	case NODETYPE_ATOM:
+		t = "atom"
+	case NODETYPE_FN:
+		t = "fn"
+	case NODETYPE_LIST:
+		t = "list"
+	case NODETYPE_MAP:
+		t = "map"
+	case NODETYPE_STRUCT:
+		t = "struct"
+	}
+
+	return Node{
+		Value:    t,
+		NodeType: NODETYPE_ATOM,
+	}
+}
+
 func doCall(node parser.Node, variables *map[string]Node) Node {
-	if node.Token.Value == USE {
-		return doUse(node, (*variables)[EXEC_FILE].Value.(string), (*variables)[SELF].Value.(int))
-	} else if val, ok := globalFns.Load(node.Token.Value); ok {
+	if val, ok := globalFns.Load(node.Token.Value); ok {
 		return doVariableCall(node, val.(Node), variables)
 	} else if val, ok := (*variables)[node.Token.Value]; ok {
 		return doVariableCall(node, val, variables)
@@ -307,6 +343,10 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 	}
 
 	switch node.Token.Value {
+	case USE:
+		return doUse(node, (*variables)[EXEC_FILE].Value.(string), (*variables)[SELF].Value.(int))
+	case TYPE:
+		return doType(node, variables)
 	case MAP_ACCESS:
 		return accessMap(parser.Node{
 			Type:      parser.ACTION_MAP_ACCESS,
