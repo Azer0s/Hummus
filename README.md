@@ -89,8 +89,8 @@
 (def ping (fn
   (for true
     (def msg (receive))
-    (def type (nth msg 0))
-    (def sender (nth msg 1))
+    (def type (nth 0 msg))
+    (def sender (nth 1 msg))
 
     (if (= type :pong)
       ((fn
@@ -106,8 +106,8 @@
 (def pong (fn
   (for true
     (def msg (receive))
-    (def type (nth msg 0))
-    (def sender (nth msg 1))
+    (def type (nth 0 msg))
+    (def sender (nth 1 msg))
 
     (if (= type :ping)
       ((fn

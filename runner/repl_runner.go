@@ -80,6 +80,10 @@ func doFailsafeRepl(reader *bufio.Reader, vars *map[string]interpreter.Node) {
 
 	var nodes []parser.Node
 
+	if len(tokens) == 0 {
+		return
+	}
+
 	if len(tokens) == 1 && tokens[0].Type == lexer.IDENTIFIER || tokens[0].Type >= lexer.INT && tokens[0].Type <= lexer.ATOM {
 		nodes = []parser.Node{
 			{
