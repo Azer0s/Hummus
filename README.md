@@ -2,6 +2,18 @@
 ![Open Source Love](https://img.shields.io/badge/Open%20source-%E2%9D%A4%EF%B8%8F-brightgreen.svg?style=flat-square) 
 ![Gluten free](https://img.shields.io/badge/Gluten-Free-blue.svg?longCache=true&style=flat-square)
 
+## Getting started
+
+`makefile` coming soon. Meanwhile, this will have to do. 🤷🏻‍♂️
+
+```bash
+git clone https://github.com/Azer0s/Hummus.git
+cd Hummus
+chmod +x ./scripts/prepare_release.sh
+./scripts/prepare_release.sh
+go build -o bin/hummus
+./bin/hummus
+```
 
 ## Examples
 
