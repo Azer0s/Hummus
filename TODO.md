@@ -3,5 +3,7 @@
 - [x] REPL
 - [x] Relative file import
 - [x] Function composition
+- [ ] Refactor debug stdlib to Go plugin
+- [ ] Refactor base stdlib to Go plugin(s)
 - [ ] Macros
 - [ ] Add functionality to stdlib
