@@ -5,12 +5,15 @@ import (
 	"strings"
 )
 
+// CALL string functions
 var CALL string = "--system-do-strings!"
 
+// Init Hummus stdlib stub
 func Init(variables *map[string]interpreter.Node) {
 	// noinit
 }
 
+// DoSystemCall Hummus stdlib stub
 func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
 	mode := args[0].Value.(string)
 

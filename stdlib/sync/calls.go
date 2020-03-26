@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// CALL concurrency functions
 var CALL string = "--system-do-sync!"
 
 var channelMap = make(map[int]chan interpreter.Node, 0)
@@ -294,6 +295,7 @@ func doUnwatch(watchee interpreter.Node, self int) interpreter.Node {
 	}
 }
 
+// Init Hummus stdlib stub
 func Init(variables *map[string]interpreter.Node) {
 	(*variables)[interpreter.SELF] = interpreter.Node{
 		Value:    createPidChannel(0),
@@ -301,6 +303,7 @@ func Init(variables *map[string]interpreter.Node) {
 	}
 }
 
+// DoSystemCall Hummus stdlib stub
 func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
 	mode := args[0].Value.(string)
 
