@@ -1,0 +1,61 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+;; sync/sleep Puts the currently running process to sleep
+;; in:
+;; * duration .. the sleep duration
+;; * mode .. the duration multiplier (:ms, :s, :min, :h)
+;; out: 0
+(def sync/sleep (fn duration mode
+  (--system-do-sync! :sleep duration mode)
+))
+
+;; spawn Spawns another process from a function
+;; in:
+;; * func .. the function to spawn
+;; out: the pid
+(def spawn (fn func
+  (--system-do-sync! :spawn func)
+))
+
+;; send Sends a value to another process
+;; in:
+;; * pid .. the process id of the recipient
+;; * msg .. the value to send
+;; out: 0
+(def send (fn pid msg
+  (--system-do-sync! :send pid msg)
+))
+
+;; receive Waits for a message to arrive
+;; out: the message
+(def receive (fn
+  (--system-do-sync! :receive)
+))
+
+;; die Kills the currently running process
+;; in:
+;; * val .. the kill message to send to
+;;          watching processes
+;; out: 0
+(def die (fn val
+  (--system-do-sync! :die val)
+))
+
+;; watch Creates a watcher on a process so the
+;;       caller process gets notified when the
+;;       watched process dies
+;; in:
+;; * pid .. the process id of the watchee
+;; out: 0
+(def sync/watch (fn pid
+  (--system-do-sync! :watch pid)
+))
+
+;; unwatch Removes a watcher from the target pid
+;; in:
+;; * pid .. the process id of the watchee
+;; out: 0
+(def sync/unwatch (fn pid
+  (--system-do-sync! :unwatch pid)
+))

@@ -407,7 +407,7 @@ func doEach(ctx map[string]Node, args []Node) Node {
 	for _, value := range list.Values {
 		ctx[SYSTEM_ENUMERATE_VAL] = value
 
-		doVariableCall(parser.Node{
+		DoVariableCall(parser.Node{
 			Type: 0,
 			Arguments: []parser.Node{
 				{
@@ -450,7 +450,7 @@ func doMap(ctx map[string]Node, args []Node) Node {
 	for _, value := range list.Values {
 		ctx[SYSTEM_ENUMERATE_VAL] = value
 
-		mapResult.Values = append(mapResult.Values, doVariableCall(parser.Node{
+		mapResult.Values = append(mapResult.Values, DoVariableCall(parser.Node{
 			Type: 0,
 			Arguments: []parser.Node{
 				{
@@ -492,7 +492,7 @@ func doFilter(ctx map[string]Node, args []Node) Node {
 	for _, value := range list.Values {
 		ctx[SYSTEM_ENUMERATE_VAL] = value
 
-		res := doVariableCall(parser.Node{
+		res := DoVariableCall(parser.Node{
 			Type: 0,
 			Arguments: []parser.Node{
 				{
@@ -542,7 +542,7 @@ func doReduce(ctx map[string]Node, args []Node) Node {
 	for _, value := range list.Values {
 		ctx[SYSTEM_ENUMERATE_VAL] = value
 
-		res := doVariableCall(parser.Node{
+		res := DoVariableCall(parser.Node{
 			Type: 0,
 			Arguments: []parser.Node{
 				{

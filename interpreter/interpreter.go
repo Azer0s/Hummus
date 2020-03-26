@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"plugin"
 	"regexp"
 	"strconv"
 	"sync"
@@ -27,15 +28,24 @@ const (
 )
 
 var globalFns = sync.Map{}
+var nativeFns = sync.Map{}
+
+var importsMu = &sync.RWMutex{}
 var imports = make([]string, 0)
 
-func contains(arr []string, str string) bool {
-	for _, a := range arr {
+func importsHas(str string) bool {
+	has := false
+
+	importsMu.RLock()
+	for _, a := range imports {
 		if a == str {
-			return true
+			has = true
+			break
 		}
 	}
-	return false
+	importsMu.RUnlock()
+
+	return has
 }
 
 func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node Node) {
@@ -166,9 +176,66 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	return variable
 }
 
-func doUse(node parser.Node, currentFile string, pid int) Node {
+func doNativeUse(name string, variables *map[string]Node) Node {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+
+	if err != nil {
+		panic(err)
+	}
+
+	file := path.Join(dir, "./stdlib", name)
+
+	if importsHas(file) {
+		return Node{
+			Value:    0,
+			NodeType: 0,
+		}
+	}
+
+	p, err := plugin.Open(file)
+	if err != nil {
+		panic(err)
+	}
+
+	n, err := p.Lookup("CALL")
+	if err != nil {
+		panic(err)
+	}
+
+	i, err := p.Lookup("Init")
+	if err != nil {
+		panic(err)
+	}
+
+	i.(func(*map[string]Node))(variables)
+
+	fn, err := p.Lookup("DoSystemCall")
+	if err != nil {
+		panic(err)
+	}
+
+	dName := *n.(*string)
+	dFn := fn.(func([]Node, *map[string]Node) Node)
+
+	nativeFns.Store(dName, dFn)
+
+	importsMu.Lock()
+	imports = append(imports, file)
+	importsMu.Unlock()
+
+	return Node{
+		Value:    0,
+		NodeType: 0,
+	}
+}
+
+func doUse(node parser.Node, currentFile string, pid int, variables *map[string]Node) Node {
 	if node.Arguments[0].Type != parser.LITERAL_ATOM {
 		panic(fmt.Sprintf("\"use\" only accepts atoms as parameter! (line %d)", node.Token.Line))
+	}
+
+	if len(node.Arguments) == 2 && node.Arguments[1].Token.Value == "native" {
+		return doNativeUse(node.Arguments[0].Token.Value, variables)
 	}
 
 	stdlib, _ := regexp.Compile("<([^>]+)>")
@@ -194,7 +261,7 @@ func doUse(node parser.Node, currentFile string, pid int) Node {
 		file = path.Join(dir, file+".hummus")
 	}
 
-	if contains(imports, file) {
+	if importsHas(file) {
 		return Node{
 			Value:    0,
 			NodeType: 0,
@@ -222,7 +289,9 @@ func doUse(node parser.Node, currentFile string, pid int) Node {
 		globalFns.Store(k, v)
 	}
 
+	importsMu.Lock()
 	imports = append(imports, file)
+	importsMu.Unlock()
 
 	return Node{
 		Value:    0,
@@ -230,7 +299,8 @@ func doUse(node parser.Node, currentFile string, pid int) Node {
 	}
 }
 
-func doVariableCall(node parser.Node, val Node, variables *map[string]Node) Node {
+// DoVariableCall calls a fn variable
+func DoVariableCall(node parser.Node, val Node, variables *map[string]Node) Node {
 	if val.NodeType == NODETYPE_FN {
 		fn := val.Value.(FnLiteral)
 		args := getArgs(node.Arguments, fn.Parameters, variables, node.Token.Line)
@@ -331,20 +401,23 @@ func doType(node parser.Node, variables *map[string]Node) Node {
 
 func doCall(node parser.Node, variables *map[string]Node) Node {
 	if val, ok := globalFns.Load(node.Token.Value); ok {
-		return doVariableCall(node, val.(Node), variables)
+		return DoVariableCall(node, val.(Node), variables)
 	} else if val, ok := (*variables)[node.Token.Value]; ok {
-		return doVariableCall(node, val, variables)
+		return DoVariableCall(node, val, variables)
+	} else if val, ok := nativeFns.Load(node.Token.Value); ok {
+		args := resolve(node.Arguments, variables, node.Token.Line)
+		return val.(func([]Node, *map[string]Node) Node)(args, variables)
 	} else if node.Token.Type == lexer.ANONYMOUS_FN {
 		fn := getValueFromNode(node.Arguments[0], variables)
 
 		node.Arguments = node.Arguments[1:]
 
-		return doVariableCall(node, fn, variables)
+		return DoVariableCall(node, fn, variables)
 	}
 
 	switch node.Token.Value {
 	case USE:
-		return doUse(node, (*variables)[EXEC_FILE].Value.(string), (*variables)[SELF].Value.(int))
+		return doUse(node, (*variables)[EXEC_FILE].Value.(string), (*variables)[SELF].Value.(int), variables)
 	case TYPE:
 		return doType(node, variables)
 	case MAP_ACCESS:
@@ -371,14 +444,8 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 		return doSystemCallBitwise(node, variables)
 	case SYSTEM_ENUMERATE:
 		return doSystemCallEnumerate(node, variables)
-	case SYSTEM_STRING:
-		return doSystemCallStrings(node, variables)
 	case SYSTEM_DEBUG:
 		return doSystemCallDebug(node, variables)
-	case SYSTEM_SYNC:
-		return doSystemCallSync(node, variables)
-	case SYSTEM_PIPE:
-		return doSystemCallPipe(node, variables)
 
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))

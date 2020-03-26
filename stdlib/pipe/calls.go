@@ -1,37 +1,35 @@
-package interpreter
+package main
 
 import (
-	"crypto/rand"
 	"fmt"
+	"github.com/Azer0s/Hummus/interpreter"
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
-	"log"
 )
 
-func doSystemCallPipe(node parser.Node, variables *map[string]Node) Node {
-	args := resolve(node.Arguments, variables, node.Token.Line)
+var CALL string = "--system-do-pipe!"
 
+func Init(variables *map[string]interpreter.Node) {
+	// noinit
+}
+
+func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
 	mode := args[0].Value.(string)
 
 	switch mode {
 	case "combine":
-		if args[1].NodeType != NODETYPE_LIST {
-			panic(SYSTEM_STRING + " :concat only accepts lists!")
+		if args[1].NodeType != interpreter.NODETYPE_LIST {
+			panic(CALL + " :concat only accepts lists!")
 		}
 
-		list := args[1].Value.(ListNode)
+		list := args[1].Value.(interpreter.ListNode)
 
 		fns := make([]string, 0)
-		ctx := make(map[string]Node, 0)
+		ctx := make(map[string]interpreter.Node, 0)
 
 		count := 0
 
 		for _, value := range list.Values {
-			b := make([]byte, 16)
-			_, err := rand.Read(b)
-			if err != nil {
-				log.Fatal(err)
-			}
 			fn := fmt.Sprintf("f%d", count)
 			count++
 
@@ -56,7 +54,7 @@ func doSystemCallPipe(node parser.Node, variables *map[string]Node) Node {
 		}
 
 		reversed[len(reversed)-1].Arguments = make([]parser.Node, 0)
-		for _, parameter := range list.Values[0].Value.(FnLiteral).Parameters {
+		for _, parameter := range list.Values[0].Value.(interpreter.FnLiteral).Parameters {
 			reversed[len(reversed)-1].Arguments = append(reversed[len(reversed)-1].Arguments, parser.Node{
 				Type:      parser.IDENTIFIER,
 				Arguments: nil,
@@ -73,15 +71,15 @@ func doSystemCallPipe(node parser.Node, variables *map[string]Node) Node {
 			reversed[i-1].Arguments = append(reversed[i-1].Arguments, reversed[i])
 		}
 
-		return Node{
-			Value: FnLiteral{
-				Parameters: list.Values[0].Value.(FnLiteral).Parameters,
+		return interpreter.Node{
+			Value: interpreter.FnLiteral{
+				Parameters: list.Values[0].Value.(interpreter.FnLiteral).Parameters,
 				Body: []parser.Node{
 					reversed[0],
 				},
 				Context: ctx,
 			},
-			NodeType: NODETYPE_FN,
+			NodeType: interpreter.NODETYPE_FN,
 		}
 	default:
 		panic("Unrecognized mode")

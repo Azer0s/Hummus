@@ -53,14 +53,13 @@
 (out "Tea costs " (` ([] :tea prices)))
 ```
 
-<!---
 ### Macros
 
 ```clojure
 (def dotimes (macro times |action| (
 ; || tells Hummus to not evaluate this argument but to
 ; literally take the AstNode as it's input parameter
-  (map (range times) (fn
+  (map (range times) (list :fn
     (unquote action)
   ))
 ))
@@ -73,7 +72,7 @@
 
 (def when (macro cond action
   (quote 
-    (if (unquote cond)
+    (list :if (unquote cond)
       (unquote action))
   )
 ))
@@ -83,7 +82,7 @@
 ; (if (> 4 3)
 ;   (out "A"))
 ```
--->
+
 
 ### Actor model
 

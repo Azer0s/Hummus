@@ -25,11 +25,6 @@ func doSystemCallDebug(node parser.Node, variables *map[string]Node) Node {
 			Value:    0,
 			NodeType: 0,
 		}
-	case "line":
-		return Node{
-			Value:    int(node.Token.Line),
-			NodeType: 0,
-		}
 	default:
 		panic("Unrecognized mode")
 	}

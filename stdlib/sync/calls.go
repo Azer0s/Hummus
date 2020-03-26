@@ -1,14 +1,17 @@
-package interpreter
+package main
 
 import (
 	"fmt"
+	"github.com/Azer0s/Hummus/interpreter"
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
 	"sync"
 	"time"
 )
 
-var channelMap = make(map[int]chan Node, 0)
+var CALL string = "--system-do-sync!"
+
+var channelMap = make(map[int]chan interpreter.Node, 0)
 var channelParent = make(map[int]int, 0)
 var watcheeToWatcher = make(map[int]map[int]int, 0)
 var watcherToWatchee = make(map[int]map[int]int, 0)
@@ -23,9 +26,8 @@ var watcherToWatcheeMu = &sync.RWMutex{}
 // MAILBOX_BUFFER buffer for channel mailboxes
 const MAILBOX_BUFFER = 1024
 
-// CreatePidChannel creates a pid and a channel for a new process
-func CreatePidChannel(self int) (pid int) {
-	channel := make(chan Node, MAILBOX_BUFFER)
+func createPidChannel(self int) (pid int) {
+	channel := make(chan interpreter.Node, MAILBOX_BUFFER)
 
 	currentPidMu.Lock()
 
@@ -85,21 +87,21 @@ func createWatch(watcher, watchee int) {
 
 }
 
-func doWatch(arg Node, variables *map[string]Node) Node {
-	if arg.NodeType != NODETYPE_INT {
-		panic(SYSTEM_SYNC + " :watch expects an int as first argument!")
+func doWatch(arg interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
+	if arg.NodeType != interpreter.NODETYPE_INT {
+		panic(CALL + " :watch expects an int as first argument!")
 	}
 
-	createWatch((*variables)[SELF].Value.(int), arg.Value.(int))
-	return Node{
+	createWatch((*variables)[interpreter.SELF].Value.(int), arg.Value.(int))
+	return interpreter.Node{
 		Value:    0,
 		NodeType: 0,
 	}
 }
 
-func doSend(pid, val Node) Node {
-	if pid.NodeType != NODETYPE_INT {
-		panic(SYSTEM_SYNC + " :send expects an int as first argument!")
+func doSend(pid, val interpreter.Node) interpreter.Node {
+	if pid.NodeType != interpreter.NODETYPE_INT {
+		panic(CALL + " :send expects an int as first argument!")
 	}
 
 	channel := channelMap[pid.Value.(int)]
@@ -110,14 +112,14 @@ func doSend(pid, val Node) Node {
 		//No data sent
 	}
 
-	return Node{
+	return interpreter.Node{
 		Value:    0,
 		NodeType: 0,
 	}
 }
 
-func doReceive(variables *map[string]Node) Node {
-	self := (*variables)[SELF].Value.(int)
+func doReceive(variables *map[string]interpreter.Node) interpreter.Node {
+	self := (*variables)[interpreter.SELF].Value.(int)
 
 	channelMapMu.RLock()
 	channel := channelMap[self]
@@ -127,7 +129,7 @@ func doReceive(variables *map[string]Node) Node {
 	return val
 }
 
-func doCleanup(p int, r Node) {
+func doCleanup(p int, r interpreter.Node) {
 	channelParentMu.Lock()
 	delete(channelParent, p)
 	channelParentMu.Unlock()
@@ -142,19 +144,19 @@ func doCleanup(p int, r Node) {
 			continue
 		}
 
-		channelMap[watcher] <- Node{
-			Value: ListNode{Values: []Node{
+		channelMap[watcher] <- interpreter.Node{
+			Value: interpreter.ListNode{Values: []interpreter.Node{
 				{
 					Value:    "dead",
-					NodeType: NODETYPE_ATOM,
+					NodeType: interpreter.NODETYPE_ATOM,
 				},
 				{
 					Value:    p,
-					NodeType: NODETYPE_INT,
+					NodeType: interpreter.NODETYPE_INT,
 				},
 				r,
 			}},
-			NodeType: NODETYPE_LIST,
+			NodeType: interpreter.NODETYPE_LIST,
 		}
 	}
 	watcheeToWatcherMu.RUnlock()
@@ -194,19 +196,19 @@ func doCleanup(p int, r Node) {
 	watcheeToWatcherMu.Unlock()
 }
 
-func doSpawn(arg Node, variables *map[string]Node) Node {
-	if arg.NodeType != NODETYPE_FN {
-		panic(SYSTEM_SYNC + " :spawn expects a function as first argument!")
+func doSpawn(arg interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
+	if arg.NodeType != interpreter.NODETYPE_FN {
+		panic(CALL + " :spawn expects a function as first argument!")
 	}
 
-	ctx := make(map[string]Node, 0)
+	ctx := make(map[string]interpreter.Node, 0)
 	for k, v := range *variables {
 		ctx[k] = v
 	}
 
 	//Do global mutex when inserting into chan map
-	pid := CreatePidChannel((*variables)[SELF].Value.(int))
-	ctx[SELF] = Node{
+	pid := createPidChannel((*variables)[interpreter.SELF].Value.(int))
+	ctx[interpreter.SELF] = interpreter.Node{
 		Value:    pid,
 		NodeType: 0,
 	}
@@ -215,40 +217,40 @@ func doSpawn(arg Node, variables *map[string]Node) Node {
 		defer func() {
 			if r := recover(); r != nil {
 				if val, ok := r.(string); ok {
-					doCleanup(p, Node{
+					doCleanup(p, interpreter.Node{
 						Value:    val,
-						NodeType: NODETYPE_STRING,
+						NodeType: interpreter.NODETYPE_STRING,
 					})
 				} else {
-					doCleanup(p, r.(Node))
+					doCleanup(p, r.(interpreter.Node))
 				}
 			}
 		}()
 
-		doVariableCall(parser.Node{
+		interpreter.DoVariableCall(parser.Node{
 			Type:      0,
 			Arguments: []parser.Node{},
 			Token:     lexer.Token{},
 		}, arg, &ctx)
-		panic(Node{
+		panic(interpreter.Node{
 			Value:    0,
 			NodeType: 0,
 		})
 	}(pid)
 
-	return Node{
+	return interpreter.Node{
 		Value:    pid,
 		NodeType: 0,
 	}
 }
 
-func doSleep(duration, mode Node) Node {
-	if duration.NodeType != NODETYPE_INT {
-		panic(SYSTEM_SYNC + " :sleep expects an int as first argument!")
+func doSleep(duration, mode interpreter.Node) interpreter.Node {
+	if duration.NodeType != interpreter.NODETYPE_INT {
+		panic(CALL + " :sleep expects an int as first argument!")
 	}
 
-	if mode.NodeType != NODETYPE_ATOM {
-		panic(SYSTEM_SYNC + " :sleep expects an int as first argument!")
+	if mode.NodeType != interpreter.NODETYPE_ATOM {
+		panic(CALL + " :sleep expects an int as first argument!")
 	}
 
 	d := time.Duration(int64(duration.Value.(int)))
@@ -263,18 +265,18 @@ func doSleep(duration, mode Node) Node {
 	case "ms":
 		time.Sleep(d * time.Millisecond)
 	default:
-		panic(SYSTEM_SYNC + " :sleep only accepts :h, :min, :s or :ms as second argument!")
+		panic(CALL + " :sleep only accepts :h, :min, :s or :ms as second argument!")
 	}
 
-	return Node{
+	return interpreter.Node{
 		Value:    0,
 		NodeType: 0,
 	}
 }
 
-func doUnwatch(watchee Node, self int) Node {
-	if watchee.NodeType != NODETYPE_INT {
-		panic(SYSTEM_SYNC + " :unwatch expects an int as first argument!")
+func doUnwatch(watchee interpreter.Node, self int) interpreter.Node {
+	if watchee.NodeType != interpreter.NODETYPE_INT {
+		panic(CALL + " :unwatch expects an int as first argument!")
 	}
 
 	w := watchee.Value.(int)
@@ -286,15 +288,20 @@ func doUnwatch(watchee Node, self int) Node {
 	delete(watcherToWatchee[self], w)
 	watcherToWatcheeMu.Unlock()
 
-	return Node{
+	return interpreter.Node{
 		Value:    0,
 		NodeType: 0,
 	}
 }
 
-func doSystemCallSync(node parser.Node, variables *map[string]Node) Node {
-	args := resolve(node.Arguments, variables, node.Token.Line)
+func Init(variables *map[string]interpreter.Node) {
+	(*variables)[interpreter.SELF] = interpreter.Node{
+		Value:    createPidChannel(0),
+		NodeType: interpreter.NODETYPE_INT,
+	}
+}
 
+func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
 	mode := args[0].Value.(string)
 
 	switch mode {
@@ -303,7 +310,7 @@ func doSystemCallSync(node parser.Node, variables *map[string]Node) Node {
 	case "watch":
 		return doWatch(args[1], variables)
 	case "unwatch":
-		return doUnwatch(args[1], (*variables)[SELF].Value.(int))
+		return doUnwatch(args[1], (*variables)[interpreter.SELF].Value.(int))
 	case "send":
 		return doSend(args[1], args[2])
 	case "receive":

@@ -7,9 +7,8 @@ func setupVars(vars *map[string]interpreter.Node, dir string) {
 		Value:    dir,
 		NodeType: interpreter.NODETYPE_STRING,
 	}
-
 	(*vars)[interpreter.SELF] = interpreter.Node{
-		Value:    interpreter.CreatePidChannel(0),
+		Value:    0,
 		NodeType: interpreter.NODETYPE_INT,
 	}
 }

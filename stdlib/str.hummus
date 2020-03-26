@@ -1,27 +1,5 @@
 ;; Copyright (c) Ariel Simulevski
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
-;; str/concat Concats two or more strings
-;; in:
-;; * args .. the list of strings to concat
-;; out: the concatenated string
-(def str/concat (fn args
-  (--system-do-strings! :concat args)
-))
-
-;; str/len Returns the length of a string
-;; in:
-;; * arg .. the string
-;; out: the length of the string
-(def str/len (fn arg
-  (--system-do-strings! :len arg)
-))
-
-;; str/nth Returns a character of a string
-;; in:
-;; * idx .. the index of the character
-;; * arg .. the lookup string
-;; out: the character
-(def str/nth (fn idx arg
-  (--system-do-strings! :nth idx arg)
-))
+(use :./str/calls.so :native)
+(use :./str/functions)

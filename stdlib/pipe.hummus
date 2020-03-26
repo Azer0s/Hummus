@@ -1,6 +1,7 @@
 ;; Copyright (c) Ariel Simulevski
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
+(use :./pipe/calls.so :native)
 (use :./pipe/operators)
 (use :./pipe/enumerable)
 (use :./pipe/functions)
