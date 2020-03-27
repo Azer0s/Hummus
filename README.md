@@ -65,6 +65,7 @@ go build -o bin/hummus
 (out "Tea costs " (` ([] :tea prices)))
 ```
 
+<!---
 ### Macros
 
 ```clojure
@@ -94,7 +95,7 @@ go build -o bin/hummus
 ; (if (> 4 3)
 ;   (out "A"))
 ```
-
+-->
 
 ### Actor model
 
@@ -241,7 +242,7 @@ go build -o bin/hummus
 
 ```clojure
 (http/handle "/" (fn req
-  "<h1> Hello </h1>"
+  (str/concat "<h1> Hello " (:method req) "</h1>")
 ))
 
 (http/handle "/test" (fn req
