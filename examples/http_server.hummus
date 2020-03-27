@@ -1,6 +1,8 @@
 (use :<net/http>)
+(use :<debug>)
 
 (http/handle "/" (fn req
+  (debug/dump req)
   "<h1> Hello </h1>"
 ))
 

@@ -3,6 +3,7 @@ package main
 import "github.com/Azer0s/Hummus/runner"
 
 func main() {
+	runner.RunFile("examples/map_exists.hummus")
 	runner.RunFile("examples/branching.hummus")
 	runner.RunFile("examples/curry.hummus")
 	runner.RunFile("examples/def_function.hummus")

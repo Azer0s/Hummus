@@ -51,3 +51,10 @@ func DumpNode(node Node) string {
 
 	return ret
 }
+
+// CopyVariableState copy the variable state to another map
+func CopyVariableState(variables, ctx *map[string]Node) {
+	for k, v := range *variables {
+		(*ctx)[k] = v
+	}
+}

@@ -3,14 +3,44 @@
 
 ; TODO: Documentation
 
+;; keys Returns a range from `from` to `to`
+;; in:
+;; * from .. lower bound of the range
+;; * to .. upper bound of the range
+;; out: the range
 (def .. (fn from to
   (--system-do-make! :range from to)
 ))
 
+;; keys Returns a range from 0 to times
+;; in:
+;; * times .. the upper bound of a range
+;; out: the range
 (def range (fn times
   (--system-do-make! :range 0 times)
 ))
 
+;; keys Returns a list from arguments
+;; in:
+;; * args .. the arguments to return a list from
+;; out: a list
 (def list (fn args
   (--system-do-make! :list args)
+))
+
+;; keys Returns the keys of a map as a list
+;; in:
+;; * map .. the map to return the keys from
+;; out: a list of atoms
+(def keys (fn map
+  (--system-do-make! :keys map)
+))
+
+;; exists? Returns true if a map contains a key
+;; in:
+;; * map .. the map to check on
+;; * key .. the key to check
+;; out: a bool
+(def exists? (fn map key
+  (--system-do-make! :exists map key)
 ))

@@ -29,6 +29,41 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 			Value:    interpreter.ListNode{Values: args[1:]},
 			NodeType: interpreter.NODETYPE_LIST,
 		}
+
+	case "exists":
+		if args[1].NodeType != interpreter.NODETYPE_ATOM {
+			panic("Expected an atom as parameter for exists? !")
+		}
+
+		if args[2].NodeType != interpreter.NODETYPE_MAP {
+			panic("Expected a map as parameter for exists? !")
+		}
+
+		_, ok := args[2].Value.(interpreter.MapNode).Values[args[1].Value.(string)]
+
+		return interpreter.Node{
+			Value:    ok,
+			NodeType: interpreter.NODETYPE_BOOL,
+		}
+
+	case "keys":
+		if args[1].NodeType != interpreter.NODETYPE_MAP {
+			panic("Expected a map as parameter for keys!")
+		}
+
+		keys := make([]interpreter.Node, 0)
+		for s := range args[1].Value.(interpreter.MapNode).Values {
+			keys = append(keys, interpreter.Node{
+				Value:    s,
+				NodeType: interpreter.NODETYPE_ATOM,
+			})
+		}
+
+		return interpreter.Node{
+			Value:    interpreter.ListNode{Values: keys},
+			NodeType: interpreter.NODETYPE_LIST,
+		}
+
 	case "range":
 		from := args[1]
 		to := args[2]

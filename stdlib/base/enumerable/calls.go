@@ -25,9 +25,7 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	mode := args[0].Value.(string)
 
 	ctx := make(map[string]interpreter.Node, 0)
-	for k, v := range *variables {
-		ctx[k] = v
-	}
+	interpreter.CopyVariableState(variables, &ctx)
 
 	switch mode {
 	case "nth":

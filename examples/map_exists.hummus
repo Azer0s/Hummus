@@ -1,0 +1,21 @@
+(use :<base>)
+(use :<debug>)
+
+(def a ({}
+  (:hello "World")
+  (:foo "Bar")
+))
+
+(def printIfExists (fn key map
+  (if (exists? key map)
+    (out ([] key map))
+    (out "Key " (` key) " does not exist!")
+  )
+))
+
+(debug/dump (keys a))
+
+(printIfExists :test a)
+(printIfExists :hello a)
+(printIfExists :x a)
+(printIfExists :foo a)

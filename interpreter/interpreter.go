@@ -492,10 +492,7 @@ func doIf(node parser.Node, variables *map[string]Node) Node {
 
 func doForLoop(node parser.Node, variables *map[string]Node) {
 	context := make(map[string]Node, 0)
-
-	for k, v := range *variables {
-		context[k] = v
-	}
+	CopyVariableState(variables, &context)
 
 	list := Run([]parser.Node{
 		node.Arguments[1],
@@ -514,10 +511,7 @@ func doForLoop(node parser.Node, variables *map[string]Node) {
 
 func doWhileLoop(node parser.Node, variables *map[string]Node) {
 	context := make(map[string]Node, 0)
-
-	for k, v := range *variables {
-		context[k] = v
-	}
+	CopyVariableState(variables, &context)
 
 	for {
 		val := Run([]parser.Node{
@@ -577,10 +571,7 @@ func getArgsByParameterList(nodes []parser.Node, variables *map[string]Node, par
 
 func getArgs(nodes []parser.Node, parameters []string, variables *map[string]Node, line uint) map[string]Node {
 	targetMap := make(map[string]Node, 0)
-
-	for k, v := range *variables {
-		targetMap[k] = v
-	}
+	CopyVariableState(variables, &targetMap)
 
 	getArgsByParameterList(nodes, variables, parameters, &targetMap, line)
 
