@@ -1,0 +1,40 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :<sync>)
+
+;; http/handle Register a handler function for an endoint
+;; in:
+;; * endpoint .. the endpoint
+;; * func .. the handler function
+;; out: 0
+(def http/handle (fn endpoint func
+  (--system-do-http! :handle endpoint func)
+))
+
+;; http/static Register a static endoint
+;; in:
+;; * endpoint .. the endpoint
+;; * location .. the relative location
+;; out: 0
+(def http/static (fn endpoint location
+  (--system-do-http! :static endpoint location)
+))
+
+;; http/serve Serves on a hostname (blocking)
+;; in:
+;; * hostname .. the hostname to serve on
+;; out: 0
+(def http/serve (fn hostname
+  (--system-do-http! :serve hostname)
+))
+
+;; http/serve-async Serves on a hostname
+;; in:
+;; * hostname .. the hostname to serve on
+;; out: 0
+(def http/serve-async (fn hostname
+  (spawn (fn
+    (--system-do-http! :serve hostname)
+  ))
+))

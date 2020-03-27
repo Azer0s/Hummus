@@ -48,11 +48,11 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		}
 	case "nth":
 		if args[1].NodeType != interpreter.NODETYPE_INT {
-			panic(CALL + " :nth expects an int as the second argument!")
+			panic(CALL + " :nth expects an int as the first argument!")
 		}
 
 		if args[2].NodeType != interpreter.NODETYPE_STRING {
-			panic(CALL + " :nth expects a string as the first argument!")
+			panic(CALL + " :nth expects a string as the second argument!")
 		}
 
 		return interpreter.Node{

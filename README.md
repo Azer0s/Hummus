@@ -237,6 +237,20 @@ go build -o bin/hummus
 )
 ```
 
+### HTTP Server
+
+```clojure
+(http/handle "/" (fn req
+  "<h1> Hello </h1>"
+))
+
+(http/handle "/test" (fn req
+  "<h1> Test </h1>"
+))
+
+(http/serve ":8080")
+```
+
 ### Examples
 
 ```clojure

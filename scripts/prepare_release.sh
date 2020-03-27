@@ -27,3 +27,6 @@ rm bin/stdlib/base/collections/calls.go
 
 go build -buildmode=plugin -o bin/stdlib/base/enumerable/calls.so bin/stdlib/base/enumerable/calls.go
 rm bin/stdlib/base/enumerable/calls.go
+
+go build -buildmode=plugin -o bin/stdlib/net/http/calls.so bin/stdlib/net/http/calls.go
+rm bin/stdlib/net/http/calls.go
