@@ -12,3 +12,18 @@ rm bin/stdlib/pipe/calls.go
 
 go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/sync/calls.so bin/stdlib/sync/calls.go
 rm bin/stdlib/sync/calls.go
+
+go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/debug/calls.so bin/stdlib/debug/calls.go
+rm bin/stdlib/debug/calls.go
+
+go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/base/io/calls.so bin/stdlib/base/io/calls.go
+rm bin/stdlib/base/io/calls.go
+
+go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/base/conversion/calls.so bin/stdlib/base/conversion/calls.go
+rm bin/stdlib/base/conversion/calls.go
+
+go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/base/collections/calls.so bin/stdlib/base/collections/calls.go
+rm bin/stdlib/base/collections/calls.go
+
+go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/base/enumerable/calls.so bin/stdlib/base/enumerable/calls.go
+rm bin/stdlib/base/enumerable/calls.go

@@ -2,25 +2,25 @@
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
 (def ! (fn p
-  (--system-do-bool! :not p)
+  (--builtin-do-bool! :not p)
 ))
 
 (def not (fn p
-  (--system-do-bool! :not p)
+  (--builtin-do-bool! :not p)
 ))
 
 (def && (fn p q
-  (--system-do-bool! :and p q)
+  (--builtin-do-bool! :and p q)
 ))
 
 (def and (fn p q
-  (--system-do-bool! :and p q)
+  (--builtin-do-bool! :and p q)
 ))
 
 (def || (fn p q
-  (--system-do-bool! :or p q)
+  (--builtin-do-bool! :or p q)
 ))
 
 (def or (fn p q
-  (--system-do-bool! :or p q)
+  (--builtin-do-bool! :or p q)
 ))

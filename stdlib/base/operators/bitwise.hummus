@@ -2,41 +2,41 @@
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
 (def ~ (fn p
-  (--system-do-bitwise! :not p)
+  (--builtin-do-bitwise! :not p)
 ))
 
 (def not:b (fn p
-  (--system-do-bitwise! :not p)
+  (--builtin-do-bitwise! :not p)
 ))
 
 (def & (fn p q
-  (--system-do-bitwise! :and p q)
+  (--builtin-do-bitwise! :and p q)
 ))
 
 (def and:b (fn p q
-  (--system-do-bitwise! :and p q)
+  (--builtin-do-bitwise! :and p q)
 ))
 
 (def | (fn p q
-  (--system-do-bitwise! :or p q)
+  (--builtin-do-bitwise! :or p q)
 ))
 
 (def or:b (fn p q
-  (--system-do-bitwise! :or p q)
+  (--builtin-do-bitwise! :or p q)
 ))
 
 (def shiftl (fn p q
-  (--system-do-bitwise! :shiftl p q)
+  (--builtin-do-bitwise! :shiftl p q)
 ))
 
 (def << (fn p q
-  (--system-do-bitwise! :shiftl p q)
+  (--builtin-do-bitwise! :shiftl p q)
 ))
 
 (def shiftr (fn p q
-  (--system-do-bitwise! :shiftr p q)
+  (--builtin-do-bitwise! :shiftr p q)
 ))
 
 (def >> (fn p q
-  (--system-do-bitwise! :shiftr p q)
+  (--builtin-do-bitwise! :shiftr p q)
 ))

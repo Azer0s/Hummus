@@ -2,17 +2,17 @@
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
 (def * (fn elements
-  (--system-do-math! :* elements)
+  (--builtin-do-math! :* elements)
 ))
 
 (def / (fn elements
-  (--system-do-math! :/ elements)
+  (--builtin-do-math! :/ elements)
 ))
 
 (def + (fn elements
-  (--system-do-math! :+ elements)
+  (--builtin-do-math! :+ elements)
 ))
 
 (def - (fn elements
-  (--system-do-math! :- elements)
+  (--builtin-do-math! :- elements)
 ))

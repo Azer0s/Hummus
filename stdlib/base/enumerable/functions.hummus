@@ -1,0 +1,80 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+;; max Returns the maximum value from
+;; a given list of values
+;; in:
+;; * args .. the list of values
+;; out: maximum value
+(def max (fn args
+  (--system-do-compare! :max args)
+))
+
+;; min Returns the minimum value from
+;; a given list of values
+;; in:
+;; * args .. the list of values
+;; out: minimum value
+(def min (fn args
+  (--system-do-compare! :min args)
+))
+
+;; nth Returns the nth value from
+;; a given list of values
+;; in:
+;; * idx .. the index to get
+;; * vals .. the list of values
+;; out: the value on the given index
+;;      of the list
+(def nth (fn idx vals
+  (--system-do-enumerate! :nth idx vals)
+))
+
+;; each Executes an action for each value
+;; of a given list of values
+;; in:
+;; * vals .. the list of values
+;; * func/1 .. the action to execute for
+;;           each value
+;; out: 0
+(def each (fn vals func
+  (--system-do-enumerate! :each vals func)
+))
+
+;; map Executes an action for each value
+;; of a given list of values and returns
+;; the result into another list
+;; in:
+;; * vals .. the list of values
+;; * func/1 .. the action to execute for
+;;           each value
+;; out: the new list
+(def map (fn vals func
+  (--system-do-enumerate! :map vals func)
+))
+
+;; filter Executes an action for each value
+;; of a given list of values and returns
+;; the result into another list if the action
+;; returned true
+;; in:
+;; * vals .. the list of values
+;; * func/1 .. the action to execute for
+;;           each value
+;; out: the new list
+(def filter (fn vals func
+  (--system-do-enumerate! :filter vals func)
+))
+
+;; reduce Executes an action for each value
+;; of a given list of values and a state variable
+;; and returns the new state variable
+;; in:
+;; * vals .. the list of values
+;; * func/2 .. the action to execute for
+;;           each value
+;; * init .. the initial value of the function
+;; out: the final state
+(def reduce (fn vals func init
+  (--system-do-enumerate! :reduce vals func init)
+))

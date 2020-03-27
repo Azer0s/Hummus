@@ -1,0 +1,30 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(def ` (fn arg
+  (--system-do-convert! :string arg)
+))
+
+(def string (fn arg
+  (` arg)
+))
+
+; TODO
+(def int (fn arg
+  (--system-do-convert! :int arg)
+))
+
+; TODO
+(def float (fn arg
+  (--system-do-convert! :float arg)
+))
+
+; TODO
+(def bool (fn arg
+  (--system-do-convert! :int arg)
+))
+
+; TODO
+(def atom (fn arg
+  (--system-do-convert! :int arg)
+))

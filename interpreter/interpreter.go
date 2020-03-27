@@ -27,8 +27,11 @@ const (
 	SELF string = "self"
 )
 
-var globalFns = sync.Map{}
-var nativeFns = sync.Map{}
+var globalFnsMu = &sync.RWMutex{}
+var globalFns = make(map[string]Node, 0)
+
+var nativeFnsMu = &sync.RWMutex{}
+var nativeFns = make(map[string]func([]Node, *map[string]Node) Node, 0)
 
 var importsMu = &sync.RWMutex{}
 var imports = make([]string, 0)
@@ -46,6 +49,34 @@ func importsHas(str string) bool {
 	importsMu.RUnlock()
 
 	return has
+}
+
+func loadGlobalFns(key string) (Node, bool) {
+	globalFnsMu.RLock()
+	val, ok := globalFns[key]
+	globalFnsMu.RUnlock()
+
+	return val, ok
+}
+
+func storeGlobalFns(key string, val Node) {
+	globalFnsMu.Lock()
+	globalFns[key] = val
+	globalFnsMu.Unlock()
+}
+
+func loadNativeFns(key string) (func([]Node, *map[string]Node) Node, bool) {
+	nativeFnsMu.RLock()
+	val, ok := nativeFns[key]
+	nativeFnsMu.RUnlock()
+
+	return val, ok
+}
+
+func storeNativeFns(key string, val func([]Node, *map[string]Node) Node) {
+	nativeFnsMu.Lock()
+	nativeFns[key] = val
+	nativeFnsMu.Unlock()
 }
 
 func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node Node) {
@@ -94,8 +125,8 @@ func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node 
 	case parser.IDENTIFIER:
 		if val, ok := (*variables)[parserNode.Token.Value]; ok {
 			node = val
-		} else if val, ok := globalFns.Load(parserNode.Token.Value); ok {
-			node = val.(Node)
+		} else if val, ok := loadGlobalFns(parserNode.Token.Value); ok {
+			node = val
 		} else {
 			panic(fmt.Sprintf("Unknown variable %s! (line %d)", parserNode.Token.Value, parserNode.Token.Line))
 		}
@@ -120,7 +151,7 @@ func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node 
 }
 
 func accessMap(node parser.Node, variables *map[string]Node) Node {
-	args := resolve(node.Arguments, variables, node.Token.Line)
+	args := resolve(node.Arguments, variables)
 
 	if args[0].NodeType != NODETYPE_ATOM {
 		panic(fmt.Sprintf("First argument in map access must be an atom! (line %d)", node.Arguments[0].Token.Line))
@@ -176,14 +207,14 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	return variable
 }
 
-func doNativeUse(name string, variables *map[string]Node) Node {
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+func doNativeUse(name, currentFile string, variables *map[string]Node) Node {
+	dir, err := filepath.Abs(filepath.Dir(currentFile))
 
 	if err != nil {
 		panic(err)
 	}
 
-	file := path.Join(dir, "./stdlib", name)
+	file := path.Join(dir, name)
 
 	if importsHas(file) {
 		return Node{
@@ -217,7 +248,7 @@ func doNativeUse(name string, variables *map[string]Node) Node {
 	dName := *n.(*string)
 	dFn := fn.(func([]Node, *map[string]Node) Node)
 
-	nativeFns.Store(dName, dFn)
+	storeNativeFns(dName, dFn)
 
 	importsMu.Lock()
 	imports = append(imports, file)
@@ -235,7 +266,7 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	}
 
 	if len(node.Arguments) == 2 && node.Arguments[1].Token.Value == "native" {
-		return doNativeUse(node.Arguments[0].Token.Value, variables)
+		return doNativeUse(node.Arguments[0].Token.Value, currentFile, variables)
 	}
 
 	stdlib, _ := regexp.Compile("<([^>]+)>")
@@ -286,7 +317,7 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	_ = Run(parser.Parse(lexer.LexString(string(b))), &vars)
 
 	for k, v := range vars {
-		globalFns.Store(k, v)
+		storeGlobalFns(k, v)
 	}
 
 	importsMu.Lock()
@@ -342,7 +373,7 @@ func DoVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 		return ret
 	} else if val.NodeType == NODETYPE_STRUCT {
 		structDef := val.Value.(StructDef)
-		arg := resolve(node.Arguments, variables, node.Token.Line)
+		arg := resolve(node.Arguments, variables)
 
 		if len(structDef.Parameters) != len(arg) {
 			panic(fmt.Sprintf("Struct argument mismatch! (line %d)", node.Token.Line))
@@ -364,7 +395,7 @@ func DoVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 }
 
 func doType(node parser.Node, variables *map[string]Node) Node {
-	args := resolve(node.Arguments, variables, node.Token.Line)
+	args := resolve(node.Arguments, variables)
 
 	if len(args) != 1 {
 		panic(fmt.Sprintf("Expected one argument for type! (line %d)", node.Token.Line))
@@ -400,13 +431,13 @@ func doType(node parser.Node, variables *map[string]Node) Node {
 }
 
 func doCall(node parser.Node, variables *map[string]Node) Node {
-	if val, ok := globalFns.Load(node.Token.Value); ok {
-		return DoVariableCall(node, val.(Node), variables)
+	if val, ok := loadGlobalFns(node.Token.Value); ok {
+		return DoVariableCall(node, val, variables)
 	} else if val, ok := (*variables)[node.Token.Value]; ok {
 		return DoVariableCall(node, val, variables)
-	} else if val, ok := nativeFns.Load(node.Token.Value); ok {
-		args := resolve(node.Arguments, variables, node.Token.Line)
-		return val.(func([]Node, *map[string]Node) Node)(args, variables)
+	} else if val, ok := loadNativeFns(node.Token.Value); ok {
+		args := resolve(node.Arguments, variables)
+		return val(args, variables)
 	} else if node.Token.Type == lexer.ANONYMOUS_FN {
 		fn := getValueFromNode(node.Arguments[0], variables)
 
@@ -426,26 +457,16 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 			Arguments: node.Arguments,
 			Token:     lexer.Token{},
 		}, variables)
-	case SYSTEM_MATH:
-		return doSystemCallMath(node, variables)
-	case SYSTEM_MAKE:
-		return doSystemCallMake(node, variables)
-	case SYSTEM_IO:
-		return doSystemCallIo(node, variables)
-	case SYSTEM_COMPARE:
-		return doSystemCallCompare(node, variables)
-	case SYSTEM_COMPARE_ARITHMETIC:
-		return doSystemCallCompareArithmetic(node, variables)
-	case SYSTEM_CONVERT:
-		return doSystemCallConvert(node, variables)
-	case SYSTEM_BOOL:
-		return doSystemCallBool(node, variables)
-	case SYSTEM_BITWISE:
-		return doSystemCallBitwise(node, variables)
-	case SYSTEM_ENUMERATE:
-		return doSystemCallEnumerate(node, variables)
-	case SYSTEM_DEBUG:
-		return doSystemCallDebug(node, variables)
+	case BUILTIN_MATH:
+		return builtInMath(node, variables)
+	case BUILTIN_COMPARE:
+		return builtInCompare(node, variables)
+	case BUILTIN_COMPARE_ARITHMETIC:
+		return builtInCompareArithmetic(node, variables)
+	case BUILTIN_BOOL:
+		return builtInBool(node, variables)
+	case BUILTIN_BITWISE:
+		return builtInBitwise(node, variables)
 
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
@@ -515,7 +536,7 @@ func doWhileLoop(node parser.Node, variables *map[string]Node) {
 	}
 }
 
-func resolve(nodes []parser.Node, variables *map[string]Node, line uint) []Node {
+func resolve(nodes []parser.Node, variables *map[string]Node) []Node {
 	args := make([]Node, 0)
 
 	for _, node := range nodes {
@@ -527,19 +548,19 @@ func resolve(nodes []parser.Node, variables *map[string]Node, line uint) []Node 
 
 func getArgsByParameterList(nodes []parser.Node, variables *map[string]Node, parameters []string, targetMap *map[string]Node, line uint) {
 	if len(parameters) == 1 && len(nodes) > 1 {
-		arg := ListNode{Values: resolve(nodes, variables, line)}
+		arg := ListNode{Values: resolve(nodes, variables)}
 
 		(*targetMap)[parameters[0]] = Node{
 			Value:    arg,
 			NodeType: NODETYPE_LIST,
 		}
 	} else if len(parameters) == len(nodes) {
-		arg := resolve(nodes, variables, line)
+		arg := resolve(nodes, variables)
 		for i := range nodes {
 			(*targetMap)[parameters[i]] = arg[i]
 		}
 	} else if len(parameters) < len(nodes) {
-		arg := resolve(nodes, variables, line)
+		arg := resolve(nodes, variables)
 		i := 0
 		for i = range parameters[:len(parameters)-1] {
 			(*targetMap)[parameters[i]] = arg[i]

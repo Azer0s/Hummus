@@ -57,7 +57,8 @@ type StructDef struct {
 	Parameters []string
 }
 
-func (node *Node) smaller(compareTo Node) bool {
+// Smaller < operator for Node
+func (node *Node) Smaller(compareTo Node) bool {
 	if node.NodeType != compareTo.NodeType {
 		panic("Can't compare nodes of two different types!")
 	}
@@ -76,7 +77,8 @@ func (node *Node) smaller(compareTo Node) bool {
 	}
 }
 
-func (node *Node) bigger(compareTo Node) bool {
+// Bigger > operator for Node
+func (node *Node) Bigger(compareTo Node) bool {
 	if node.NodeType != compareTo.NodeType {
 		panic("Can't compare nodes of two different types!")
 	}

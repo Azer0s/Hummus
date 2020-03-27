@@ -1,0 +1,19 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+;; debug/dump Dumps any value to the console
+;; in:
+;; * x .. the value to dump
+;; out: 0
+(def debug/dump (fn x
+  (--system-do-debug! :dump x)
+))
+
+;; debug/dump Dumps the current variable state
+;; to the console
+;; out: 0
+(def debug/dump_state (fn
+  (--system-do-debug! :dump_state)
+))
+
+; TODO: Add proc debug functions (list procs, show mon, etc)

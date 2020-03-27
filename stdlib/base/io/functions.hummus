@@ -1,0 +1,25 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+;; out Prints a list of value to stdio
+;; in:
+;; * args .. the values to print
+;; out: 0
+(def out (fn args
+  (for (range x args)
+    (--system-do-io! :console-out x)
+  )
+  (--system-do-io! :console-out "\n")
+))
+
+;; in Reads from stdin until a newline
+;; out: the input string
+(def in (fn
+  (--system-do-io! :console-in "\n")
+))
+
+;; clear Clears the console
+;; out: 0
+(def io/clear (fn
+  (--system-do-io! :console-clear "\n")
+))
