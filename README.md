@@ -37,6 +37,8 @@ go build -o bin/hummus
 ### Structs
 
 ```clojure
+(use :<base>)
+
 (def Animal (struct
   :name
   :age
@@ -55,6 +57,8 @@ go build -o bin/hummus
 ### Maps
 
 ```clojure
+(use :<base>)
+
 (def prices ({}
   (:tea :1.5$)
   (:coffee :2$)
@@ -100,6 +104,9 @@ go build -o bin/hummus
 ### Actor model
 
 ```clojure
+(use :<base>)
+(use :<sync>)
+
 (def ping (fn
   (for true
     (def msg (receive))
@@ -144,6 +151,9 @@ go build -o bin/hummus
 ### Map ⇄ Filter ⇄ Reduce
 
 ```clojure
+(use :<base>)
+(use :<str>)
+
 (def pilots (list
   ({}
     (:id 2)
@@ -194,6 +204,10 @@ go build -o bin/hummus
 ### Function composition
 
 ```clojure
+(use :<base>)
+(use :<pipe>)
+(use :<str>)
+
 (def add (fn a b
   (+ a b)
 ))
@@ -241,6 +255,9 @@ go build -o bin/hummus
 ### HTTP Server
 
 ```clojure
+(use :<base>)
+(use :<net/http>)
+
 (http/handle "/" (fn req
   (str/concat "<h1> Hello " (:method req) "</h1>")
 ))
@@ -255,6 +272,8 @@ go build -o bin/hummus
 ### Examples
 
 ```clojure
+(use :<base>)
+
 (def fib (fn n
   (if (< n 2)
     1 
