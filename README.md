@@ -49,6 +49,8 @@ docker run --rm -it azer0s/hummus
 ### Structs
 
 ```clojure
+(use :<base>)
+
 (def Animal (struct
   :name
   :age
@@ -67,6 +69,8 @@ docker run --rm -it azer0s/hummus
 ### Maps
 
 ```clojure
+(use :<base>)
+
 (def prices ({}
   (:tea :1.5$)
   (:coffee :2$)
@@ -112,6 +116,9 @@ docker run --rm -it azer0s/hummus
 ### Actor model
 
 ```clojure
+(use :<base>)
+(use :<sync>)
+
 (def ping (fn
   (for true
     (def msg (receive))
@@ -156,6 +163,9 @@ docker run --rm -it azer0s/hummus
 ### Map ⇄ Filter ⇄ Reduce
 
 ```clojure
+(use :<base>)
+(use :<str>)
+
 (def pilots (list
   ({}
     (:id 2)
@@ -206,6 +216,10 @@ docker run --rm -it azer0s/hummus
 ### Function composition
 
 ```clojure
+(use :<base>)
+(use :<pipe>)
+(use :<str>)
+
 (def add (fn a b
   (+ a b)
 ))
@@ -253,6 +267,9 @@ docker run --rm -it azer0s/hummus
 ### HTTP Server
 
 ```clojure
+(use :<base>)
+(use :<net/http>)
+
 (http/handle "/" (fn req
   (str/concat "<h1> Hello " (:method req) "</h1>")
 ))
@@ -267,6 +284,8 @@ docker run --rm -it azer0s/hummus
 ### Examples
 
 ```clojure
+(use :<base>)
+
 (def fib (fn n
   (if (< n 2)
     1 
