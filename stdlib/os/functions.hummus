@@ -1,0 +1,47 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+;; os/exit Exits the application
+;; in:
+;; * status .. the status to exit the application with
+;; out: 0
+(def os/exit (fn status
+  (--system-do-os! :exit status)
+))
+
+;; os/env Returns the specified env variable
+;; in:
+;; * key .. the name of the env variable
+;; out: the env variable as a string
+(def os/env (fn key
+  (--system-do-os! :env key)
+))
+
+;; os/env-all Returns env variables
+;; out: the env variable as a map
+(def os/env-all (fn
+  (--system-do-os! :env-all)
+))
+
+;; os/args Returns a list of arguments
+;; out: the args list
+(def os/args (fn
+  (--system-do-os! :args)
+))
+
+;; os/cmd-args Runs a command with args and returns an option
+;; in:
+;; * cmd .. the command
+;; * args .. the arguments as a list
+;; out: the status code
+(def os/cmd-args (fn cmd args
+  (--system-do-os! :cmd-args cmd args)
+))
+
+;; os/cmd Runs a command and returns an option
+;; in:
+;; * cmd .. the command as a list
+;; out: the status code
+(def os/cmd (fn cmd
+  (--system-do-os! :cmd cmd)
+))

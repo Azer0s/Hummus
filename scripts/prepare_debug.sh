@@ -30,3 +30,6 @@ rm bin/stdlib/base/enumerable/calls.go
 
 go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/net/http/calls.so bin/stdlib/net/http/calls.go
 rm bin/stdlib/net/http/calls.go
+
+go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/os/calls.so bin/stdlib/os/calls.go
+rm bin/stdlib/os/calls.go

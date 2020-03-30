@@ -4,15 +4,27 @@
 
 ## Getting started
 
-`makefile` coming soon. Meanwhile, this will have to do. 🤷🏻‍♂️
-
 ```bash
 git clone https://github.com/Azer0s/Hummus.git
 cd Hummus
+```
+
+### Running locally
+
+`makefile` coming soon. Meanwhile, this will have to do. 🤷🏻‍♂️
+
+```bash
 chmod +x ./scripts/prepare_release.sh
 ./scripts/prepare_release.sh
 go build -o bin/hummus
 ./bin/hummus
+```
+
+### Running on docker
+
+```bash
+docker build -t azer0s/hummus:latest .
+docker run --rm -it azer0s/hummus
 ```
 
 ## Examples
