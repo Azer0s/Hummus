@@ -27,13 +27,13 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		return env(args)
 
 	case "env-all":
-		return env_all(args)
+		return envAll()
 
 	case "args":
 		return getArgs()
 
 	case "cmd-args":
-		return cmd_args(args)
+		return cmdArgs(args)
 
 	case "cmd":
 		return cmd(args)
@@ -67,7 +67,7 @@ func env(args []interpreter.Node) interpreter.Node {
 	}
 }
 
-func env_all(args []interpreter.Node) interpreter.Node {
+func envAll() interpreter.Node {
 	vals := make(map[string]interpreter.Node, 0)
 
 	for _, e := range os.Environ() {
@@ -101,7 +101,7 @@ func getArgs() interpreter.Node {
 	}
 }
 
-func cmd_args(args []interpreter.Node) interpreter.Node {
+func cmdArgs(args []interpreter.Node) interpreter.Node {
 	if args[1].NodeType != interpreter.NODETYPE_STRING {
 		panic(CALL + " :env expects a string as the first argument!")
 	}
