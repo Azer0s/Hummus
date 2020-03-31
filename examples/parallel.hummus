@@ -1,0 +1,27 @@
+(use :<base>)
+(use :<sync>)
+
+(def pipe/parallel (fn fns
+  (fn x
+    (def runner self)
+
+    (map (range (len fns)) (fn i
+      (spawn (fn
+        (send runner ({} 
+          (:value (func x))
+          (:worker (atom i))
+        ))
+      ))
+    ))
+
+    (map fns (fn _
+      (receive)
+    ))
+  )
+))
+
+(def pipe/parallel-do (fn x fns
+  (def executor (pipe/parallel fns))
+
+  (executor x)
+))
