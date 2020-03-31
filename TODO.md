@@ -23,4 +23,5 @@
   - [ ] Json
   - [ ] Random
   - [ ] Time
+  - [ ] HTML
 - [ ] Get rid of pseudo-terminal-go

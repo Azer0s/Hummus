@@ -1,0 +1,8 @@
+(use :<html>)
+
+(def index (fn
+  (body ({} (:style "background-color:powderblue;"))
+    (h1 ({}) "This is a heading")
+    (p ({} (:style "font-family:courier;")) "This is a paragraph.")
+  )
+))
