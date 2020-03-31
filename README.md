@@ -297,6 +297,10 @@ docker run --rm -it azer0s/hummus
   (out x)
 )
 
+(for (range x (to 10))
+  (out x)
+)
+
 (for true
   (out "Hello world")
 )

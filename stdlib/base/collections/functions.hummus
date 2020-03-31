@@ -3,7 +3,7 @@
 
 ; TODO: Documentation
 
-;; keys Returns a range from `from` to `to`
+;; .. Returns a range from `from` to `to`
 ;; in:
 ;; * from .. lower bound of the range
 ;; * to .. upper bound of the range
@@ -12,7 +12,7 @@
   (--system-do-make! :range from to)
 ))
 
-;; keys Returns a range from 0 to times
+;; range Returns a range from 0 to times
 ;; in:
 ;; * times .. the upper bound of a range
 ;; out: the range
@@ -20,7 +20,15 @@
   (--system-do-make! :range 0 times)
 ))
 
-;; keys Returns a list from arguments
+;; to Alias for range
+;; in:
+;; * times .. the upper bound of a range
+;; out: the range
+(def to (fn times
+  (--system-do-make! :range 0 times)
+))
+
+;; list Returns a list from arguments
 ;; in:
 ;; * args .. the arguments to return a list from
 ;; out: a list

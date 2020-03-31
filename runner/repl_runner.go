@@ -1,13 +1,14 @@
 package runner
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/Azer0s/Hummus/interpreter"
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
+	"github.com/carmark/pseudo-terminal-go/terminal"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func printHelp() {
@@ -35,6 +36,56 @@ func checkClose(tokens []lexer.Token) bool {
 	return buffer == 0
 }
 
+func dumpRepl(node interpreter.Node) string {
+	ret := ""
+
+	if node.NodeType == interpreter.NODETYPE_LIST {
+		ret += "("
+
+		for _, value := range node.Value.(interpreter.ListNode).Values {
+			ret += dumpRepl(value) + " "
+		}
+
+		ret = strings.TrimSuffix(ret, " ")
+		ret += ")"
+	} else if node.NodeType == interpreter.NODETYPE_MAP {
+		ret += "("
+
+		for k, v := range node.Value.(interpreter.MapNode).Values {
+			ret += fmt.Sprintf("%s => %s ", k, dumpRepl(v))
+		}
+
+		ret = strings.TrimSuffix(ret, " ")
+		ret += ")"
+	} else if node.NodeType == interpreter.NODETYPE_FN {
+		ret += "[fn "
+
+		for _, parameter := range node.Value.(interpreter.FnLiteral).Parameters {
+			ret += parameter + " "
+		}
+
+		ret = strings.TrimSuffix(ret, " ")
+		ret += "]"
+	} else if node.NodeType == interpreter.NODETYPE_STRUCT {
+		ret += "[struct "
+
+		for _, parameter := range node.Value.(interpreter.StructDef).Parameters {
+			ret += parameter + " "
+		}
+
+		ret = strings.TrimSuffix(ret, " ")
+		ret += "]"
+	} else if node.NodeType == interpreter.NODETYPE_STRING {
+		ret = fmt.Sprintf("\"%v\"", node.Value)
+	} else if node.NodeType == interpreter.NODETYPE_ATOM {
+		ret = fmt.Sprintf(":%v", node.Value)
+	} else {
+		ret = fmt.Sprintf("%v", node.Value)
+	}
+
+	return ret
+}
+
 func getParserType(tokenType lexer.TokenType) parser.NodeType {
 	switch tokenType {
 	case lexer.IDENTIFIER:
@@ -54,20 +105,20 @@ func getParserType(tokenType lexer.TokenType) parser.NodeType {
 	return 0
 }
 
-func doFailsafeRepl(reader *bufio.Reader, vars *map[string]interpreter.Node) {
+func doFailsafeRepl(term *terminal.Terminal, vars *map[string]interpreter.Node) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Error:", r)
 		}
 	}()
 
-	fmt.Print("=> ")
-
 	text := ""
 	var tokens []lexer.Token
 
+	term.SetPrompt("=> ")
+
 	for {
-		t, _ := reader.ReadString('\n')
+		t, _ := term.ReadLine()
 
 		text += t
 		tokens = lexer.LexString(text)
@@ -75,7 +126,8 @@ func doFailsafeRepl(reader *bufio.Reader, vars *map[string]interpreter.Node) {
 		if checkClose(tokens) {
 			break
 		}
-		fmt.Print(" ..")
+
+		term.SetPrompt(" ..")
 	}
 
 	var nodes []parser.Node
@@ -101,7 +153,7 @@ func doFailsafeRepl(reader *bufio.Reader, vars *map[string]interpreter.Node) {
 	} else if len(nodes) == 1 && nodes[0].Type == parser.ACTION_CALL && nodes[0].Token.Value == "help" {
 		printHelp()
 	} else {
-		fmt.Println(interpreter.DumpNode(interpreter.Run(nodes, vars)))
+		fmt.Println(dumpRepl(interpreter.Run(nodes, vars)))
 	}
 }
 
@@ -115,9 +167,13 @@ func RunRepl() {
 		panic(err)
 	}
 
-	reader := bufio.NewReader(os.Stdin)
+	term, err := terminal.NewWithStdInOut()
+	if err != nil {
+		panic(err)
+	}
+	defer term.ReleaseFromStdInOut()
 
 	for {
-		doFailsafeRepl(reader, &vars)
+		doFailsafeRepl(term, &vars)
 	}
 }

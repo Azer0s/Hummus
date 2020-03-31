@@ -50,3 +50,5 @@ out/production/Hummus/stdlib\.js
 bin/
 
 .idea/codeStyles/
+
+go.sum

@@ -1,0 +1,17 @@
+(use :<base>)
+(use :scopes2)
+
+(def a 10)
+
+(def do1 (fn
+  (out a)
+))
+
+(def do2 (fn
+  (out a)
+  (do1)
+))
+
+(do2)
+
+(do3) ; should print 10 because it has been overriden by outer context

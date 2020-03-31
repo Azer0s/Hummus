@@ -3,7 +3,24 @@
 - [x] REPL
 - [x] Relative file import
 - [x] Function composition
-- [ ] Refactor debug stdlib to Go plugin
-- [ ] Refactor base stdlib to Go plugin(s)
+- [x] Refactor debug stdlib to Go plugin
+- [x] Refactor base stdlib to Go plugin(s)
 - [ ] Macros
+- [ ] Add object store
 - [ ] Add functionality to stdlib
+  - [ ] Regex
+  - [ ] Aspects
+  - [ ] Math
+  - [ ] Logger
+  - [ ] File
+  - [ ] Dir
+  - [ ] Bench
+  - [ ] Sockets
+    - [ ] TCP
+    - [ ] UDP
+  - [ ] Encode
+    - [ ] Base64
+  - [ ] Json
+  - [ ] Random
+  - [ ] Time
+- [ ] Get rid of pseudo-terminal-go

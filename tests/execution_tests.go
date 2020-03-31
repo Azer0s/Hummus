@@ -7,6 +7,7 @@ import (
 
 //TODO: Actually test something
 
+// TestExecution test entrypoint
 func TestExecution(t *testing.T) {
 	runner.RunFile("examples/map_exists.hummus")
 	runner.RunFile("examples/branching.hummus")

@@ -1,0 +1,7 @@
+(use :<base>)
+
+(def a 20)
+
+(def do3 (fn
+  (out a)
+))
