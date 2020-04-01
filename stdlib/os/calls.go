@@ -120,19 +120,7 @@ func cmdArgs(args []interpreter.Node) interpreter.Node {
 
 	out := string(b)
 
-	return interpreter.Node{
-		Value: interpreter.MapNode{Values: map[string]interpreter.Node{
-			"value": {
-				Value:    out,
-				NodeType: interpreter.NODETYPE_STRING,
-			},
-			"error": {
-				Value:    err != nil,
-				NodeType: interpreter.NODETYPE_BOOL,
-			},
-		}},
-		NodeType: interpreter.NODETYPE_MAP,
-	}
+	return interpreter.OptionalNode(out, interpreter.NODETYPE_STRING, err != nil)
 }
 
 func cmd(args []interpreter.Node) interpreter.Node {
@@ -143,17 +131,5 @@ func cmd(args []interpreter.Node) interpreter.Node {
 	b, err := exec.Command(args[1].Value.(string)).CombinedOutput()
 	out := string(b)
 
-	return interpreter.Node{
-		Value: interpreter.MapNode{Values: map[string]interpreter.Node{
-			"value": {
-				Value:    out,
-				NodeType: interpreter.NODETYPE_STRING,
-			},
-			"error": {
-				Value:    err != nil,
-				NodeType: interpreter.NODETYPE_BOOL,
-			},
-		}},
-		NodeType: interpreter.NODETYPE_MAP,
-	}
+	return interpreter.OptionalNode(out, interpreter.NODETYPE_STRING, err != nil)
 }

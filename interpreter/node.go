@@ -96,3 +96,20 @@ func (node *Node) Bigger(compareTo Node) bool {
 		panic(fmt.Sprintf("Nodetype %d cannot be compared!", node.NodeType))
 	}
 }
+
+// OptionalNode return an optional node
+func OptionalNode(val interface{}, nodeType NodeType, err bool) Node {
+	return Node{
+		Value: MapNode{Values: map[string]Node{
+			"value": {
+				Value:    val,
+				NodeType: nodeType,
+			},
+			"error": {
+				Value:    err,
+				NodeType: NODETYPE_BOOL,
+			},
+		}},
+		NodeType: NODETYPE_MAP,
+	}
+}

@@ -1,30 +1,89 @@
 ;; Copyright (c) Ariel Simulevski
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
+;; ` Converts a value to a string
+;; in:
+;; * arg .. the value to convert
+;; out: a string
 (def ` (fn arg
   (--system-do-convert! :string arg)
 ))
 
+;; string Converts a value to a string
+;; in:
+;; * arg .. the value to convert
+;; out: a string
 (def string (fn arg
-  (` arg)
+  (--system-do-convert! :string arg)
 ))
 
-; TODO
+;; int Converts a value to an int
+;; in:
+;; * arg .. the value to convert
+;; out: a option map
 (def int (fn arg
   (--system-do-convert! :int arg)
 ))
 
-; TODO
+;; float Converts a value to a float
+;; in:
+;; * arg .. the value to convert
+;; out: a option map
 (def float (fn arg
   (--system-do-convert! :float arg)
 ))
 
-; TODO
+;; bool Converts a value to a bool
+;; in:
+;; * arg .. the value to convert
+;; out: a option map
 (def bool (fn arg
-  (--system-do-convert! :int arg)
+  (--system-do-convert! :bool arg)
 ))
 
-; TODO
+;; atom Converts a value to an atom
+;; in:
+;; * arg .. the value to convert
+;; out: an atom
 (def atom (fn arg
-  (--system-do-convert! :int arg)
+  (--system-do-convert! :atom arg)
+))
+
+;; int! Converts a value to an int
+;; in:
+;; * arg .. the value to convert
+;; out: the value or 0 if there was an error
+(def int! (fn arg
+  (def val (--system-do-convert! :int arg))
+
+  (if (not (:error val))
+    (:value val)
+    0
+  )
+))
+
+;; float! Converts a value to a float
+;; in:
+;; * arg .. the value to convert
+;; out: the value or 0.0 if there was an error
+(def float! (fn arg
+  (def val (--system-do-convert! :float arg))
+
+    (if (not (:error val))
+      (:value val)
+      0.0
+    )
+))
+
+;; bool! Converts a value to a bool
+;; in:
+;; * arg .. the value to convert
+;; out: the value or false if there was an error
+(def bool! (fn arg
+  (def val (--system-do-convert! :bool arg))
+
+  (if (not (:error val))
+    (:value val)
+    false
+  )
 ))

@@ -19,6 +19,15 @@
   (--system-do-compare! :min args)
 ))
 
+
+;; len Returns the length of a list
+;; in:
+;; * vals .. the list to return the length from
+;; out: the length
+(def len (fn vals
+  (--system-do-enumerate! :len vals)
+))
+
 ;; nth Returns the nth value from
 ;; a given list of values
 ;; in:

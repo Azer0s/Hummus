@@ -1,8 +1,6 @@
 ;; Copyright (c) Ariel Simulevski
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
-; TODO: Documentation
-
 ;; .. Returns a range from `from` to `to`
 ;; in:
 ;; * from .. lower bound of the range

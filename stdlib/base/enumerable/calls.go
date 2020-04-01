@@ -28,17 +28,10 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	interpreter.CopyVariableState(variables, &ctx)
 
 	switch mode {
+	case "len":
+		return doLen(args)
 	case "nth":
-		if args[2].NodeType != interpreter.NODETYPE_LIST {
-			panic(CALL + " expects a list as second argument!")
-		}
-		list := args[2].Value.(interpreter.ListNode)
-
-		if args[1].NodeType != interpreter.NODETYPE_INT {
-			panic(CALL + " :nth expects an int as first argument!")
-		}
-
-		return list.Values[args[1].Value.(int)]
+		return doNth(args)
 	case "each":
 		return doEach(ctx, args)
 	case "map":
@@ -52,14 +45,38 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	}
 }
 
+func doLen(args []interpreter.Node) interpreter.Node {
+	if args[1].NodeType != interpreter.NODETYPE_LIST {
+		panic(CALL + " :len expects a list as first argument!")
+	}
+
+	return interpreter.Node{
+		Value:    len(args[1].Value.(interpreter.ListNode).Values),
+		NodeType: interpreter.NODETYPE_INT,
+	}
+}
+
+func doNth(args []interpreter.Node) interpreter.Node {
+	if args[2].NodeType != interpreter.NODETYPE_LIST {
+		panic(CALL + " :nth expects a list as first argument!")
+	}
+	list := args[2].Value.(interpreter.ListNode)
+
+	if args[1].NodeType != interpreter.NODETYPE_INT {
+		panic(CALL + " :nth expects an int as first argument!")
+	}
+
+	return list.Values[args[1].Value.(int)]
+}
+
 func doEach(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter.Node {
 	if args[1].NodeType != interpreter.NODETYPE_LIST {
-		panic(CALL + " expects a list as first argument!")
+		panic(CALL + " :each expects a list as first argument!")
 	}
 	list := args[1].Value.(interpreter.ListNode)
 
 	if args[2].NodeType != interpreter.NODETYPE_FN {
-		panic(CALL + " expects a function as second argument!")
+		panic(CALL + " :each expects a function as second argument!")
 	}
 	fn := args[2].Value.(interpreter.FnLiteral)
 	if len(fn.Parameters) != 1 {
@@ -94,12 +111,12 @@ func doEach(ctx map[string]interpreter.Node, args []interpreter.Node) interprete
 
 func doMap(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter.Node {
 	if args[1].NodeType != interpreter.NODETYPE_LIST {
-		panic(CALL + " expects a list as first argument!")
+		panic(CALL + " :map expects a list as first argument!")
 	}
 	list := args[1].Value.(interpreter.ListNode)
 
 	if args[2].NodeType != interpreter.NODETYPE_FN {
-		panic(CALL + " expects a function as second argument!")
+		panic(CALL + " :map expects a function as second argument!")
 	}
 	fn := args[2].Value.(interpreter.FnLiteral)
 
@@ -137,12 +154,12 @@ func doMap(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter
 
 func doFilter(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter.Node {
 	if args[1].NodeType != interpreter.NODETYPE_LIST {
-		panic(CALL + " expects a list as first argument!")
+		panic(CALL + " :filter expects a list as first argument!")
 	}
 	list := args[1].Value.(interpreter.ListNode)
 
 	if args[2].NodeType != interpreter.NODETYPE_FN {
-		panic(CALL + " expects a function as second argument!")
+		panic(CALL + " :filter expects a function as second argument!")
 	}
 	fn := args[2].Value.(interpreter.FnLiteral)
 	if len(fn.Parameters) != 1 {
@@ -187,12 +204,12 @@ func doFilter(ctx map[string]interpreter.Node, args []interpreter.Node) interpre
 
 func doReduce(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter.Node {
 	if args[1].NodeType != interpreter.NODETYPE_LIST {
-		panic(CALL + " expects a list as first argument!")
+		panic(CALL + " :reduce expects a list as first argument!")
 	}
 	list := args[1].Value.(interpreter.ListNode)
 
 	if args[2].NodeType != interpreter.NODETYPE_FN {
-		panic(CALL + " expects a function as second argument!")
+		panic(CALL + " :reduce expects a function as second argument!")
 	}
 	fn := args[2].Value.(interpreter.FnLiteral)
 	if len(fn.Parameters) != 2 {
