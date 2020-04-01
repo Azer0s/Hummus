@@ -17,7 +17,7 @@
 
     (each (range (- (len fns) 1)) (fn i
       (sync/watch (spawn (fn
-        (sync/sleep 1 :ms)
+        (sync/sleep 1 :ms) ; is it worth rewriting this to a send/receive block?
         (def func (nth i fns))
         (send runner ({}
           (:value (func x))
