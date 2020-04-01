@@ -1,27 +1,22 @@
 (use :<base>)
-(use :<sync>)
+(use :<pipe/parallel>)
 
-(def pipe/parallel (fn fns
-  (fn x
-    (def runner self)
+(def square (fn x
+  (* x x)))
 
-    (map (range (len fns)) (fn i
-      (spawn (fn
-        (send runner ({} 
-          (:value (func x))
-          (:worker (atom i))
-        ))
-      ))
-    ))
+(pipe/parallel-do 4 out square)
 
-    (map fns (fn _
-      (receive)
-    ))
-  )
+(def square (fn x
+  (* x x)
+  (die "stop")
 ))
 
-(def pipe/parallel-do (fn x fns
-  (def executor (pipe/parallel fns))
+(pipe/parallel-do 4 out square)
 
-  (executor x)
-))
+(def square (fn x
+  (* x x)))
+
+(def sleep (fn x
+  (sync/sleep x :s)))
+
+(pipe/parallel-do 10 out square sleep)

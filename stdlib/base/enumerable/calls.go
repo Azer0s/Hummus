@@ -36,6 +36,8 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		return doEach(ctx, args)
 	case "map":
 		return doMap(ctx, args)
+	case "flatmap":
+		return doFlatmap(args)
 	case "filter":
 		return doFilter(ctx, args)
 	case "reduce":
@@ -58,7 +60,7 @@ func doLen(args []interpreter.Node) interpreter.Node {
 
 func doNth(args []interpreter.Node) interpreter.Node {
 	if args[2].NodeType != interpreter.NODETYPE_LIST {
-		panic(CALL + " :nth expects a list as first argument!")
+		panic(CALL + " :nth expects a list as second argument!")
 	}
 	list := args[2].Value.(interpreter.ListNode)
 
@@ -150,6 +152,32 @@ func doMap(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter
 		Value:    mapResult,
 		NodeType: interpreter.NODETYPE_LIST,
 	}
+}
+
+func doFlatmap(args []interpreter.Node) interpreter.Node {
+	if args[1].NodeType != interpreter.NODETYPE_LIST {
+		panic(CALL + " :filter expects a list as first argument!")
+	}
+
+	return interpreter.Node{
+		Value:    interpreter.ListNode{Values: flatmapNode(args[1])},
+		NodeType: interpreter.NODETYPE_LIST,
+	}
+}
+
+func flatmapNode(arg interpreter.Node) []interpreter.Node {
+
+	if arg.NodeType == interpreter.NODETYPE_LIST {
+		list := make([]interpreter.Node, 0)
+
+		for _, value := range arg.Value.(interpreter.ListNode).Values {
+			list = append(list, flatmapNode(value)...)
+		}
+
+		return list
+	}
+
+	return []interpreter.Node{arg}
 }
 
 func doFilter(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter.Node {

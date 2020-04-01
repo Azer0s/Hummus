@@ -66,6 +66,18 @@ docker run --rm -it azer0s/hummus
 (out (:name tom) " is a " (` (:race tom))) ; prints Tom is a cat
 ```
 
+### Parallel processing
+
+````clojure
+(use :<base>)
+(use :<pipe/parallel>)
+
+(def square (fn x 
+  (* x x)))
+
+(pipe/parallel-do 4 out square)
+````
+
 ### Maps
 
 ```clojure

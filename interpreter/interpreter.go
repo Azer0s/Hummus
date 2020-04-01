@@ -553,7 +553,7 @@ func getArgsByParameterList(nodes []parser.Node, variables *map[string]Node, par
 		for i := range nodes {
 			(*targetMap)[parameters[i]] = arg[i]
 		}
-	} else if len(parameters) < len(nodes) {
+	} else if len(parameters) < len(nodes) && len(parameters) > 0 {
 		arg := resolve(nodes, variables)
 		i := 0
 		for i = range parameters[:len(parameters)-1] {

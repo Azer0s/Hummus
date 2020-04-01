@@ -62,6 +62,14 @@
   (--system-do-enumerate! :map vals func)
 ))
 
+;; flatmap Flats a list of lists into a list
+;; in:
+;; * vals .. the list of lists
+;; out: the new list
+(def flatmap (fn vals
+  (--system-do-enumerate! :flatmap vals)
+))
+
 ;; filter Executes an action for each value
 ;; of a given list of values and returns
 ;; the result into another list if the action

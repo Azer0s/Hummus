@@ -105,7 +105,9 @@ func doSend(pid, val interpreter.Node) interpreter.Node {
 		panic(CALL + " :send expects an int as first argument!")
 	}
 
+	channelMapMu.RLock()
 	channel := channelMap[pid.Value.(int)]
+	channelMapMu.RUnlock()
 
 	select {
 	case channel <- val:
@@ -145,7 +147,11 @@ func doCleanup(p int, r interpreter.Node) {
 			continue
 		}
 
-		channelMap[watcher] <- interpreter.Node{
+		channelMapMu.RLock()
+		channel := channelMap[watcher]
+		channelMapMu.RUnlock()
+
+		channel <- interpreter.Node{
 			Value: interpreter.ListNode{Values: []interpreter.Node{
 				{
 					Value:    "dead",
@@ -220,8 +226,13 @@ func doSpawn(arg interpreter.Node, variables *map[string]interpreter.Node) inter
 						Value:    val,
 						NodeType: interpreter.NODETYPE_STRING,
 					})
+				} else if val, ok := r.(interpreter.Node); ok {
+					doCleanup(p, val)
 				} else {
-					doCleanup(p, r.(interpreter.Node))
+					doCleanup(p, interpreter.Node{
+						Value:    fmt.Sprintf("%v", r),
+						NodeType: interpreter.NODETYPE_STRING,
+					})
 				}
 			}
 		}()

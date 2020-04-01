@@ -1,0 +1,65 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :<base>)
+(use :<sync>)
+(use :<pipe>)
+
+;; pipe/parallel Combines one or more functions,
+;;               and returns a parallel executor
+;;               for them
+;; in:
+;; * fns .. the list of functions
+;; out: the parallel function
+(def pipe/parallel (fn fns
+  (fn x
+    (def runner (identity self))
+
+    (each (range (- (len fns) 1)) (fn i
+      (sync/watch (spawn (fn
+        (sync/sleep 1 :ms)
+        (def func (nth i fns))
+        (send runner ({}
+          (:value (func x))
+          (:worker (atom i))
+        ))
+      )))
+    ))
+
+    (def val_or_error (fn i
+      (if (> i 0)
+        ((fn
+          (def val (receive))
+
+          (if (= (type val) :list)
+            (if (/= (nth 2 val) 0)
+              (list ({} (:error (nth 2 val))) (val_or_error (- i 1)))
+              (val_or_error i)
+            )
+            (list val (val_or_error (- i 1)))
+          )
+        ))
+      )
+    ))
+
+    (pipe/do (val_or_error (len fns))
+      flatmap
+      (filter.. (fn x
+        (= (type x) :map)
+      ))
+    )
+  )
+))
+
+;; pipe/parallel-do Combines one or more functions,
+;;                  executes them in parallel and
+;;                  returns a list of maps
+;; in:
+;; * x .. the input value of the parallel functions
+;; * fns .. the list of functions
+;; out: the result list
+(def pipe/parallel-do (fn x fns
+  (def executor (pipe/parallel fns))
+
+  (executor x)
+))
