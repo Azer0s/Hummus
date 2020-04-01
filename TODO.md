@@ -5,6 +5,7 @@
 - [x] Function composition
 - [x] Refactor debug stdlib to Go plugin
 - [x] Refactor base stdlib to Go plugin(s)
+- [ ] `receive` timeout
 - [ ] Macros
 - [ ] Add object store
 - [ ] Add functionality to stdlib
