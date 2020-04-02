@@ -34,6 +34,12 @@
   (--system-do-make! :list args)
 ))
 
+;; nothing Returns an empty list
+;; out: a list
+(def nothing (fn
+  (--system-do-make! :nothing)
+))
+
 ;; keys Returns the keys of a map as a list
 ;; in:
 ;; * map .. the map to return the keys from

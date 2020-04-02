@@ -1,0 +1,95 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :<base>)
+(use :<str>)
+
+;TODO: Doc
+; This is based on https://www.w3schools.com/tags/ref_byfunc.asp
+
+(def html/tag-start (fn tag props
+  (str/concat
+    "<" tag
+      (str/concat (map (keys props) (fn x
+        (if (= ([] x props) :attribute)
+          (str/concat " " (string x))
+          (str/concat " " (` x) "=\"" ([] x props) "\"")
+        )
+      )))
+    ">\n"
+  )
+))
+
+(def html/tag (fn tag props body
+  (if (= (type body) :string)
+    (str/concat
+      (html/tag-start tag props)
+      body
+      "\n</" tag ">"
+    )
+    (str/concat
+      (html/tag-start tag props)
+      (if (= (len body) 1)
+        (nth 0 body)
+        (reduce body (fn x acc (str/concat acc "\n" x)) "")
+      )
+      "\n</" tag ">"
+    )
+  )
+))
+
+;;------------;;
+;; Basic HTML ;;
+;;------------;;
+
+(def html/html (fn props body
+  (html/tag "html" props body)
+))
+
+(def html/head (fn props body
+  (html/tag "head" props body)
+))
+
+(def html/title (fn props body
+  (html/tag "title" props body)
+))
+
+(def html/h1 (fn props body
+  (html/tag "h1" props body)
+))
+
+(def html/h2 (fn props body
+  (html/tag "h2" props body)
+))
+
+(def html/h3 (fn props body
+  (html/tag "h3" props body)
+))
+
+(def html/h4 (fn props body
+  (html/tag "h4" props body)
+))
+
+(def html/h5 (fn props body
+  (html/tag "h5" props body)
+))
+
+(def html/h6 (fn props body
+  (html/tag "h6" props body)
+))
+
+(def html/p (fn props body
+  (html/tag "p" props body)
+))
+
+(def html/br (fn
+  "<br>"
+))
+
+(def html/hr (fn
+  "<hr>"
+))
+
+(def html/comment (fn text
+  (str/concat "<!--" text "-->")
+))

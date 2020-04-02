@@ -431,9 +431,9 @@ func doType(node parser.Node, variables *map[string]Node) Node {
 }
 
 func doCall(node parser.Node, variables *map[string]Node) Node {
-	if val, ok := loadGlobalFns(node.Token.Value); ok {
+	if val, ok := (*variables)[node.Token.Value]; ok {
 		return DoVariableCall(node, val, variables)
-	} else if val, ok := (*variables)[node.Token.Value]; ok {
+	} else if val, ok := loadGlobalFns(node.Token.Value); ok {
 		return DoVariableCall(node, val, variables)
 	} else if val, ok := loadNativeFns(node.Token.Value); ok {
 		args := resolve(node.Arguments, variables)

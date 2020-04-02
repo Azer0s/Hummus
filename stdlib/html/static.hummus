@@ -1,0 +1,60 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :<html>)
+
+;;------------;;
+;; Basic HTML ;;
+;;------------;;
+
+(def html (fn props body
+  (html/tag "html" props body)
+))
+
+(def head (fn props body
+  (html/tag "head" props body)
+))
+
+(def title (fn props body
+  (html/tag "title" props body)
+))
+
+(def h1 (fn props body
+  (html/tag "h1" props body)
+))
+
+(def h2 (fn props body
+  (html/tag "h2" props body)
+))
+
+(def h3 (fn props body
+  (html/tag "h3" props body)
+))
+
+(def h4 (fn props body
+  (html/tag "h4" props body)
+))
+
+(def h5 (fn props body
+  (html/tag "h5" props body)
+))
+
+(def h6 (fn props body
+  (html/tag "h6" props body)
+))
+
+(def p (fn props body
+  (html/tag "p" props body)
+))
+
+(def br (fn
+  "<br>"
+))
+
+(def hr (fn
+  "<hr>"
+))
+
+(def comment (fn text
+  (str/concat "<!--" text "-->")
+))

@@ -1,0 +1,4 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :./html/functions)

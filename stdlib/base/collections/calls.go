@@ -29,6 +29,12 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	case "range":
 		return doRange(args)
 
+	case "nothing":
+		return interpreter.Node{
+			Value:    interpreter.ListNode{Values: make([]interpreter.Node, 0)},
+			NodeType: interpreter.NODETYPE_LIST,
+		}
+
 	default:
 		panic("Unrecognized mode")
 	}

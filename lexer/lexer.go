@@ -89,6 +89,9 @@ func LexString(code string) []Token {
 					case 'v':
 						buffer = append(buffer, '\v')
 						break
+					case '"':
+						buffer = append(buffer, '"')
+						break
 					}
 					next(&i, &current, code)
 				} else {
