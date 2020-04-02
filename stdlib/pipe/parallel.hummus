@@ -16,14 +16,18 @@
     (def runner (identity self))
 
     (each (range (- (len fns) 1)) (fn i
-      (sync/watch (spawn (fn
-        (sync/sleep 1 :ms)
-        (def func (nth i fns))
-        (send runner ({}
-          (:value (func x))
-          (:worker (atom i))
-        ))
+      (def pid (spawn (fn
+       (receive)
+
+       (def func (nth i fns))
+       (send runner ({}
+         (:value (func x))
+         (:worker (atom i))
+       ))
       )))
+
+      (sync/watch pid)
+      (send pid 0)
     ))
 
     (def val_or_error (fn i
