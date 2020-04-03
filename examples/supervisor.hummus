@@ -2,14 +2,15 @@
 (use :<base>)
 
 (def work (fn
+  (receive)
   (out "Henlo")
-  (sync/sleep 1 :ms)
 ))
 
 (def do_supervise (fn func
   (def setup (fn func
     (def toWatch (spawn func))
     (sync/watch toWatch)
+    (send toWatch 0)
     (out toWatch)
   ))
 

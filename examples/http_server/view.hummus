@@ -1,0 +1,38 @@
+(use :<html/static>)
+
+(def view/index (fn
+  (html
+    (h1 "HTML")
+    (p "HTML is a language for describing web pages.....")
+    (hr)
+
+    (h1 "CSS")
+    (p "CSS defines how to display HTML elements.....")
+    (hr)
+
+    (h1 (list "Test"))
+    (p ({} (:style "font-family:courier;") (:foo :attribute)) "This is a paragraph.")
+  )
+))
+
+(def view/test (fn
+  (html
+    (body
+      (h2 "An Unordered HTML List")
+
+      (ul
+        (li "Coffee")
+        (li "Tea")
+        (li "Milk")
+      )
+
+      (h2 "An Ordered HTML List")
+
+      (ol
+        (li "Coffee")
+        (li "Tea")
+        (li "Milk")
+      )
+    )
+  )
+))

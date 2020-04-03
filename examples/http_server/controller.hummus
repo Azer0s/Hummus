@@ -1,13 +1,12 @@
 (use :<net/http>)
 (use :<debug>)
+(use :view)
 
 (http/handle "/" (fn req
   (debug/dump req)
-  "<h1> Hello </h1>"
+  (view/index)
 ))
 
 (http/handle "/test" (fn req
-  "<h1> Test </h1>"
+  (view/test)
 ))
-
-(http/serve ":8080")

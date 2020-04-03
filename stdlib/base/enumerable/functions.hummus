@@ -19,6 +19,15 @@
   (--system-do-compare! :min args)
 ))
 
+;; slice Returns a slice from a list
+;; in:
+;; * from .. beginning of the slice
+;; * to .. end of the slice
+;; * vals .. the list to take the slice from
+;; out: the new list
+(def slice (fn from to vals
+  (--system-do-enumerate! :slice from to vals)
+))
 
 ;; len Returns the length of a list
 ;; in:

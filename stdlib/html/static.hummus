@@ -7,44 +7,48 @@
 ;; Basic HTML ;;
 ;;------------;;
 
-(def html (fn props body
-  (html/tag "html" props body)
+(def html (fn props
+  (html/tag "html" props)
 ))
 
-(def head (fn props body
-  (html/tag "head" props body)
+(def head (fn props
+  (html/tag "head" props)
 ))
 
-(def title (fn props body
-  (html/tag "title" props body)
+(def title (fn props
+  (html/tag "title" props)
 ))
 
-(def h1 (fn props body
-  (html/tag "h1" props body)
+(def body (fn props
+  (html/tag "body" props)
 ))
 
-(def h2 (fn props body
-  (html/tag "h2" props body)
+(def h1 (fn props
+  (html/tag "h1" props)
 ))
 
-(def h3 (fn props body
-  (html/tag "h3" props body)
+(def h2 (fn props
+  (html/tag "h2" props)
 ))
 
-(def h4 (fn props body
-  (html/tag "h4" props body)
+(def h3 (fn props
+  (html/tag "h3" props)
 ))
 
-(def h5 (fn props body
-  (html/tag "h5" props body)
+(def h4 (fn props
+  (html/tag "h4" props)
 ))
 
-(def h6 (fn props body
-  (html/tag "h6" props body)
+(def h5 (fn props
+  (html/tag "h5" props)
 ))
 
-(def p (fn props body
-  (html/tag "p" props body)
+(def h6 (fn props
+  (html/tag "h6" props)
+))
+
+(def p (fn props
+  (html/tag "p" props)
 ))
 
 (def br (fn
@@ -57,4 +61,356 @@
 
 (def comment (fn text
   (str/concat "<!--" text "-->")
+))
+
+;;------------;;
+;; Formatting ;;
+;;------------;;
+
+(def b (fn props
+  (html/tag "b" props)
+))
+
+(def blockquote (fn props
+  (html/tag "blockquote" props)
+))
+
+(def cite (fn props
+  (html/tag "cite" props)
+))
+
+(def code (fn props
+  (html/tag "code" props)
+))
+
+(def em (fn props
+  (html/tag "em" props)
+))
+
+(def i (fn props
+  (html/tag "i" props)
+))
+
+(def mark (fn props
+  (html/tag "mark" props)
+))
+
+(def pre (fn props
+  (html/tag "pre" props)
+))
+
+(def q (fn props
+  (html/tag "q" props)
+))
+
+(def small (fn props
+  (html/tag "small" props)
+))
+
+(def strong (fn props
+  (html/tag "strong" props)
+))
+
+(def template (fn props
+  (html/tag "template" props)
+))
+
+(def time (fn props
+  (html/tag "time" props)
+))
+
+(def u (fn props
+  (html/tag "u" props)
+))
+
+(def wbr (fn props
+  (html/tag "wbr" props)
+))
+
+;;-------;;
+;; Forms ;;
+;;-------;;
+
+(def form (fn props
+  (html/tag "form" props)
+))
+
+(def input (fn props
+  (html/tag "input" props)
+))
+
+(def textarea (fn props
+  (html/tag "textarea" props)
+))
+
+(def button (fn props
+  (html/tag "button" props)
+))
+
+(def select (fn props
+  (html/tag "select" props)
+))
+
+(def optgroup (fn props
+  (html/tag "optgroup" props)
+))
+
+(def option (fn props
+  (html/tag "option" props)
+))
+
+(def label (fn props
+  (html/tag "label" props)
+))
+
+(def fieldset (fn props
+  (html/tag "fieldset" props)
+))
+
+(def legend (fn props
+  (html/tag "legend" props)
+))
+
+(def datalist (fn props
+  (html/tag "datalist" props)
+))
+
+(def output (fn props
+  (html/tag "output" props)
+))
+
+;;--------;;
+;; Frames ;;
+;;--------;;
+
+(def iframe (fn props
+  (html/tag "iframe" props)
+))
+
+;;--------;;
+;; Images ;;
+;;--------;;
+
+(def img (fn props
+  (html/tag "img" props)
+))
+
+(def map-html (fn props
+  (html/tag "map" props)
+))
+
+(def area (fn props
+  (html/tag "area" props)
+))
+
+(def canvas (fn props
+  (html/tag "canvas" props)
+))
+
+(def figcaption (fn props
+  (html/tag "figcaption" props)
+))
+
+(def figure (fn props
+  (html/tag "figure" props)
+))
+
+(def picture (fn props
+  (html/tag "picture" props)
+))
+
+(def svg (fn props
+  (html/tag "svg" props)
+))
+
+;;---------------;;
+;; Audio / Video ;;
+;;---------------;;
+
+(def audio (fn props
+  (html/tag "audio" props)
+))
+
+(def source (fn props
+  (html/tag "source" props)
+))
+
+(def track (fn props
+  (html/tag "track" props)
+))
+
+(def video (fn props
+  (html/tag "video" props)
+))
+
+;;-------;;
+;; Links ;;
+;;-------;;
+
+(def a (fn props
+  (html/tag "a" props)
+))
+
+(def link (fn props
+  (html/tag "link" props)
+))
+
+(def nav (fn props
+  (html/tag "nav" props)
+))
+
+;;-------;;
+;; Lists ;;
+;;-------;;
+
+(def ul (fn props
+  (html/tag "ul" props)
+))
+
+(def ol (fn props
+  (html/tag "ol" props)
+))
+
+(def li (fn props
+  (html/tag "li" props)
+))
+
+(def dl (fn props
+  (html/tag "dl" props)
+))
+
+(def dt (fn props
+  (html/tag "dt" props)
+))
+
+(def dd (fn props
+  (html/tag "dd" props)
+))
+
+;;--------;;
+;; Tables ;;
+;;--------;;
+
+(def table (fn props
+  (html/tag "table" props)
+))
+
+(def caption (fn props
+  (html/tag "caption" props)
+))
+
+(def th (fn props
+  (html/tag "th" props)
+))
+
+(def tr (fn props
+  (html/tag "tr" props)
+))
+
+(def td (fn props
+  (html/tag "td" props)
+))
+
+(def thead (fn props
+  (html/tag "thead" props)
+))
+
+(def tbody (fn props
+  (html/tag "tbody" props)
+))
+
+(def tfoot (fn props
+  (html/tag "tfoot" props)
+))
+
+(def col (fn props
+  (html/tag "col" props)
+))
+
+(def colgroup (fn props
+  (html/tag "colgroup" props)
+))
+
+;;----------------------;;
+;; Styles and Semantics ;;
+;;----------------------;;
+
+(def style (fn props
+  (html/tag "style" props)
+))
+
+(def div (fn props
+  (html/tag "div" props)
+))
+
+(def span (fn props
+  (html/tag "span" props)
+))
+
+(def header (fn props
+  (html/tag "header" props)
+))
+
+(def footer (fn props
+  (html/tag "footer" props)
+))
+
+(def main (fn props
+  (html/tag "main" props)
+))
+
+(def section (fn props
+  (html/tag "section" props)
+))
+
+(def article (fn props
+  (html/tag "article" props)
+))
+
+(def aside (fn props
+  (html/tag "aside" props)
+))
+
+(def details (fn props
+  (html/tag "details" props)
+))
+
+(def dialog (fn props
+  (html/tag "dialog" props)
+))
+
+(def summary (fn props
+  (html/tag "summary" props)
+))
+
+(def data (fn props
+  (html/tag "data" props)
+))
+
+;;-----------;;
+;; Meta Info ;;
+;;-----------;;
+
+(def head (fn props
+  (html/tag "head" props)
+))
+
+(def meta (fn props
+  (html/tag "meta" props)
+))
+
+(def base (fn props
+  (html/tag "base" props)
+))
+
+;;-------------;;
+;; Programming ;;
+;;-------------;;
+
+(def script (fn props
+  (html/tag "script" props)
+))
+
+(def noscript (fn props
+  (html/tag "noscript" props)
 ))

@@ -28,6 +28,8 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	interpreter.CopyVariableState(variables, &ctx)
 
 	switch mode {
+	case "slice":
+		return doSlice(args)
 	case "len":
 		return doLen(args)
 	case "nth":
@@ -44,6 +46,39 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		return doReduce(ctx, args)
 	default:
 		panic("Unrecognized mode")
+	}
+}
+
+func doSlice(args []interpreter.Node) interpreter.Node {
+	if args[1].NodeType != interpreter.NODETYPE_INT && (args[1].NodeType != interpreter.NODETYPE_ATOM && args[1].Value != "-") {
+		panic(CALL + " :slice expects an int or :- as first argument!")
+	}
+
+	if args[2].NodeType != interpreter.NODETYPE_INT && (args[2].NodeType != interpreter.NODETYPE_ATOM && args[2].Value != "-") {
+		panic(CALL + " :slice expects an int or :- as second argument!")
+	}
+
+	if args[3].NodeType != interpreter.NODETYPE_LIST {
+		panic(CALL + " :slice expects a list as third argument!")
+	}
+
+	if args[1].NodeType == interpreter.NODETYPE_INT && args[2].NodeType == interpreter.NODETYPE_INT {
+		return interpreter.Node{
+			Value:    interpreter.ListNode{Values: args[3].Value.(interpreter.ListNode).Values[args[1].Value.(int):args[2].Value.(int)]},
+			NodeType: interpreter.NODETYPE_LIST,
+		}
+	} else if args[1].NodeType == interpreter.NODETYPE_INT && args[2].NodeType == interpreter.NODETYPE_ATOM {
+		return interpreter.Node{
+			Value:    interpreter.ListNode{Values: args[3].Value.(interpreter.ListNode).Values[args[1].Value.(int):]},
+			NodeType: interpreter.NODETYPE_LIST,
+		}
+	} else if args[1].NodeType == interpreter.NODETYPE_ATOM && args[2].NodeType == interpreter.NODETYPE_INT {
+		return interpreter.Node{
+			Value:    interpreter.ListNode{Values: args[3].Value.(interpreter.ListNode).Values[:args[2].Value.(int)]},
+			NodeType: interpreter.NODETYPE_LIST,
+		}
+	} else {
+		return args[3]
 	}
 }
 
