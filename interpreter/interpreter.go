@@ -80,10 +80,7 @@ func storeNativeFns(key string, val func([]Node, *map[string]Node) Node) {
 }
 
 func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node Node) {
-	node = Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	node = Nothing
 
 	switch parserNode.Type {
 	case parser.LITERAL_INT:
@@ -165,16 +162,13 @@ func accessMap(node parser.Node, variables *map[string]Node) Node {
 }
 
 func createMap(node parser.Node, variables *map[string]Node) Node {
-	mapNode := MapNode{Values: make(map[string]Node, 0)}
+	mapVals := make(map[string]Node, 0)
 
 	for _, argument := range node.Arguments {
-		mapNode.Values[argument.Arguments[0].Token.Value] = getValueFromNode(argument.Arguments[1], variables)
+		mapVals[argument.Arguments[0].Token.Value] = getValueFromNode(argument.Arguments[1], variables)
 	}
 
-	return Node{
-		Value:    mapNode,
-		NodeType: NODETYPE_MAP,
-	}
+	return NodeMap(mapVals)
 }
 
 func getStructDef(node parser.Node) StructDef {
@@ -189,10 +183,7 @@ func getStructDef(node parser.Node) StructDef {
 
 func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	name := node.Arguments[0].Token.Value
-	variable := Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	variable := Nothing
 
 	//I am doing this here, just like I do macros here because you can only define macros and structs in `def`
 	if node.Arguments[1].Type == parser.STRUCT_DEF {
@@ -217,10 +208,7 @@ func doNativeUse(name, currentFile string, variables *map[string]Node) Node {
 	file := path.Join(dir, name)
 
 	if importsHas(file) {
-		return Node{
-			Value:    0,
-			NodeType: 0,
-		}
+		return Nothing
 	}
 
 	p, err := plugin.Open(file)
@@ -254,10 +242,7 @@ func doNativeUse(name, currentFile string, variables *map[string]Node) Node {
 	imports = append(imports, file)
 	importsMu.Unlock()
 
-	return Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return Nothing
 }
 
 func doUse(node parser.Node, currentFile string, pid int, variables *map[string]Node) Node {
@@ -293,10 +278,7 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	}
 
 	if importsHas(file) {
-		return Node{
-			Value:    0,
-			NodeType: 0,
-		}
+		return Nothing
 	}
 
 	b, err := ioutil.ReadFile(file)
@@ -306,14 +288,9 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	}
 
 	vars := make(map[string]Node, 0)
-	vars[EXEC_FILE] = Node{
-		Value:    file,
-		NodeType: NODETYPE_STRING,
-	}
-	vars[SELF] = Node{
-		Value:    pid,
-		NodeType: NODETYPE_INT,
-	}
+	vars[EXEC_FILE] = StringNode(file)
+	vars[SELF] = IntNode(pid)
+
 	_ = Run(parser.Parse(lexer.LexString(string(b))), &vars)
 
 	for k, v := range vars {
@@ -324,10 +301,7 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	imports = append(imports, file)
 	importsMu.Unlock()
 
-	return Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return Nothing
 }
 
 // DoVariableCall calls a fn variable
@@ -379,16 +353,13 @@ func DoVariableCall(node parser.Node, val Node, variables *map[string]Node) Node
 			panic(fmt.Sprintf("Struct argument mismatch! (line %d)", node.Token.Line))
 		}
 
-		mapNode := MapNode{Values: make(map[string]Node, 0)}
+		mapVals := make(map[string]Node, 0)
 
 		for i := range structDef.Parameters {
-			mapNode.Values[structDef.Parameters[i]] = arg[i]
+			mapVals[structDef.Parameters[i]] = arg[i]
 		}
 
-		return Node{
-			Value:    mapNode,
-			NodeType: NODETYPE_MAP,
-		}
+		return NodeMap(mapVals)
 	}
 
 	panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token.Value, node.Token.Line))
@@ -424,10 +395,7 @@ func doType(node parser.Node, variables *map[string]Node) Node {
 		t = "struct"
 	}
 
-	return Node{
-		Value:    t,
-		NodeType: NODETYPE_ATOM,
-	}
+	return AtomNode(t)
 }
 
 func doCall(node parser.Node, variables *map[string]Node) Node {
@@ -484,10 +452,7 @@ func doIf(node parser.Node, variables *map[string]Node) Node {
 		return getValueFromNode(node.Arguments[2].Arguments[0], variables)
 	}
 
-	return Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return Nothing
 }
 
 func doForLoop(node parser.Node, variables *map[string]Node) {
@@ -542,12 +507,7 @@ func resolve(nodes []parser.Node, variables *map[string]Node) []Node {
 
 func getArgsByParameterList(nodes []parser.Node, variables *map[string]Node, parameters []string, targetMap *map[string]Node, line uint) {
 	if len(parameters) == 1 && len(nodes) > 1 {
-		arg := ListNode{Values: resolve(nodes, variables)}
-
-		(*targetMap)[parameters[0]] = Node{
-			Value:    arg,
-			NodeType: NODETYPE_LIST,
-		}
+		(*targetMap)[parameters[0]] = NodeList(resolve(nodes, variables))
 	} else if len(parameters) == len(nodes) {
 		arg := resolve(nodes, variables)
 		for i := range nodes {
@@ -560,10 +520,7 @@ func getArgsByParameterList(nodes []parser.Node, variables *map[string]Node, par
 			(*targetMap)[parameters[i]] = arg[i]
 		}
 
-		(*targetMap)[parameters[i+1]] = Node{
-			Value:    ListNode{Values: arg[i+1:]},
-			NodeType: NODETYPE_LIST,
-		}
+		(*targetMap)[parameters[i+1]] = NodeList(arg[i+1:])
 	} else {
 		panic(fmt.Sprintf("Argument mismatch! (line %d)", line))
 	}
@@ -580,10 +537,7 @@ func getArgs(nodes []parser.Node, parameters []string, variables *map[string]Nod
 
 // Run run an AST
 func Run(nodes []parser.Node, variables *map[string]Node) (returnVal Node) {
-	returnVal = Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	returnVal = Nothing
 
 	for _, node := range nodes {
 		switch node.Type {

@@ -30,10 +30,7 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		return doRange(args)
 
 	case "nothing":
-		return interpreter.Node{
-			Value:    interpreter.ListNode{Values: make([]interpreter.Node, 0)},
-			NodeType: interpreter.NODETYPE_LIST,
-		}
+		return interpreter.NodeList(make([]interpreter.Node, 0))
 
 	default:
 		panic("Unrecognized mode")
@@ -43,15 +40,13 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 func list(args []interpreter.Node) interpreter.Node {
 	if args[1].NodeType == interpreter.NODETYPE_LIST {
 		return interpreter.Node{
+			//I don't use interpreter.NodeList here because I'd have to cast args[1].Value to a slice
 			Value:    args[1].Value,
 			NodeType: interpreter.NODETYPE_LIST,
 		}
 	}
 
-	return interpreter.Node{
-		Value:    interpreter.ListNode{Values: args[1:]},
-		NodeType: interpreter.NODETYPE_LIST,
-	}
+	return interpreter.NodeList(args[1:])
 }
 
 func exists(args []interpreter.Node) interpreter.Node {
@@ -65,10 +60,7 @@ func exists(args []interpreter.Node) interpreter.Node {
 
 	_, ok := args[2].Value.(interpreter.MapNode).Values[args[1].Value.(string)]
 
-	return interpreter.Node{
-		Value:    ok,
-		NodeType: interpreter.NODETYPE_BOOL,
-	}
+	return interpreter.BoolNode(ok)
 }
 
 func keys(args []interpreter.Node) interpreter.Node {
@@ -78,16 +70,10 @@ func keys(args []interpreter.Node) interpreter.Node {
 
 	keys := make([]interpreter.Node, 0)
 	for s := range args[1].Value.(interpreter.MapNode).Values {
-		keys = append(keys, interpreter.Node{
-			Value:    s,
-			NodeType: interpreter.NODETYPE_ATOM,
-		})
+		keys = append(keys, interpreter.AtomNode(s))
 	}
 
-	return interpreter.Node{
-		Value:    interpreter.ListNode{Values: keys},
-		NodeType: interpreter.NODETYPE_LIST,
-	}
+	return interpreter.NodeList(keys)
 }
 
 func doRange(args []interpreter.Node) interpreter.Node {
@@ -101,26 +87,17 @@ func doRange(args []interpreter.Node) interpreter.Node {
 	f := from.Value.(int)
 	t := to.Value.(int)
 
-	list := interpreter.ListNode{Values: make([]interpreter.Node, 0)}
+	list := make([]interpreter.Node, 0)
 
 	if f > t {
 		for i := t; i >= t; i-- {
-			list.Values = append(list.Values, interpreter.Node{
-				Value:    i,
-				NodeType: interpreter.NODETYPE_INT,
-			})
+			list = append(list, interpreter.IntNode(i))
 		}
 	} else {
 		for i := f; i <= t; i++ {
-			list.Values = append(list.Values, interpreter.Node{
-				Value:    i,
-				NodeType: interpreter.NODETYPE_INT,
-			})
+			list = append(list, interpreter.IntNode(i))
 		}
 	}
 
-	return interpreter.Node{
-		Value:    list,
-		NodeType: interpreter.NODETYPE_LIST,
-	}
+	return interpreter.NodeList(list)
 }

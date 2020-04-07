@@ -24,17 +24,11 @@ func builtInMath(node parser.Node, variables *map[string]Node) Node {
 	mode := args[0].Value.(string)
 
 	if mode == "-" && args[1].NodeType == NODETYPE_INT {
-		return Node{
-			Value:    -args[1].Value.(int),
-			NodeType: NODETYPE_INT,
-		}
+		return IntNode(-args[1].Value.(int))
 	}
 
 	if mode == "-" && args[1].NodeType == NODETYPE_FLOAT {
-		return Node{
-			Value:    -args[1].Value.(float64),
-			NodeType: NODETYPE_FLOAT,
-		}
+		return FloatNode(-args[1].Value.(float64))
 	}
 
 	vals := args[1].Value.(ListNode)
@@ -89,15 +83,9 @@ func builtInCompare(node parser.Node, variables *map[string]Node) Node {
 
 	switch mode {
 	case "/=":
-		return Node{
-			Value:    args[1].Value != args[2].Value,
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(args[1].Value != args[2].Value)
 	case "=":
-		return Node{
-			Value:    args[1].Value == args[2].Value,
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(args[1].Value == args[2].Value)
 	case "min":
 		if args[1].NodeType != NODETYPE_LIST {
 			panic(BUILTIN_COMPARE + " :min only accepts lists!")
@@ -186,10 +174,7 @@ func builtInBool(node parser.Node, variables *map[string]Node) Node {
 			panic(BUILTIN_BOOL + " only accepts bools!")
 		}
 
-		return Node{
-			Value:    !args[1].Value.(bool),
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(!args[1].Value.(bool))
 	}
 
 	if args[1].NodeType != NODETYPE_BOOL || args[2].NodeType != NODETYPE_BOOL {
@@ -198,15 +183,9 @@ func builtInBool(node parser.Node, variables *map[string]Node) Node {
 
 	switch mode {
 	case "and":
-		return Node{
-			Value:    args[1].Value.(bool) && args[2].Value.(bool),
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(args[1].Value.(bool) && args[2].Value.(bool))
 	case "or":
-		return Node{
-			Value:    args[1].Value.(bool) || args[2].Value.(bool),
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(args[1].Value.(bool) || args[2].Value.(bool))
 	default:
 		panic("Unrecognized mode")
 	}
@@ -222,10 +201,7 @@ func builtInBitwise(node parser.Node, variables *map[string]Node) Node {
 			panic(BUILTIN_BITWISE + " only accepts ints!")
 		}
 
-		return Node{
-			Value:    int(^uint(args[1].Value.(int))),
-			NodeType: NODETYPE_INT,
-		}
+		return IntNode(int(^uint(args[1].Value.(int))))
 	}
 
 	if args[1].NodeType != NODETYPE_INT || args[2].NodeType != NODETYPE_INT {
@@ -234,35 +210,20 @@ func builtInBitwise(node parser.Node, variables *map[string]Node) Node {
 
 	switch mode {
 	case "and":
-		return Node{
-			Value:    int(uint(args[1].Value.(int)) & uint(args[2].Value.(int))),
-			NodeType: NODETYPE_INT,
-		}
+		return IntNode(int(uint(args[1].Value.(int)) & uint(args[2].Value.(int))))
 	case "or":
-		return Node{
-			Value:    int(uint(args[1].Value.(int)) | uint(args[2].Value.(int))),
-			NodeType: NODETYPE_INT,
-		}
+		return IntNode(int(uint(args[1].Value.(int)) | uint(args[2].Value.(int))))
 	case "shiftl":
-		return Node{
-			Value:    int(uint(args[1].Value.(int)) << uint(args[2].Value.(int))),
-			NodeType: NODETYPE_INT,
-		}
+		return IntNode(int(uint(args[1].Value.(int)) << uint(args[2].Value.(int))))
 	case "shiftr":
-		return Node{
-			Value:    int(uint(args[1].Value.(int)) >> uint(args[2].Value.(int))),
-			NodeType: NODETYPE_INT,
-		}
+		return IntNode(int(uint(args[1].Value.(int)) >> uint(args[2].Value.(int))))
 	default:
 		panic("Unrecognized mode")
 	}
 }
 
 func doFloatCalculation(mode string, vals []float64) (node Node) {
-	node = Node{
-		Value:    vals[0],
-		NodeType: NODETYPE_FLOAT,
-	}
+	node = FloatNode(vals[0])
 
 	switch mode {
 	case "*":
@@ -291,10 +252,7 @@ func doFloatCalculation(mode string, vals []float64) (node Node) {
 }
 
 func doIntCalculation(mode string, vals []int) (node Node) {
-	node = Node{
-		Value:    vals[0],
-		NodeType: NODETYPE_INT,
-	}
+	node = IntNode(vals[0])
 
 	switch mode {
 	case "*":
@@ -325,25 +283,13 @@ func doIntCalculation(mode string, vals []int) (node Node) {
 func doFloatCompare(mode string, f []float64) Node {
 	switch mode {
 	case "<":
-		return Node{
-			Value:    f[0] < f[1],
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(f[0] < f[1])
 	case ">":
-		return Node{
-			Value:    f[0] > f[1],
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(f[0] > f[1])
 	case "<=":
-		return Node{
-			Value:    f[0] <= f[1],
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(f[0] <= f[1])
 	case ">=":
-		return Node{
-			Value:    f[0] >= f[1],
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(f[0] >= f[1])
 	default:
 		panic("Unrecognized mode")
 	}
@@ -352,25 +298,13 @@ func doFloatCompare(mode string, f []float64) Node {
 func doIntCompare(mode string, i []int) Node {
 	switch mode {
 	case "<":
-		return Node{
-			Value:    i[0] < i[1],
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(i[0] < i[1])
 	case ">":
-		return Node{
-			Value:    i[0] > i[1],
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(i[0] > i[1])
 	case "<=":
-		return Node{
-			Value:    i[0] <= i[1],
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(i[0] <= i[1])
 	case ">=":
-		return Node{
-			Value:    i[0] >= i[1],
-			NodeType: NODETYPE_BOOL,
-		}
+		return BoolNode(i[0] >= i[1])
 	default:
 		panic("Unrecognized mode")
 	}

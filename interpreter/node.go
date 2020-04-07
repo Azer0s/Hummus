@@ -98,18 +98,71 @@ func (node *Node) Bigger(compareTo Node) bool {
 }
 
 // OptionalNode return an optional node
-func OptionalNode(val interface{}, nodeType NodeType, err bool) Node {
+func OptionalNode(val Node, err bool) Node {
+	return NodeMap(map[string]Node{
+		"value": val,
+		"error": BoolNode(err),
+	})
+}
+
+// Nothing represents an empty return (int 0)
+var Nothing = Node{
+	Value:    0,
+	NodeType: 0,
+}
+
+// NodeList returns an interpreter.Node from a []Node
+func NodeList(val []Node) Node {
 	return Node{
-		Value: MapNode{Values: map[string]Node{
-			"value": {
-				Value:    val,
-				NodeType: nodeType,
-			},
-			"error": {
-				Value:    err,
-				NodeType: NODETYPE_BOOL,
-			},
-		}},
+		Value:    ListNode{Values: val},
+		NodeType: NODETYPE_LIST,
+	}
+}
+
+// NodeMap returns an interpreter.Node from a map[string]Node
+func NodeMap(val map[string]Node) Node {
+	return Node{
+		Value:    MapNode{Values: val},
 		NodeType: NODETYPE_MAP,
+	}
+}
+
+// BoolNode returns an interpreter.Node from a bool
+func BoolNode(val bool) Node {
+	return Node{
+		Value:    val,
+		NodeType: NODETYPE_BOOL,
+	}
+}
+
+// StringNode returns an interpreter.Node from a string
+func StringNode(val string) Node {
+	return Node{
+		Value:    val,
+		NodeType: NODETYPE_STRING,
+	}
+}
+
+// AtomNode returns an interpreter.Node from a string
+func AtomNode(val string) Node {
+	return Node{
+		Value:    val,
+		NodeType: NODETYPE_ATOM,
+	}
+}
+
+// IntNode returns an interpreter.Node from an int
+func IntNode(val int) Node {
+	return Node{
+		Value:    val,
+		NodeType: NODETYPE_INT,
+	}
+}
+
+// FloatNode returns an interpreter.Node from a float64
+func FloatNode(val float64) Node {
+	return Node{
+		Value:    val,
+		NodeType: NODETYPE_FLOAT,
 	}
 }

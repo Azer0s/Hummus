@@ -24,6 +24,8 @@ var channelParentMu = &sync.RWMutex{}
 var watcheeToWatcherMu = &sync.RWMutex{}
 var watcherToWatcheeMu = &sync.RWMutex{}
 
+var initOnce sync.Once
+
 // MAILBOX_BUFFER buffer for channel mailboxes
 const MAILBOX_BUFFER = 1024
 
@@ -94,10 +96,7 @@ func doWatch(arg interpreter.Node, variables *map[string]interpreter.Node) inter
 	}
 
 	createWatch((*variables)[interpreter.SELF].Value.(int), arg.Value.(int))
-	return interpreter.Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return interpreter.Nothing
 }
 
 func doSend(pid, val interpreter.Node) interpreter.Node {
@@ -115,10 +114,7 @@ func doSend(pid, val interpreter.Node) interpreter.Node {
 		//No data sent
 	}
 
-	return interpreter.Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return interpreter.Nothing
 }
 
 func doReceive(variables *map[string]interpreter.Node) interpreter.Node {
@@ -151,20 +147,11 @@ func doCleanup(p int, r interpreter.Node) {
 		channel := channelMap[watcher]
 		channelMapMu.RUnlock()
 
-		channel <- interpreter.Node{
-			Value: interpreter.ListNode{Values: []interpreter.Node{
-				{
-					Value:    "dead",
-					NodeType: interpreter.NODETYPE_ATOM,
-				},
-				{
-					Value:    p,
-					NodeType: interpreter.NODETYPE_INT,
-				},
-				r,
-			}},
-			NodeType: interpreter.NODETYPE_LIST,
-		}
+		channel <- interpreter.NodeList([]interpreter.Node{
+			interpreter.AtomNode("dead"),
+			interpreter.IntNode(p),
+			r,
+		})
 	}
 	watcheeToWatcherMu.RUnlock()
 
@@ -213,26 +200,17 @@ func doSpawn(arg interpreter.Node, variables *map[string]interpreter.Node) inter
 
 	//Do global mutex when inserting into chan map
 	pid := createPidChannel((*variables)[interpreter.SELF].Value.(int))
-	ctx[interpreter.SELF] = interpreter.Node{
-		Value:    pid,
-		NodeType: 0,
-	}
+	ctx[interpreter.SELF] = interpreter.IntNode(pid)
 
 	go func(p int) {
 		defer func() {
 			if r := recover(); r != nil {
 				if val, ok := r.(string); ok {
-					doCleanup(p, interpreter.Node{
-						Value:    val,
-						NodeType: interpreter.NODETYPE_STRING,
-					})
+					doCleanup(p, interpreter.StringNode(val))
 				} else if val, ok := r.(interpreter.Node); ok {
 					doCleanup(p, val)
 				} else {
-					doCleanup(p, interpreter.Node{
-						Value:    fmt.Sprintf("%v", r),
-						NodeType: interpreter.NODETYPE_STRING,
-					})
+					doCleanup(p, interpreter.StringNode(fmt.Sprintf("%v", r)))
 				}
 			}
 		}()
@@ -242,16 +220,10 @@ func doSpawn(arg interpreter.Node, variables *map[string]interpreter.Node) inter
 			Arguments: []parser.Node{},
 			Token:     lexer.Token{},
 		}, arg, &ctx)
-		panic(interpreter.Node{
-			Value:    0,
-			NodeType: 0,
-		})
+		panic(interpreter.Nothing)
 	}(pid)
 
-	return interpreter.Node{
-		Value:    pid,
-		NodeType: 0,
-	}
+	return interpreter.IntNode(pid)
 }
 
 func doSleep(duration, mode interpreter.Node) interpreter.Node {
@@ -278,10 +250,7 @@ func doSleep(duration, mode interpreter.Node) interpreter.Node {
 		panic(CALL + " :sleep only accepts :h, :min, :s or :ms as second argument!")
 	}
 
-	return interpreter.Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return interpreter.Nothing
 }
 
 func doUnwatch(watchee interpreter.Node, self int) interpreter.Node {
@@ -298,18 +267,14 @@ func doUnwatch(watchee interpreter.Node, self int) interpreter.Node {
 	delete(watcherToWatchee[self], w)
 	watcherToWatcheeMu.Unlock()
 
-	return interpreter.Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return interpreter.Nothing
 }
 
 // Init Hummus stdlib stub
 func Init(variables *map[string]interpreter.Node) {
-	(*variables)[interpreter.SELF] = interpreter.Node{
-		Value:    createPidChannel(0),
-		NodeType: interpreter.NODETYPE_INT,
-	}
+	initOnce.Do(func() {
+		(*variables)[interpreter.SELF] = interpreter.IntNode(createPidChannel(0))
+	})
 }
 
 // DoSystemCall Hummus stdlib stub

@@ -50,10 +50,7 @@ func exit(args []interpreter.Node) interpreter.Node {
 
 	os.Exit(args[1].Value.(int))
 
-	return interpreter.Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return interpreter.Nothing
 }
 
 func env(args []interpreter.Node) interpreter.Node {
@@ -61,10 +58,7 @@ func env(args []interpreter.Node) interpreter.Node {
 		panic(CALL + " :env only accepts strings!")
 	}
 
-	return interpreter.Node{
-		Value:    os.Getenv(args[1].Value.(string)),
-		NodeType: interpreter.NODETYPE_STRING,
-	}
+	return interpreter.StringNode(os.Getenv(args[1].Value.(string)))
 }
 
 func envAll() interpreter.Node {
@@ -73,32 +67,20 @@ func envAll() interpreter.Node {
 	for _, e := range os.Environ() {
 		pair := strings.SplitN(e, "=", 2)
 
-		vals[pair[0]] = interpreter.Node{
-			Value:    pair[1],
-			NodeType: interpreter.NODETYPE_STRING,
-		}
+		vals[pair[0]] = interpreter.StringNode(pair[1])
 	}
 
-	return interpreter.Node{
-		Value:    interpreter.MapNode{Values: vals},
-		NodeType: interpreter.NODETYPE_MAP,
-	}
+	return interpreter.NodeMap(vals)
 }
 
 func getArgs() interpreter.Node {
 	nodes := make([]interpreter.Node, 0)
 
 	for _, arg := range os.Args {
-		nodes = append(nodes, interpreter.Node{
-			Value:    arg,
-			NodeType: interpreter.NODETYPE_STRING,
-		})
+		nodes = append(nodes, interpreter.StringNode(arg))
 	}
 
-	return interpreter.Node{
-		Value:    interpreter.ListNode{Values: nodes},
-		NodeType: interpreter.NODETYPE_LIST,
-	}
+	return interpreter.NodeList(nodes)
 }
 
 func cmdArgs(args []interpreter.Node) interpreter.Node {
@@ -120,7 +102,7 @@ func cmdArgs(args []interpreter.Node) interpreter.Node {
 
 	out := string(b)
 
-	return interpreter.OptionalNode(out, interpreter.NODETYPE_STRING, err != nil)
+	return interpreter.OptionalNode(interpreter.StringNode(out), err != nil)
 }
 
 func cmd(args []interpreter.Node) interpreter.Node {
@@ -131,5 +113,5 @@ func cmd(args []interpreter.Node) interpreter.Node {
 	b, err := exec.Command(args[1].Value.(string)).CombinedOutput()
 	out := string(b)
 
-	return interpreter.OptionalNode(out, interpreter.NODETYPE_STRING, err != nil)
+	return interpreter.OptionalNode(interpreter.StringNode(out), err != nil)
 }

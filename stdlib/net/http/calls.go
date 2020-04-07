@@ -34,10 +34,7 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		fs := http.FileServer(http.Dir(args[2].Value.(string)))
 		http.Handle(args[1].Value.(string), fs)
 
-		return interpreter.Node{
-			Value:    0,
-			NodeType: 0,
-		}
+		return interpreter.Nothing
 	case "handle":
 		return doHandle(args, variables)
 	case "serve":
@@ -51,10 +48,7 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 			panic(err)
 		}
 
-		return interpreter.Node{
-			Value:    0,
-			NodeType: 0,
-		}
+		return interpreter.Nothing
 	default:
 		panic("Unrecognized mode")
 	}
@@ -101,29 +95,17 @@ func doHandle(args []interpreter.Node, variables *map[string]interpreter.Node) i
 		fmt.Fprintf(writer, interpreter.DumpNode(res))
 	})
 
-	return interpreter.Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return interpreter.Nothing
 }
 
 func getReqMap(request *http.Request) interpreter.Node {
-	return interpreter.Node{
-		Value: interpreter.MapNode{Values: map[string]interpreter.Node{
-			"method": {
-				Value:    request.Method,
-				NodeType: interpreter.NODETYPE_STRING,
-			},
-			"proto": {
-				Value:    request.Proto,
-				NodeType: interpreter.NODETYPE_STRING,
-			},
-			"header": getHeaders(request),
-			"body":   getBody(request),
-			"params": getParams(request),
-		}},
-		NodeType: interpreter.NODETYPE_MAP,
-	}
+	return interpreter.NodeMap(map[string]interpreter.Node{
+		"method": interpreter.StringNode(request.Method),
+		"proto":  interpreter.StringNode(request.Proto),
+		"header": getHeaders(request),
+		"body":   getBody(request),
+		"params": getParams(request),
+	})
 }
 
 func getParams(request *http.Request) interpreter.Node {
@@ -134,16 +116,10 @@ func getBody(request *http.Request) interpreter.Node {
 	body, err := ioutil.ReadAll(request.Body)
 
 	if err != nil {
-		return interpreter.Node{
-			Value:    "",
-			NodeType: interpreter.NODETYPE_STRING,
-		}
+		return interpreter.StringNode("")
 	}
 
-	return interpreter.Node{
-		Value:    string(body),
-		NodeType: interpreter.NODETYPE_STRING,
-	}
+	return interpreter.StringNode(string(body))
 }
 
 func getHeaders(request *http.Request) interpreter.Node {
@@ -154,23 +130,14 @@ func getNodeByMapStringArray(values map[string][]string) interpreter.Node {
 	node := make(map[string]interpreter.Node, 0)
 
 	for k, strings := range values {
-		vals := interpreter.ListNode{Values: make([]interpreter.Node, 0)}
+		vals := make([]interpreter.Node, 0)
 
 		for _, s := range strings {
-			vals.Values = append(vals.Values, interpreter.Node{
-				Value:    s,
-				NodeType: interpreter.NODETYPE_STRING,
-			})
+			vals = append(vals, interpreter.StringNode(s))
 		}
 
-		node[k] = interpreter.Node{
-			Value:    vals,
-			NodeType: interpreter.NODETYPE_LIST,
-		}
+		node[k] = interpreter.NodeList(vals)
 	}
 
-	return interpreter.Node{
-		Value:    interpreter.MapNode{Values: node},
-		NodeType: interpreter.NODETYPE_MAP,
-	}
+	return interpreter.NodeMap(node)
 }

@@ -63,20 +63,11 @@ func doSlice(args []interpreter.Node) interpreter.Node {
 	}
 
 	if args[1].NodeType == interpreter.NODETYPE_INT && args[2].NodeType == interpreter.NODETYPE_INT {
-		return interpreter.Node{
-			Value:    interpreter.ListNode{Values: args[3].Value.(interpreter.ListNode).Values[args[1].Value.(int):args[2].Value.(int)]},
-			NodeType: interpreter.NODETYPE_LIST,
-		}
+		return interpreter.NodeList(args[3].Value.(interpreter.ListNode).Values[args[1].Value.(int):args[2].Value.(int)])
 	} else if args[1].NodeType == interpreter.NODETYPE_INT && args[2].NodeType == interpreter.NODETYPE_ATOM {
-		return interpreter.Node{
-			Value:    interpreter.ListNode{Values: args[3].Value.(interpreter.ListNode).Values[args[1].Value.(int):]},
-			NodeType: interpreter.NODETYPE_LIST,
-		}
+		return interpreter.NodeList(args[3].Value.(interpreter.ListNode).Values[args[1].Value.(int):])
 	} else if args[1].NodeType == interpreter.NODETYPE_ATOM && args[2].NodeType == interpreter.NODETYPE_INT {
-		return interpreter.Node{
-			Value:    interpreter.ListNode{Values: args[3].Value.(interpreter.ListNode).Values[:args[2].Value.(int)]},
-			NodeType: interpreter.NODETYPE_LIST,
-		}
+		return interpreter.NodeList(args[3].Value.(interpreter.ListNode).Values[:args[2].Value.(int)])
 	} else {
 		return args[3]
 	}
@@ -87,10 +78,7 @@ func doLen(args []interpreter.Node) interpreter.Node {
 		panic(CALL + " :len expects a list as first argument!")
 	}
 
-	return interpreter.Node{
-		Value:    len(args[1].Value.(interpreter.ListNode).Values),
-		NodeType: interpreter.NODETYPE_INT,
-	}
+	return interpreter.IntNode(len(args[1].Value.(interpreter.ListNode).Values))
 }
 
 func doNth(args []interpreter.Node) interpreter.Node {
@@ -140,10 +128,7 @@ func doEach(ctx map[string]interpreter.Node, args []interpreter.Node) interprete
 		}, args[2], &ctx)
 	}
 
-	return interpreter.Node{
-		Value:    0,
-		NodeType: 0,
-	}
+	return interpreter.Nothing
 }
 
 func doMap(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter.Node {
@@ -161,12 +146,12 @@ func doMap(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter
 		panic("Enumerate map should have one parameter in execution function!")
 	}
 
-	mapResult := interpreter.ListNode{Values: make([]interpreter.Node, 0)}
+	mapResult := make([]interpreter.Node, 0)
 
 	for _, value := range list.Values {
 		ctx[SYSTEM_ENUMERATE_VAL] = value
 
-		mapResult.Values = append(mapResult.Values, interpreter.DoVariableCall(parser.Node{
+		mapResult = append(mapResult, interpreter.DoVariableCall(parser.Node{
 			Type: 0,
 			Arguments: []parser.Node{
 				{
@@ -183,10 +168,7 @@ func doMap(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter
 		}, args[2], &ctx))
 	}
 
-	return interpreter.Node{
-		Value:    mapResult,
-		NodeType: interpreter.NODETYPE_LIST,
-	}
+	return interpreter.NodeList(mapResult)
 }
 
 func doFlatmap(args []interpreter.Node) interpreter.Node {
@@ -194,10 +176,7 @@ func doFlatmap(args []interpreter.Node) interpreter.Node {
 		panic(CALL + " :filter expects a list as first argument!")
 	}
 
-	return interpreter.Node{
-		Value:    interpreter.ListNode{Values: flatmapNode(args[1])},
-		NodeType: interpreter.NODETYPE_LIST,
-	}
+	return interpreter.NodeList(flatmapNode(args[1]))
 }
 
 func flatmapNode(arg interpreter.Node) []interpreter.Node {
@@ -229,7 +208,7 @@ func doFilter(ctx map[string]interpreter.Node, args []interpreter.Node) interpre
 		panic("Enumerate filter should have one parameter in execution function!")
 	}
 
-	filterResult := interpreter.ListNode{Values: make([]interpreter.Node, 0)}
+	filterResult := make([]interpreter.Node, 0)
 
 	for _, value := range list.Values {
 		ctx[SYSTEM_ENUMERATE_VAL] = value
@@ -255,14 +234,11 @@ func doFilter(ctx map[string]interpreter.Node, args []interpreter.Node) interpre
 		}
 
 		if res.Value.(bool) {
-			filterResult.Values = append(filterResult.Values, value)
+			filterResult = append(filterResult, value)
 		}
 	}
 
-	return interpreter.Node{
-		Value:    filterResult,
-		NodeType: interpreter.NODETYPE_LIST,
-	}
+	return interpreter.NodeList(filterResult)
 }
 
 func doReduce(ctx map[string]interpreter.Node, args []interpreter.Node) interpreter.Node {

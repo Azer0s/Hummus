@@ -29,24 +29,15 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 			panic(CALL + " :console-out only accepts int, float, bool, string or atom!")
 		}
 
-		return interpreter.Node{
-			Value:    0,
-			NodeType: 0,
-		}
+		return interpreter.Nothing
 	case "console-in":
 		t, _ := reader.ReadString('\n')
 
-		return interpreter.Node{
-			Value:    t,
-			NodeType: interpreter.NODETYPE_STRING,
-		}
+		return interpreter.StringNode(t)
 	case "console-clear":
 		print("\033[H\033[2J")
 
-		return interpreter.Node{
-			Value:    0,
-			NodeType: 0,
-		}
+		return interpreter.Nothing
 	default:
 		panic("Unrecognized mode")
 	}

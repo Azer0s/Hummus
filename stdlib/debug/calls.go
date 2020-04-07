@@ -20,18 +20,12 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	switch mode {
 	case "dump":
 		fmt.Println(interpreter.DumpNode(args[1]))
-		return interpreter.Node{
-			Value:    0,
-			NodeType: 0,
-		}
+		return interpreter.Nothing
 	case "dump_state":
 		for k, v := range *variables {
 			fmt.Println(fmt.Sprintf("%s => %s", k, interpreter.DumpNode(v)))
 		}
-		return interpreter.Node{
-			Value:    0,
-			NodeType: 0,
-		}
+		return interpreter.Nothing
 	default:
 		panic("Unrecognized mode")
 	}

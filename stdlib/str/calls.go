@@ -33,19 +33,13 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 			str = append(str, value.Value.(string))
 		}
 
-		return interpreter.Node{
-			Value:    strings.Join(str, ""),
-			NodeType: interpreter.NODETYPE_STRING,
-		}
+		return interpreter.StringNode(strings.Join(str, ""))
 	case "len":
 		if args[1].NodeType != interpreter.NODETYPE_STRING {
 			panic(CALL + " :len only accepts strings!")
 		}
 
-		return interpreter.Node{
-			Value:    len(args[1].Value.(string)),
-			NodeType: interpreter.NODETYPE_INT,
-		}
+		return interpreter.IntNode(len(args[1].Value.(string)))
 	case "nth":
 		if args[1].NodeType != interpreter.NODETYPE_INT {
 			panic(CALL + " :nth expects an int as the first argument!")
@@ -55,10 +49,7 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 			panic(CALL + " :nth expects a string as the second argument!")
 		}
 
-		return interpreter.Node{
-			Value:    string(args[2].Value.(string)[args[1].Value.(int)]),
-			NodeType: interpreter.NODETYPE_STRING,
-		}
+		return interpreter.StringNode(string(args[2].Value.(string)[args[1].Value.(int)]))
 	default:
 		panic("Unrecognized mode")
 	}
