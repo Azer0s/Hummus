@@ -1,0 +1,40 @@
+(use :<base>)
+(use :<regex>)
+
+(def reg1 (regex/compile "ab[cd]"))
+(def reg2 (regex/compile "xb[cd]"))
+(def reg3 (regex/compile "yb[cd]"))
+
+;; "Oh...we don't actually need reg1 and reg3"
+
+(free reg1)
+(free reg2)
+
+((fn
+  (def fnreg (regex/compile "function"))
+  (free fnreg) ; you HAVE to free this
+  ; since you can send pseudo ptrs around in
+  ; Hummus and not the actual native objects
+  ; and actors are always in unknown state,
+  ; we cannot just delete a native object.
+  ; Instead, you have to free it when you
+  ; create one in inner scope.
+  ; Native objects are not recommended, but
+  ; if you *really* need them, use them
+  ; properly with free or write a handler
+  ; around them that handles memory safety
+
+  ; Why is Hummus built that way?
+  ; Well...it's super easy to copy primitives
+  ; around. But if we're dealing with an actual
+  ; big object, you'd rather not copy those around
+  ; everywhere.
+  ; Sure, I could ask everyone to just use ptrs
+  ; when dealing with native objects (from the
+  ; Go side), but I'd rather not have the option
+  ; for anyone to do dumb shit.
+
+  ; Apart from that: thread shared objects
+  ; They are amazing and, when used correctly,
+  ; quite fast.
+))

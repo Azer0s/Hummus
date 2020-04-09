@@ -21,6 +21,8 @@ const (
 	TYPE string = "type"
 	// MAP_ACCESS map access function
 	MAP_ACCESS string = "[]"
+	// FREE object store free function
+	FREE string = "free"
 	// EXEC_FILE current file
 	EXEC_FILE string = "EXEC-FILE"
 	// SELF current process id
@@ -35,6 +37,12 @@ var nativeFns = make(map[string]func([]Node, *map[string]Node) Node, 0)
 
 var importsMu = &sync.RWMutex{}
 var imports = make([]string, 0)
+
+var objectsMu = &sync.RWMutex{}
+var objects = make(map[int]interface{}, 0)
+
+var objectIdCountMu = &sync.Mutex{}
+var objectIdCount = 0
 
 func importsHas(str string) bool {
 	has := false
@@ -77,6 +85,29 @@ func storeNativeFns(key string, val func([]Node, *map[string]Node) Node) {
 	nativeFnsMu.Lock()
 	nativeFns[key] = val
 	nativeFnsMu.Unlock()
+}
+
+// LoadObject load an object from the object store by its ptr
+func LoadObject(key int) (interface{}, bool) {
+	objectsMu.RLock()
+	val, ok := objects[key]
+	objectsMu.RUnlock()
+
+	return val, ok
+}
+
+// StoreObject store an object and return a pseudo ptr to it
+func StoreObject(val interface{}) int {
+	objectIdCountMu.Lock()
+	id := objectIdCount
+	objectIdCount++
+	objectIdCountMu.Unlock()
+
+	objectsMu.Lock()
+	objects[id] = val
+	objectsMu.Unlock()
+
+	return id
 }
 
 func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node Node) {
@@ -372,30 +403,7 @@ func doType(node parser.Node, variables *map[string]Node) Node {
 		panic(fmt.Sprintf("Expected one argument for type! (line %d)", node.Token.Line))
 	}
 
-	t := ""
-
-	switch args[0].NodeType {
-	case NODETYPE_INT:
-		t = "int"
-	case NODETYPE_FLOAT:
-		t = "float"
-	case NODETYPE_STRING:
-		t = "string"
-	case NODETYPE_BOOL:
-		t = "bool"
-	case NODETYPE_ATOM:
-		t = "atom"
-	case NODETYPE_FN:
-		t = "fn"
-	case NODETYPE_LIST:
-		t = "list"
-	case NODETYPE_MAP:
-		t = "map"
-	case NODETYPE_STRUCT:
-		t = "struct"
-	}
-
-	return AtomNode(t)
+	return AtomNode(args[0].NodeType.String())
 }
 
 func doCall(node parser.Node, variables *map[string]Node) Node {
@@ -425,6 +433,8 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 			Arguments: node.Arguments,
 			Token:     lexer.Token{},
 		}, variables)
+	case FREE:
+		return doFree(node, variables)
 	case BUILTIN_MATH:
 		return builtInMath(node, variables)
 	case BUILTIN_COMPARE:
@@ -439,6 +449,21 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
 	}
+}
+
+func doFree(node parser.Node, variables *map[string]Node) Node {
+	args := resolve(node.Arguments, variables)
+
+	if args[0].NodeType != NODETYPE_INT {
+		panic(fmt.Sprintf("First argument in free must be an int! (line %d)", node.Arguments[0].Token.Line))
+	}
+
+	objectsMu.Lock()
+	defer objectsMu.Unlock()
+
+	delete(objects, args[0].Value.(int))
+
+	return Nothing
 }
 
 func doIf(node parser.Node, variables *map[string]Node) Node {

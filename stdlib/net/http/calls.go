@@ -23,13 +23,8 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 
 	switch mode {
 	case "static":
-		if args[1].NodeType != interpreter.NODETYPE_STRING {
-			panic(CALL + " :static expects a string as the first argument!")
-		}
-
-		if args[2].NodeType != interpreter.NODETYPE_STRING {
-			panic(CALL + " :static expects a string as the second argument!")
-		}
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :static")
+		interpreter.EnsureType(&args, 2, interpreter.NODETYPE_STRING, CALL+" :static")
 
 		fs := http.FileServer(http.Dir(args[2].Value.(string)))
 		http.Handle(args[1].Value.(string), fs)
@@ -38,9 +33,7 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	case "handle":
 		return doHandle(args, variables)
 	case "serve":
-		if args[1].NodeType != interpreter.NODETYPE_STRING {
-			panic(CALL + " :serve expects a string as the first argument!")
-		}
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :serve")
 
 		err := http.ListenAndServe(args[1].Value.(string), nil)
 
@@ -55,13 +48,8 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 }
 
 func doHandle(args []interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
-	if args[1].NodeType != interpreter.NODETYPE_STRING {
-		panic(CALL + " :handle expects a string as the first argument!")
-	}
-
-	if args[2].NodeType != interpreter.NODETYPE_FN {
-		panic(CALL + " :handle expects a fn as the second argument!")
-	}
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :handle")
+	interpreter.EnsureType(&args, 2, interpreter.NODETYPE_FN, CALL+" :handle")
 
 	ctx := make(map[string]interpreter.Node, 0)
 	interpreter.CopyVariableState(variables, &ctx)

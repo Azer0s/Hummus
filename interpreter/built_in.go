@@ -87,11 +87,9 @@ func builtInCompare(node parser.Node, variables *map[string]Node) Node {
 	case "=":
 		return BoolNode(args[1].Value == args[2].Value)
 	case "min":
-		if args[1].NodeType != NODETYPE_LIST {
-			panic(BUILTIN_COMPARE + " :min only accepts lists!")
-		}
-
+		EnsureType(&args, 1, NODETYPE_LIST, BUILTIN_COMPARE+" :min")
 		list := args[1].Value.(ListNode).Values
+
 		min := list[0]
 
 		for i := 1; i < len(list); i++ {
@@ -102,11 +100,9 @@ func builtInCompare(node parser.Node, variables *map[string]Node) Node {
 
 		return min
 	case "max":
-		if args[1].NodeType != NODETYPE_LIST {
-			panic(BUILTIN_COMPARE + " :max only accepts lists!")
-		}
-
+		EnsureType(&args, 1, NODETYPE_LIST, BUILTIN_COMPARE+" :max")
 		list := args[1].Value.(ListNode).Values
+
 		max := list[0]
 
 		for i := 1; i < len(list); i++ {
@@ -170,16 +166,13 @@ func builtInBool(node parser.Node, variables *map[string]Node) Node {
 	mode := args[0].Value.(string)
 
 	if mode == "not" {
-		if args[1].NodeType != NODETYPE_BOOL {
-			panic(BUILTIN_BOOL + " only accepts bools!")
-		}
+		EnsureType(&args, 1, NODETYPE_BOOL, BUILTIN_BOOL)
 
 		return BoolNode(!args[1].Value.(bool))
 	}
 
-	if args[1].NodeType != NODETYPE_BOOL || args[2].NodeType != NODETYPE_BOOL {
-		panic(BUILTIN_BOOL + " only accepts bools!")
-	}
+	EnsureType(&args, 1, NODETYPE_BOOL, BUILTIN_BOOL)
+	EnsureType(&args, 2, NODETYPE_BOOL, BUILTIN_BOOL)
 
 	switch mode {
 	case "and":
@@ -197,16 +190,13 @@ func builtInBitwise(node parser.Node, variables *map[string]Node) Node {
 	mode := args[0].Value.(string)
 
 	if mode == "not" {
-		if args[1].NodeType != NODETYPE_INT {
-			panic(BUILTIN_BITWISE + " only accepts ints!")
-		}
+		EnsureType(&args, 1, NODETYPE_INT, BUILTIN_BITWISE)
 
 		return IntNode(int(^uint(args[1].Value.(int))))
 	}
 
-	if args[1].NodeType != NODETYPE_INT || args[2].NodeType != NODETYPE_INT {
-		panic(BUILTIN_BITWISE + " only accepts ints!")
-	}
+	EnsureType(&args, 1, NODETYPE_INT, BUILTIN_BITWISE)
+	EnsureType(&args, 2, NODETYPE_INT, BUILTIN_BITWISE)
 
 	switch mode {
 	case "and":

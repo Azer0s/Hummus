@@ -21,10 +21,7 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 
 	switch mode {
 	case "combine":
-		if args[1].NodeType != interpreter.NODETYPE_LIST {
-			panic(CALL + " :concat only accepts lists!")
-		}
-
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_LIST, CALL+" :concat")
 		list := args[1].Value.(interpreter.ListNode)
 
 		fns := make([]string, 0)

@@ -1,5 +1,5 @@
 (def - (fn elements
-  (--system-do-math! :- elements)
+  (--builtin-do-math! :- elements)
 ))
 
 (- 2)

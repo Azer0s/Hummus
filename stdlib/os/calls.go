@@ -44,20 +44,13 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 }
 
 func exit(args []interpreter.Node) interpreter.Node {
-	if args[1].NodeType != interpreter.NODETYPE_INT {
-		panic(CALL + " :exit only accepts ints!")
-	}
-
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_INT, CALL+" :exit")
 	os.Exit(args[1].Value.(int))
-
 	return interpreter.Nothing
 }
 
 func env(args []interpreter.Node) interpreter.Node {
-	if args[1].NodeType != interpreter.NODETYPE_STRING {
-		panic(CALL + " :env only accepts strings!")
-	}
-
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :env")
 	return interpreter.StringNode(os.Getenv(args[1].Value.(string)))
 }
 
@@ -84,13 +77,8 @@ func getArgs() interpreter.Node {
 }
 
 func cmdArgs(args []interpreter.Node) interpreter.Node {
-	if args[1].NodeType != interpreter.NODETYPE_STRING {
-		panic(CALL + " :env expects a string as the first argument!")
-	}
-
-	if args[2].NodeType != interpreter.NODETYPE_LIST {
-		panic(CALL + " :env expects a list as the second argument!")
-	}
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :cmd-args")
+	interpreter.EnsureType(&args, 2, interpreter.NODETYPE_LIST, CALL+" :cmd-args")
 
 	cmdArgs := make([]string, 0)
 
@@ -102,16 +90,14 @@ func cmdArgs(args []interpreter.Node) interpreter.Node {
 
 	out := string(b)
 
-	return interpreter.OptionalNode(interpreter.StringNode(out), err != nil)
+	return interpreter.OptionNode(interpreter.StringNode(out), err != nil)
 }
 
 func cmd(args []interpreter.Node) interpreter.Node {
-	if args[1].NodeType != interpreter.NODETYPE_STRING {
-		panic(CALL + " :env expects a string as the first argument!")
-	}
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :cmd")
 
 	b, err := exec.Command(args[1].Value.(string)).CombinedOutput()
 	out := string(b)
 
-	return interpreter.OptionalNode(interpreter.StringNode(out), err != nil)
+	return interpreter.OptionNode(interpreter.StringNode(out), err != nil)
 }

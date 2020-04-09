@@ -35,6 +35,33 @@ const (
 	NODETYPE_STRUCT NodeType = 8
 )
 
+func (nt NodeType) String() string {
+	t := ""
+
+	switch nt {
+	case NODETYPE_INT:
+		t = "int"
+	case NODETYPE_FLOAT:
+		t = "float"
+	case NODETYPE_STRING:
+		t = "string"
+	case NODETYPE_BOOL:
+		t = "bool"
+	case NODETYPE_ATOM:
+		t = "atom"
+	case NODETYPE_FN:
+		t = "fn"
+	case NODETYPE_LIST:
+		t = "list"
+	case NODETYPE_MAP:
+		t = "map"
+	case NODETYPE_STRUCT:
+		t = "struct"
+	}
+
+	return t
+}
+
 // FnLiteral a function literal (block)
 type FnLiteral struct {
 	Parameters []string
@@ -97,8 +124,8 @@ func (node *Node) Bigger(compareTo Node) bool {
 	}
 }
 
-// OptionalNode return an optional node
-func OptionalNode(val Node, err bool) Node {
+// OptionNode return an optional node
+func OptionNode(val Node, err bool) Node {
 	return NodeMap(map[string]Node{
 		"value": val,
 		"error": BoolNode(err),

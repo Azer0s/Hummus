@@ -6,10 +6,18 @@
 - [x] Refactor debug stdlib to Go plugin
 - [x] Refactor base stdlib to Go plugin(s)
 - [ ] `receive` timeout
+- [ ] Documentation
+  - [ ] Language
+  - [ ] Stdlib
+  - [ ] Internals
+    - [ ] Object store (see `examples/free.hummus`)
+    - [ ] Go API
 - [ ] Macros
-- [ ] Add object store
+- [x] Add object store
+  - [x] `free` builtin to free memory from the object store
 - [ ] Add functionality to stdlib
-  - [ ] Regex
+  - [x] Regex
+  - [ ] Log
   - [ ] Aspects
   - [ ] Math
   - [ ] Logger

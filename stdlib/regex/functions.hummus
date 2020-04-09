@@ -1,0 +1,75 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :<base>)
+(use :<option>)
+
+;; regex/compile Compiles a regular expression
+;; in:
+;; * reg .. the regular expression to compile
+;; out: an option with a pseudo ptr
+(def regex/compile (fn reg
+  (--system-do-regex! :compile reg)
+))
+
+;; regex/compile! Compiles a regular expression
+;; in:
+;; * reg .. the regular expression to compile
+;; out: a pseudo ptr or -1
+(def regex/compile! (fn reg
+  (option/or_else (regex/compile reg) (- 1))
+))
+
+;; regex/is_match! Checks if a regex matches a string
+;; in:
+;; * reg .. the regular expression to check by
+;;          (either a string or the pseudo ptr)
+;; * val .. the value to check
+;; out: a bool
+(def regex/is_match? (fn reg val
+  (--system-do-regex! :ismatch reg val)
+))
+
+;; regex/match Matches a string to a regex
+;; in:
+;; * reg .. the regular expression to match by
+;;          (either a string or the pseudo ptr)
+;; * val .. the value to match
+;; out: an option with a match list
+(def regex/match (fn reg val
+  (--system-do-regex! :matches reg val)
+))
+
+;; regex/match! Matches a string to a regex
+;; in:
+;; * reg .. the regular expression to match by
+;;          (either a string or the pseudo ptr)
+;; * val .. the value to match
+;; out: a match list or (nothing)
+(def regex/match! (fn reg val
+  (option/or_else (regex/match reg val) (nothing))
+))
+
+;; regex/replace Replaces a string with a new string
+;; in:
+;; * reg .. the regular expression to match by
+;;          (either a string or the pseudo ptr)
+;;          (the old string)
+;; * val .. the value to replace string in
+;; * new .. the new string
+;; out: an option with a string
+(def regex/replace (fn reg val new
+  (--system-do-regex! :replace reg val new)
+))
+
+;; regex/replace! Replaces a string with a new string
+;; in:
+;; * reg .. the regular expression to match by
+;;          (either a string or the pseudo ptr)
+;;          (the old string)
+;; * val .. the value to replace string in
+;; * new .. the new string
+;; out: a string or ""
+(def regex/replace! (fn reg val new
+  (option/or_else (regex/replace reg val new) val)
+))

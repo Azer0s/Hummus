@@ -19,9 +19,7 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 
 	switch mode {
 	case "concat":
-		if args[1].NodeType != interpreter.NODETYPE_LIST {
-			panic(CALL + " :concat only accepts lists!")
-		}
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_LIST, CALL+" :concat")
 
 		str := make([]string, 0)
 
@@ -35,19 +33,11 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 
 		return interpreter.StringNode(strings.Join(str, ""))
 	case "len":
-		if args[1].NodeType != interpreter.NODETYPE_STRING {
-			panic(CALL + " :len only accepts strings!")
-		}
-
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :len")
 		return interpreter.IntNode(len(args[1].Value.(string)))
 	case "nth":
-		if args[1].NodeType != interpreter.NODETYPE_INT {
-			panic(CALL + " :nth expects an int as the first argument!")
-		}
-
-		if args[2].NodeType != interpreter.NODETYPE_STRING {
-			panic(CALL + " :nth expects a string as the second argument!")
-		}
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_INT, CALL+" :nth")
+		interpreter.EnsureType(&args, 2, interpreter.NODETYPE_STRING, CALL+" :nth")
 
 		return interpreter.StringNode(string(args[2].Value.(string)[args[1].Value.(int)]))
 	default:

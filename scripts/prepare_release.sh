@@ -33,3 +33,6 @@ rm bin/stdlib/net/http/calls.go
 
 go build -buildmode=plugin -o bin/stdlib/os/calls.so bin/stdlib/os/calls.go
 rm bin/stdlib/os/calls.go
+
+go build -buildmode=plugin -o bin/stdlib/regex/calls.so bin/stdlib/regex/calls.go
+rm bin/stdlib/regex/calls.go

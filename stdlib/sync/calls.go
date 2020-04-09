@@ -91,18 +91,13 @@ func createWatch(watcher, watchee int) {
 }
 
 func doWatch(arg interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
-	if arg.NodeType != interpreter.NODETYPE_INT {
-		panic(CALL + " :watch expects an int as first argument!")
-	}
-
+	interpreter.EnsureSingleType(&arg, 1, interpreter.NODETYPE_INT, CALL+" :watch")
 	createWatch((*variables)[interpreter.SELF].Value.(int), arg.Value.(int))
 	return interpreter.Nothing
 }
 
 func doSend(pid, val interpreter.Node) interpreter.Node {
-	if pid.NodeType != interpreter.NODETYPE_INT {
-		panic(CALL + " :send expects an int as first argument!")
-	}
+	interpreter.EnsureSingleType(&pid, 1, interpreter.NODETYPE_INT, CALL+" :send")
 
 	channelMapMu.RLock()
 	channel := channelMap[pid.Value.(int)]
@@ -191,9 +186,7 @@ func doCleanup(p int, r interpreter.Node) {
 }
 
 func doSpawn(arg interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
-	if arg.NodeType != interpreter.NODETYPE_FN {
-		panic(CALL + " :spawn expects a function as first argument!")
-	}
+	interpreter.EnsureSingleType(&arg, 1, interpreter.NODETYPE_FN, CALL+" :spawn")
 
 	ctx := make(map[string]interpreter.Node, 0)
 	interpreter.CopyVariableState(variables, &ctx)
@@ -227,13 +220,8 @@ func doSpawn(arg interpreter.Node, variables *map[string]interpreter.Node) inter
 }
 
 func doSleep(duration, mode interpreter.Node) interpreter.Node {
-	if duration.NodeType != interpreter.NODETYPE_INT {
-		panic(CALL + " :sleep expects an int as first argument!")
-	}
-
-	if mode.NodeType != interpreter.NODETYPE_ATOM {
-		panic(CALL + " :sleep expects an int as first argument!")
-	}
+	interpreter.EnsureSingleType(&duration, 1, interpreter.NODETYPE_INT, CALL+" :sleep")
+	interpreter.EnsureSingleType(&mode, 2, interpreter.NODETYPE_ATOM, CALL+" :sleep")
 
 	d := time.Duration(int64(duration.Value.(int)))
 
@@ -254,9 +242,7 @@ func doSleep(duration, mode interpreter.Node) interpreter.Node {
 }
 
 func doUnwatch(watchee interpreter.Node, self int) interpreter.Node {
-	if watchee.NodeType != interpreter.NODETYPE_INT {
-		panic(CALL + " :unwatch expects an int as first argument!")
-	}
+	interpreter.EnsureSingleType(&watchee, 1, interpreter.NODETYPE_INT, CALL+" :unwatch")
 
 	w := watchee.Value.(int)
 	watcheeToWatcherMu.Lock()

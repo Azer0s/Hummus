@@ -50,13 +50,8 @@ func list(args []interpreter.Node) interpreter.Node {
 }
 
 func exists(args []interpreter.Node) interpreter.Node {
-	if args[1].NodeType != interpreter.NODETYPE_ATOM {
-		panic("Expected an atom as parameter for exists? !")
-	}
-
-	if args[2].NodeType != interpreter.NODETYPE_MAP {
-		panic("Expected a map as parameter for exists? !")
-	}
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_ATOM, CALL+" :exists")
+	interpreter.EnsureType(&args, 2, interpreter.NODETYPE_MAP, CALL+" :exists")
 
 	_, ok := args[2].Value.(interpreter.MapNode).Values[args[1].Value.(string)]
 
@@ -64,9 +59,7 @@ func exists(args []interpreter.Node) interpreter.Node {
 }
 
 func keys(args []interpreter.Node) interpreter.Node {
-	if args[1].NodeType != interpreter.NODETYPE_MAP {
-		panic("Expected a map as parameter for keys!")
-	}
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_MAP, CALL+" :keys")
 
 	keys := make([]interpreter.Node, 0)
 	for s := range args[1].Value.(interpreter.MapNode).Values {
@@ -77,15 +70,11 @@ func keys(args []interpreter.Node) interpreter.Node {
 }
 
 func doRange(args []interpreter.Node) interpreter.Node {
-	from := args[1]
-	to := args[2]
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_INT, CALL+" :range")
+	interpreter.EnsureType(&args, 2, interpreter.NODETYPE_INT, CALL+" :range")
 
-	if from.NodeType != interpreter.NODETYPE_INT || to.NodeType != interpreter.NODETYPE_INT {
-		panic("Expected an int as parameter for range!")
-	}
-
-	f := from.Value.(int)
-	t := to.Value.(int)
+	f := args[1].Value.(int)
+	t := args[2].Value.(int)
 
 	list := make([]interpreter.Node, 0)
 

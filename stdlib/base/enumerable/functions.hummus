@@ -7,7 +7,7 @@
 ;; * args .. the list of values
 ;; out: maximum value
 (def max (fn args
-  (--system-do-compare! :max args)
+  (--builtin-do-compare! :max args)
 ))
 
 ;; min Returns the minimum value from
@@ -16,7 +16,7 @@
 ;; * args .. the list of values
 ;; out: minimum value
 (def min (fn args
-  (--system-do-compare! :min args)
+  (--builtin-do-compare! :min args)
 ))
 
 ;; slice Returns a slice from a list

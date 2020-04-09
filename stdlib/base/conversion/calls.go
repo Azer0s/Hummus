@@ -32,15 +32,15 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 
 	case "int":
 		val, err := strconv.Atoi(interpreter.DumpNode(args[1]))
-		return interpreter.OptionalNode(interpreter.IntNode(val), err != nil)
+		return interpreter.OptionNode(interpreter.IntNode(val), err != nil)
 
 	case "float":
 		val, err := strconv.ParseFloat(interpreter.DumpNode(args[1]), 64)
-		return interpreter.OptionalNode(interpreter.FloatNode(val), err != nil)
+		return interpreter.OptionNode(interpreter.FloatNode(val), err != nil)
 
 	case "bool":
 		val, err := strconv.ParseBool(interpreter.DumpNode(args[1]))
-		return interpreter.OptionalNode(interpreter.BoolNode(val), err != nil)
+		return interpreter.OptionNode(interpreter.BoolNode(val), err != nil)
 
 	case "identity":
 		return args[1]
