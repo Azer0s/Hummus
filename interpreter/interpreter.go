@@ -5,7 +5,6 @@ import (
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
 	"io/ioutil"
-	"os"
 	"path"
 	"path/filepath"
 	"plugin"
@@ -13,6 +12,9 @@ import (
 	"strconv"
 	"sync"
 )
+
+// BasePath base path from which to import stdlib
+var BasePath string
 
 const (
 	// USE include function
@@ -290,7 +292,7 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	file := node.Arguments[0].Token.Value
 
 	if stdlib.MatchString(file) {
-		dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		dir, err := filepath.Abs(BasePath)
 
 		if err != nil {
 			panic(err)

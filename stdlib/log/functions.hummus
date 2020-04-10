@@ -1,0 +1,137 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+;; log/set-level Sets the loglevel
+;; in:
+;; * lvl .. the desired loglevel
+;; out: true if the operation was successful
+(def log/set-level (fn lvl
+  (--system-do-log! :set-level lvl)
+))
+
+;; log/json Switch json output
+;; in:
+;; * enable .. JSON output enable switch
+(def log/json (fn enable
+  (--system-do-log! :json enable)
+))
+
+;; log/create-hook Create a log hook
+;; in:
+;; * cb .. the hook callback
+(def log/create-hook (fn cb
+  (--system-do-log! :create-hook cb)
+))
+
+;; log/register-hook Create a log hook
+;; in:
+;; * hook .. the hook callback ptr
+(def log/register-hook (fn hook
+  (--system-do-log! :register-hook hook)
+))
+
+
+;; log/trace Logs a message at level Trace
+;; in:
+;; * args .. the value to log
+(def log/trace (fn val
+  (--system-do-log! :log :trace val)
+))
+
+;; log/debug Logs a message at level Debug
+;; in:
+;; * args .. the value to log
+(def log/debug (fn val
+  (--system-do-log! :log :debug val)
+))
+
+;; log/info Logs a message at level Info
+;; in:
+;; * args .. the value to log
+(def log/info (fn val
+  (--system-do-log! :log :info val)
+))
+
+;; log/warn Logs a message at level Warn
+;; in:
+;; * args .. the value to log
+(def log/warn (fn val
+  (--system-do-log! :log :warn val)
+))
+
+;; log/error Logs a message at level Error
+;; in:
+;; * args .. the value to log
+(def log/error (fn val
+  (--system-do-log! :log :error val)
+))
+
+;; log/fatal Logs a message at level Fatal
+;; in:
+;; * args .. the value to log
+(def log/fatal (fn val
+  (--system-do-log! :log :fatal val)
+))
+
+;; log/panic Logs a message at level Panic
+;; in:
+;; * args .. the value to log
+(def log/panic (fn val
+  (--system-do-log! :log :panic val)
+))
+
+;; log/trace{} Logs a message at level Trace with props
+;; in:
+;; * props .. the props to log with
+;; * args .. the value to log
+(def log/trace{} (fn props val
+  (--system-do-log! :log-props :trace props val)
+))
+
+;; log/debug{} Logs a message at level Debug with props
+;; in:
+;; * props .. the props to log with
+;; * args .. the value to log
+(def log/debug{} (fn props val
+  (--system-do-log! :log-props :debug props val)
+))
+
+;; log/info{} Logs a message at level Info with props
+;; in:
+;; * props .. the props to log with
+;; * args .. the value to log
+(def log/info{} (fn props val
+  (--system-do-log! :log-props :info props val)
+))
+
+;; log/warn{} Logs a message at level Warn with props
+;; in:
+;; * props .. the props to log with
+;; * args .. the value to log
+(def log/warn{} (fn props val
+  (--system-do-log! :log-props :warn props val)
+))
+
+;; log/error{} Logs a message at level Error with props
+;; in:
+;; * props .. the props to log with
+;; * args .. the value to log
+(def log/error{} (fn props val
+  (--system-do-log! :log-props :error props val)
+))
+
+;; log/fatal{} Logs a message at level Fatal with props
+;; in:
+;; * props .. the props to log with
+;; * args .. the value to log
+(def log/fatal{} (fn props val
+  (--system-do-log! :log-props :fatal props val)
+))
+
+;; log/panic{} Logs a message at level Panic with props
+;; in:
+;; * props .. the props to log with
+;; * args .. the value to log
+(def log/panic{} (fn props val
+  (--system-do-log! :log-props :panic props val)
+))

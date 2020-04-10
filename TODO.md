@@ -5,6 +5,14 @@
 - [x] Function composition
 - [x] Refactor debug stdlib to Go plugin
 - [x] Refactor base stdlib to Go plugin(s)
+- [ ] `hummus init project`
+- [ ] `hummus get github.com/Azer0/kafka-hummus`
+- [ ] `hummus run`
+- [ ] Add tests
+  - [x] Parser
+  - [x] Runner
+  - [ ] Interpreter
+  - [ ] Stdlib
 - [ ] `receive` timeout
 - [ ] Documentation
   - [ ] Language
@@ -18,9 +26,8 @@
 - [ ] Add functionality to stdlib
   - [x] Regex
   - [ ] Log
-  - [ ] Aspects
   - [ ] Math
-  - [ ] Logger
+  - [x] Log
   - [ ] File
   - [ ] Dir
   - [ ] Bench
@@ -34,3 +41,4 @@
   - [ ] Time
   - [x] HTML
 - [ ] Get rid of pseudo-terminal-go
+  - [ ] Evaluate https://github.com/creack/pty

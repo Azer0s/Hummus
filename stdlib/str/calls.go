@@ -40,6 +40,12 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		interpreter.EnsureType(&args, 2, interpreter.NODETYPE_STRING, CALL+" :nth")
 
 		return interpreter.StringNode(string(args[2].Value.(string)[args[1].Value.(int)]))
+	case "lower":
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :lower")
+		return interpreter.StringNode(strings.ToLower(args[1].Value.(string)))
+	case "upper":
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :upper")
+		return interpreter.StringNode(strings.ToUpper(args[1].Value.(string)))
 	default:
 		panic("Unrecognized mode")
 	}

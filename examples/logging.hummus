@@ -1,0 +1,34 @@
+(use :<base>)
+(use :<debug>)
+(use :<log>)
+
+(log/set-level :info)
+(def trap-hook (log/create-hook (fn x
+  (out (:message x))
+)))
+
+(def do-log (fn
+  (log/trace "This is a trace message")
+  (log/debug "This is a debug message")
+  (log/info "This is an info message")
+  (log/warn "This is a warn message")
+))
+
+(do-log)
+
+(log/register-hook trap-hook)
+
+(do-log)
+
+(log/json true)
+
+(do-log)
+
+(log/info{} ({}
+  (:foo :bar)
+  (:hello "world")
+) "This is an info message")
+
+(log/warn{} ({}
+  (:request-id "da34f")
+) "This is a warn message")

@@ -327,3 +327,11 @@ docker run --rm -it azer0s/hummus
 ```clojure
 (help)
 ```
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
+
+## Credits
+
+* <a href="https://github.com/carmark/pseudo-terminal-go">carmark/pseudo-terminal-go</a> - used for REPL
+* <a href="https://github.com/sirupsen/logrus">sirupsen/logrus</a> - used in the log stdlib

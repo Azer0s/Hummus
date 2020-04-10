@@ -25,3 +25,19 @@
 (def str/nth (fn idx arg
   (--system-do-strings! :nth idx arg)
 ))
+
+;; str/lower Converts a string to all lowercase
+;; in:
+;; * arg .. the string to convert
+;; out: the converted string
+(def str/lower (fn arg
+  (--system-do-strings! :lower arg)
+))
+
+;; str/upper Converts a string to all uppercase
+;; in:
+;; * arg .. the string to convert
+;; out: the converted string
+(def str/upper (fn arg
+  (--system-do-strings! :upper arg)
+))

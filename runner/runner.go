@@ -6,7 +6,9 @@ import (
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
 	"github.com/carmark/pseudo-terminal-go/terminal"
+	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -176,4 +178,40 @@ func RunRepl() {
 	for {
 		doFailsafeRepl(term, &vars)
 	}
+}
+
+func getExecFile(p, filename string) string {
+	if path.IsAbs(filename) {
+		return filename
+	}
+
+	return path.Join(p, filename)
+}
+
+// RunFile runs a file by filename
+func RunFile(filename string) interpreter.Node {
+	b, err := ioutil.ReadFile(filename)
+
+	if err != nil {
+		panic(err)
+	}
+
+	p, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	execFile := getExecFile(p, filename)
+
+	vars := make(map[string]interpreter.Node, 0)
+	setupVars(&vars, execFile)
+
+	return interpreter.Run(parser.Parse(lexer.LexString(string(b))), &vars)
+}
+
+func RunString(code string) interpreter.Node {
+	vars := make(map[string]interpreter.Node, 0)
+	setupVars(&vars, os.Args[0])
+
+	return interpreter.Run(parser.Parse(lexer.LexString(code)), &vars)
 }

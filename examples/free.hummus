@@ -1,9 +1,9 @@
 (use :<base>)
 (use :<regex>)
 
-(def reg1 (regex/compile "ab[cd]"))
-(def reg2 (regex/compile "xb[cd]"))
-(def reg3 (regex/compile "yb[cd]"))
+(def reg1 (regex/compile! "ab[cd]"))
+(def reg2 (regex/compile! "xb[cd]"))
+(def reg3 (regex/compile! "yb[cd]"))
 
 ;; "Oh...we don't actually need reg1 and reg3"
 
@@ -11,7 +11,7 @@
 (free reg2)
 
 ((fn
-  (def fnreg (regex/compile "function"))
+  (def fnreg (regex/compile! "function"))
   (free fnreg) ; you HAVE to free this
   ; since you can send pseudo ptrs around in
   ; Hummus and not the actual native objects
