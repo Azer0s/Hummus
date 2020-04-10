@@ -209,6 +209,7 @@ func RunFile(filename string) interpreter.Node {
 	return interpreter.Run(parser.Parse(lexer.LexString(string(b))), &vars)
 }
 
+// RunString run Hummus code from a string
 func RunString(code string) interpreter.Node {
 	vars := make(map[string]interpreter.Node, 0)
 	setupVars(&vars, os.Args[0])

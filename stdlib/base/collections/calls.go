@@ -5,7 +5,7 @@ import (
 )
 
 // CALL the built in value make system function
-var CALL string = "--system-do-make!"
+var CALL string = "--system-do-collections!"
 
 // Init Hummus stdlib stub
 func Init(variables *map[string]interpreter.Node) {
@@ -32,9 +32,34 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	case "nothing":
 		return interpreter.NodeList(make([]interpreter.Node, 0))
 
+	case "map-add":
+		return doMapAdd(args)
+
+	case "list-add":
+		return doListAdd(args)
+
 	default:
 		panic("Unrecognized mode")
 	}
+}
+
+func doMapAdd(args []interpreter.Node) interpreter.Node {
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_MAP, CALL+" :map-add")
+	interpreter.EnsureType(&args, 2, interpreter.NODETYPE_ATOM, CALL+" :map-add")
+
+	m := args[1].Value.(interpreter.MapNode).Values
+	m[args[2].Value.(string)] = args[3]
+
+	return interpreter.NodeMap(m)
+}
+
+func doListAdd(args []interpreter.Node) interpreter.Node {
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_LIST, CALL+" :map-add")
+
+	l := args[1].Value.(interpreter.ListNode).Values
+	l = append(l, args[2])
+
+	return interpreter.NodeList(l)
 }
 
 func list(args []interpreter.Node) interpreter.Node {

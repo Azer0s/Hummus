@@ -7,7 +7,7 @@
 ;; * to .. upper bound of the range
 ;; out: the range
 (def .. (fn from to
-  (--system-do-make! :range from to)
+  (--system-do-collections! :range from to)
 ))
 
 ;; range Returns a range from 0 to times
@@ -15,7 +15,7 @@
 ;; * times .. the upper bound of a range
 ;; out: the range
 (def range (fn times
-  (--system-do-make! :range 0 times)
+  (--system-do-collections! :range 0 times)
 ))
 
 ;; to Alias for range
@@ -23,7 +23,7 @@
 ;; * times .. the upper bound of a range
 ;; out: the range
 (def to (fn times
-  (--system-do-make! :range 0 times)
+  (--system-do-collections! :range 0 times)
 ))
 
 ;; list Returns a list from arguments
@@ -31,13 +31,13 @@
 ;; * args .. the arguments to return a list from
 ;; out: a list
 (def list (fn args
-  (--system-do-make! :list args)
+  (--system-do-collections! :list args)
 ))
 
 ;; nothing Returns an empty list
 ;; out: a list
 (def nothing (fn
-  (--system-do-make! :nothing)
+  (--system-do-collections! :nothing)
 ))
 
 ;; keys Returns the keys of a map as a list
@@ -45,7 +45,7 @@
 ;; * map .. the map to return the keys from
 ;; out: a list of atoms
 (def keys (fn map
-  (--system-do-make! :keys map)
+  (--system-do-collections! :keys map)
 ))
 
 ;; exists? Returns true if a map contains a key
@@ -54,5 +54,24 @@
 ;; * key .. the key to check
 ;; out: a bool
 (def exists? (fn map key
-  (--system-do-make! :exists map key)
+  (--system-do-collections! :exists map key)
+))
+
+;; map/add Adds a value to a map and returns the new map
+;; in:
+;; * map .. the map to add value to
+;; * key .. the key to add
+;; * val .. the value to add
+;; out: the new map
+(def map/add (fn map key val
+  (--system-do-collections! :map-add map key val)
+))
+
+;; list/add Adds a value to a list and returns the new list
+;; in:
+;; * l .. the list to add value to
+;; * val .. the value to add
+;; out: the new list
+(def list/add (fn l val
+  (--system-do-collections! :list-add l val)
 ))
