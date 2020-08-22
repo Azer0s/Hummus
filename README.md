@@ -93,7 +93,6 @@ docker run --rm -it azer0s/hummus
 (out "Tea costs " (` ([] :tea prices)))
 ```
 
-<!---
 ### Macros
 
 ```clojure
@@ -123,7 +122,6 @@ docker run --rm -it azer0s/hummus
 ; (if (> 4 3)
 ;   (out "A"))
 ```
--->
 
 ### Actor model
 
