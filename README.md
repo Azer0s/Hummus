@@ -99,9 +99,7 @@ docker run --rm -it azer0s/hummus
 (def dotimes (macro times |action| (
 ; || tells Hummus to not evaluate this argument but to
 ; literally take the AstNode as it's input parameter
-  (map (range times) (list :fn
-    (unquote action)
-  ))
+  (map (range times) action)
 ))
 
 (dotimes 3 (out "Hello world"))
@@ -110,11 +108,8 @@ docker run --rm -it azer0s/hummus
 ; (out "Hello world")
 ; (out "Hello world")
 
-(def when (macro cond action
-  (quote 
-    (list :if (unquote cond)
-      (unquote action))
-  )
+(def when (macro |cond| |action|
+  (' :if cond action)
 ))
 
 (when (> 4 3) (out "A"))
