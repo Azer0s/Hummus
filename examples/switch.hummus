@@ -1,9 +1,7 @@
 (def switch (macro |value| |statements|
   (map statements (fn statement
-    (quote
-      (if (= (unquote value) (unquote (nth 0 statament)))
-        (unquote (nth 1 statament))
-      )
+    (' :if (' :call := value (nth 0 statament))
+      (nth 1 statament)
     )
   ))
 ))
