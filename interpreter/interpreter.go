@@ -31,6 +31,18 @@ const (
 	SELF string = "self"
 )
 
+var literalRe *regexp.Regexp
+
+func init() {
+	re, err := regexp.Compile("\\|(\\w+)\\|")
+
+	if err != nil {
+		panic(err)
+	}
+
+	literalRe = re
+}
+
 var globalFnsMu = &sync.RWMutex{}
 var globalFns = make(map[string]Node, 0)
 
@@ -214,6 +226,28 @@ func getStructDef(node parser.Node) StructDef {
 	return structDef
 }
 
+func getMacroDef(parserNode parser.Node) MacroDef {
+	parameters := make([]MacroParameter, 0)
+	for _, argument := range parserNode.Arguments[1].Arguments[0].Arguments {
+		if literalRe.MatchString(argument.Token.Value) {
+			parameters = append(parameters, MacroParameter{
+				Parameter: literalRe.FindStringSubmatch(argument.Token.Value)[1],
+				Literal:   true,
+			})
+		} else {
+			parameters = append(parameters, MacroParameter{
+				Parameter: argument.Token.Value,
+				Literal:   false,
+			})
+		}
+	}
+
+	return MacroDef{
+		Parameters: parameters,
+		Body:       parserNode.Arguments[1:],
+	}
+}
+
 func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	name := node.Arguments[0].Token.Value
 	variable := Nothing
@@ -223,6 +257,11 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 		(*variables)[name] = Node{
 			Value:    getStructDef(node),
 			NodeType: NODETYPE_STRUCT,
+		}
+	} else if node.Arguments[1].Type == parser.MACRO_DEF {
+		(*variables)[name] = Node{
+			Value:    getMacroDef(node),
+			NodeType: NODETYPE_MACRO,
 		}
 	} else {
 		(*variables)[name] = getValueFromNode(node.Arguments[1], variables)

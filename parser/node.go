@@ -47,4 +47,6 @@ const (
 	PARAMETERS NodeType = 12
 	// STRUCT_DEF struct definition
 	STRUCT_DEF NodeType = 16
+	// MACRO_DEF macro definition
+	MACRO_DEF NodeType = 17
 )
