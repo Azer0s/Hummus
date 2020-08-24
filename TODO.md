@@ -17,15 +17,17 @@
 - [ ] Documentation
   - [ ] Language
   - [ ] Stdlib
-  - [ ] Internals
-    - [ ] Object store (see `examples/free.hummus`)
-    - [ ] Go API
+  - [x] Internals
+    - [x] Object store (see `examples/free.hummus`)
+    - [x] Go API
 - [ ] Macros
 - [x] Add object store
   - [x] `free` builtin to free memory from the object store
 - [ ] Add functionality to stdlib
   - [x] Regex
-  - [ ] Log
+  - [x] Debug
+  - [x] Log
+    - [ ] LogFn
   - [ ] Math
   - [x] Log
   - [ ] File
@@ -37,8 +39,8 @@
   - [ ] Encode
     - [ ] Base64
   - [ ] Json
-  - [ ] Random
-  - [ ] Time
+  - [ ] Date
+  - [x] Random
   - [x] HTML
 - [ ] Get rid of pseudo-terminal-go
   - [ ] Evaluate https://github.com/creack/pty

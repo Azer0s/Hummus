@@ -1,0 +1,22 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(def random/int (fn
+  (--system-do-random! :int)
+))
+
+(def random/intn (fn n
+  (--system-do-random! :intn n)
+))
+
+(def random/float (fn
+  (--system-do-random! :float)
+))
+
+(def random/string (fn n
+  (--system-do-random! :string n)
+))
+
+(def random/stringc (fn n charset
+  (--system-do-random! :stringc n charset)
+))
