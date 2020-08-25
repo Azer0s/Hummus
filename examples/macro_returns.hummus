@@ -1,0 +1,50 @@
+(use :<base>)
+
+(def returnCall (macro
+  (' :call :out (' :string "Hello"))
+))
+
+(def returnIf (macro
+  (' :if (' :bool true) (' :call :out (' :string "Hello")))
+))
+
+(def returnIdentifier (macro
+  (' :identifier :x)
+))
+
+
+(def returnAtom (macro
+  (' :atom :ok)
+))
+
+
+(def returnBool (macro
+  (' :bool true)
+))
+
+
+(def returnInt (macro
+  (' :int  10)
+))
+
+(def returnFloat (macro
+  (' :float  10.1)
+))
+
+(def returnString (macro
+  (' :string "Hello")
+))
+
+(def namespace (macro prefix |defines|
+  (map defines (fn define
+    (' :def (str/concat prefix "/" (string (nth 1 define))) (nth 2 define))
+  ))
+))
+
+(namespace test
+  (def foo (fn
+    (out "Hello")
+  ))
+)
+
+(test/foo)

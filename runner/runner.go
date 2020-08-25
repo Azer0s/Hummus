@@ -122,7 +122,7 @@ func doFailsafeRepl(term *terminal.Terminal, vars *map[string]interpreter.Node) 
 	for {
 		t, _ := term.ReadLine()
 
-		text += t
+		text += t + "\n"
 		tokens = lexer.LexString(text)
 
 		if checkClose(tokens) {

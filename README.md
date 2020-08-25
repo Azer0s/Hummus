@@ -93,16 +93,13 @@ docker run --rm -it azer0s/hummus
 (out "Tea costs " (` ([] :tea prices)))
 ```
 
-<!---
 ### Macros
 
 ```clojure
-(def dotimes (macro times |action| (
+(def dotimes (macro times |action|
 ; || tells Hummus to not evaluate this argument but to
 ; literally take the AstNode as it's input parameter
-  (map (range times) (list :fn
-    (unquote action)
-  ))
+  (map (.. 1 times) (fn _ (identity action)))
 ))
 
 (dotimes 3 (out "Hello world"))
@@ -111,11 +108,8 @@ docker run --rm -it azer0s/hummus
 ; (out "Hello world")
 ; (out "Hello world")
 
-(def when (macro cond action
-  (quote 
-    (list :if (unquote cond)
-      (unquote action))
-  )
+(def when (macro |cond| |action|
+  (' :if cond action)
 ))
 
 (when (> 4 3) (out "A"))
@@ -123,7 +117,6 @@ docker run --rm -it azer0s/hummus
 ; (if (> 4 3)
 ;   (out "A"))
 ```
--->
 
 ### Actor model
 

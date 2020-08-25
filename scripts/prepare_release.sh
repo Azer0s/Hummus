@@ -37,5 +37,8 @@ rm bin/stdlib/os/calls.go
 go build -buildmode=plugin -o bin/stdlib/regex/calls.so bin/stdlib/regex/calls.go
 rm bin/stdlib/regex/calls.go
 
+go build -buildmode=plugin -o bin/stdlib/random/calls.so bin/stdlib/random/calls.go
+rm bin/stdlib/random/calls.go
+
 go build -buildmode=plugin -o bin/stdlib/log/calls.so bin/stdlib/log/calls.go bin/stdlib/log/std_hook.go
 rm bin/stdlib/log/calls.go bin/stdlib/log/std_hook.go

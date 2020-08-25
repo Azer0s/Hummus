@@ -33,6 +33,8 @@ const (
 	NODETYPE_MAP NodeType = 7
 	// NODETYPE_STRUCT struct type
 	NODETYPE_STRUCT NodeType = 8
+	// NODETYPE_MACRO macro type
+	NODETYPE_MACRO NodeType = 9
 )
 
 func (nt NodeType) String() string {
@@ -82,6 +84,16 @@ type MapNode struct {
 // StructDef struct definition
 type StructDef struct {
 	Parameters []string
+}
+
+type MacroParameter struct {
+	Parameter string
+	Literal   bool
+}
+
+type MacroDef struct {
+	Parameters []MacroParameter
+	Body       []parser.Node
 }
 
 // Smaller < operator for Node

@@ -411,7 +411,9 @@ func parseDef(i *int, current *lexer.Token, tokens []lexer.Token, canMacro bool)
 				panic(fmt.Sprintf("Macros can only be defined in root scope! (line %d)", current.Line))
 			}
 
-			//TODO: Parse macro - macros come last (after the interpreter is done)
+			macro := parseFunction(i, current, tokens)
+			macro.Type = MACRO_DEF
+			node.Arguments = append(node.Arguments, macro)
 		} else if current.Type == lexer.IDENTIFIER_STRUCT {
 			next(i, current, tokens)
 			atoms := Node{

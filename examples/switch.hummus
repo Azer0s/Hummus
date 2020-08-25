@@ -1,16 +1,18 @@
+(use :<base>)
+
 (def switch (macro |value| |statements|
-  (map statements (fn statement
-    (quote
-      (if (= (unquote value) (unquote (nth 0 statament)))
-        (unquote (nth 1 statament))
-      )
+  (def vals (map (range (- (/ (len statements) 2) 1)) (fn i (' (* i 2) (+ (* i 2) 1))) ))
+
+  (map vals (fn kv
+    (' :if (' :call := value (nth (nth 0 kv) statements))
+      (nth (nth 1 kv) statements)
     )
   ))
 ))
 
-(def x (in))
+(def x "Hello")
 
 (switch x
-  ("Hello" (out "Hi!"))
-  ("Bye" (out "See ya!"))
+  "Hello" (out "Hi!")
+  "Bye" (out "See ya!")
 )

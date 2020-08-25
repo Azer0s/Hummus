@@ -34,6 +34,14 @@
   (--system-do-collections! :list args)
 ))
 
+;; ' Returns a list from arguments
+;; in:
+;; * args .. the arguments to return a list from
+;; out: a list
+(def ' (fn args
+  (--system-do-collections! :list args)
+))
+
 ;; nothing Returns an empty list
 ;; out: a list
 (def nothing (fn
