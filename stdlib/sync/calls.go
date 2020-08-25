@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+func main() {}
+
 // CALL concurrency functions
 var CALL string = "--system-do-sync!"
 

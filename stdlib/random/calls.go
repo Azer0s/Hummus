@@ -5,6 +5,8 @@ import (
 	"math/rand"
 )
 
+func main() {}
+
 // CALL random functions
 var CALL string = "--system-do-random!"
 

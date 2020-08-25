@@ -2,8 +2,7 @@ FROM golang:alpine as builder
 RUN apk update && apk add --no-cache git && apk add --update alpine-sdk
 WORKDIR $GOPATH/src/github.com/Azer0s/Hummus/
 COPY . .
-RUN rm go.mod
-RUN go get github.com/carmark/pseudo-terminal-go/terminal
+RUN go get ./...
 RUN chmod +x scripts/prepare_release.sh
 RUN ./scripts/prepare_release.sh
 RUN go build -o bin/hummus

@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+func main() {}
+
 // CALL HTTP server functions
 var CALL string = "--system-do-http!"
 
