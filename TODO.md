@@ -20,7 +20,7 @@
   - [x] Internals
     - [x] Object store (see `examples/free.hummus`)
     - [x] Go API
-- [ ] Macros
+- [x] Macros
 - [x] Add object store
   - [x] `free` builtin to free memory from the object store
 - [ ] Add functionality to stdlib
