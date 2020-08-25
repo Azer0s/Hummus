@@ -96,10 +96,10 @@ docker run --rm -it azer0s/hummus
 ### Macros
 
 ```clojure
-(def dotimes (macro times |action| (
+(def dotimes (macro times |action|
 ; || tells Hummus to not evaluate this argument but to
 ; literally take the AstNode as it's input parameter
-  (map (range times) action)
+  (map (.. 1 times) (fn _ (identity action)))
 ))
 
 (dotimes 3 (out "Hello world"))

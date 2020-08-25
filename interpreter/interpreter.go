@@ -16,6 +16,7 @@ import (
 // BasePath base path from which to import stdlib
 var BasePath string
 
+//noinspection GoSnakeCaseUsage
 const (
 	// USE include function
 	USE string = "use"
@@ -244,7 +245,7 @@ func getMacroDef(parserNode parser.Node) MacroDef {
 
 	return MacroDef{
 		Parameters: parameters,
-		Body:       parserNode.Arguments[1:],
+		Body:       parserNode.Arguments[1].Arguments[1:],
 	}
 }
 
@@ -376,65 +377,143 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	return Nothing
 }
 
-// DoVariableCall calls a fn variable
-func DoVariableCall(node parser.Node, val Node, variables *map[string]Node) Node {
-	if val.NodeType == NODETYPE_FN {
-		fn := val.Value.(FnLiteral)
-		args := getArgs(node.Arguments, fn.Parameters, variables, node.Token.Line)
+func doFnCall(node parser.Node, val Node, variables *map[string]Node) Node {
+	fn := val.Value.(FnLiteral)
+	args := getArgs(node.Arguments, fn.Parameters, variables, node.Token.Line)
+
+	if fn.Context != nil {
+		for k, v := range fn.Context {
+			args[k] = v
+		}
+	}
+
+	ret := Run(fn.Body, &args)
+
+	if ret.NodeType == NODETYPE_FN {
+		// set context in case of currying
+		ctx := make(map[string]Node, 0)
 
 		if fn.Context != nil {
 			for k, v := range fn.Context {
-				args[k] = v
+				ctx[k] = v
 			}
 		}
 
-		ret := Run(fn.Body, &args)
-
-		if ret.NodeType == NODETYPE_FN {
-			// set context in case of currying
-			ctx := make(map[string]Node, 0)
-
-			if fn.Context != nil {
-				for k, v := range fn.Context {
-					ctx[k] = v
-				}
-			}
-
-			retFn := ret.Value.(FnLiteral)
-			if retFn.Context != nil {
-				for k, v := range retFn.Context {
-					ctx[k] = v
-				}
-			}
-
-			getArgsByParameterList(node.Arguments, variables, fn.Parameters, &ctx, node.Token.Line)
-
-			ret.Value = FnLiteral{
-				Parameters: ret.Value.(FnLiteral).Parameters,
-				Body:       ret.Value.(FnLiteral).Body,
-				Context:    ctx,
+		retFn := ret.Value.(FnLiteral)
+		if retFn.Context != nil {
+			for k, v := range retFn.Context {
+				ctx[k] = v
 			}
 		}
 
-		return ret
-	} else if val.NodeType == NODETYPE_STRUCT {
-		structDef := val.Value.(StructDef)
-		arg := resolve(node.Arguments, variables)
+		getArgsByParameterList(node.Arguments, variables, fn.Parameters, &ctx, node.Token.Line)
 
-		if len(structDef.Parameters) != len(arg) {
-			panic(fmt.Sprintf("Struct argument mismatch! (line %d)", node.Token.Line))
+		ret.Value = FnLiteral{
+			Parameters: ret.Value.(FnLiteral).Parameters,
+			Body:       ret.Value.(FnLiteral).Body,
+			Context:    ctx,
 		}
-
-		mapVals := make(map[string]Node, 0)
-
-		for i := range structDef.Parameters {
-			mapVals[structDef.Parameters[i]] = arg[i]
-		}
-
-		return NodeMap(mapVals)
 	}
 
-	panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token.Value, node.Token.Line))
+	return ret
+}
+
+func doStructCreation(node parser.Node, val Node, variables *map[string]Node) Node {
+	structDef := val.Value.(StructDef)
+	arg := resolve(node.Arguments, variables)
+
+	if len(structDef.Parameters) != len(arg) {
+		panic(fmt.Sprintf("Struct argument mismatch! (line %d)", node.Token.Line))
+	}
+
+	mapVals := make(map[string]Node, 0)
+
+	for i := range structDef.Parameters {
+		mapVals[structDef.Parameters[i]] = arg[i]
+	}
+
+	return NodeMap(mapVals)
+}
+
+func doMacroCall(node parser.Node, val Node, variables *map[string]Node) Node {
+	macro := val.Value.(MacroDef)
+
+	targetMap := make(map[string]Node, 0)
+	CopyVariableState(variables, &targetMap)
+
+	if len(macro.Parameters) == 1 && len(node.Arguments) > 1 {
+		//1 macro argument, many inputs => list
+
+		if macro.Parameters[0].Literal {
+			l := make([]Node, 0)
+			for _, argument := range node.Arguments {
+				l = append(l, parserNodeToAstList(argument))
+			}
+
+			targetMap[macro.Parameters[0].Parameter] = NodeList(l)
+		} else {
+			targetMap[macro.Parameters[0].Parameter] = NodeList(resolve(node.Arguments, variables))
+		}
+	} else if len(macro.Parameters) == len(node.Arguments) {
+		//arguments 1:1
+
+		for i := range macro.Parameters {
+			if macro.Parameters[i].Literal {
+				targetMap[macro.Parameters[i].Parameter] = parserNodeToAstList(node.Arguments[i])
+			} else {
+				targetMap[macro.Parameters[i].Parameter] = getValueFromNode(node.Arguments[i], variables)
+			}
+		}
+	} else if len(macro.Parameters) < len(node.Arguments) && len(macro.Parameters) > 0 {
+		//arguments 1:1 until end, last variable is a list
+
+		i := 0
+		for i = range macro.Parameters[:len(macro.Parameters)-1] {
+			if macro.Parameters[i].Literal {
+				targetMap[macro.Parameters[i].Parameter] = parserNodeToAstList(node.Arguments[i])
+			} else {
+				targetMap[macro.Parameters[i].Parameter] = getValueFromNode(node.Arguments[i], variables)
+			}
+		}
+
+		if macro.Parameters[i+1].Literal {
+			l := make([]Node, 0)
+			for _, argument := range node.Arguments[i+1:] {
+				l = append(l, parserNodeToAstList(argument))
+			}
+
+			targetMap[macro.Parameters[i+1].Parameter] = NodeList(l)
+		} else {
+			targetMap[macro.Parameters[i+1].Parameter] = NodeList(resolve(node.Arguments[i+1:], variables))
+		}
+	} else {
+		panic(fmt.Sprintf("Argument mismatch! (line %d)", node.Token.Line))
+	}
+
+	ret := Run(macro.Body, &targetMap)
+
+	if ret.NodeType != NODETYPE_LIST {
+		panic(fmt.Sprintf("Macro %s doesn't return a list! (line %d)", node.Token.Value, node.Token.Line))
+	}
+
+	//Convert ret to Ast and run it
+	ast := astListToParserNode(ret.Value.(ListNode))
+
+	return Run(ast, variables)
+}
+
+// DoVariableCall calls a fn variable
+func DoVariableCall(node parser.Node, val Node, variables *map[string]Node) Node {
+	switch val.NodeType {
+	case NODETYPE_FN:
+		return doFnCall(node, val, variables)
+	case NODETYPE_STRUCT:
+		return doStructCreation(node, val, variables)
+	case NODETYPE_MACRO:
+		return doMacroCall(node, val, variables)
+	default:
+		panic(fmt.Sprintf("Variable %s is not callable! (line %d)", node.Token.Value, node.Token.Line))
+	}
 }
 
 func doType(node parser.Node, variables *map[string]Node) Node {
