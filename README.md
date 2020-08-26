@@ -290,6 +290,7 @@ docker run --rm -it azer0s/hummus
 
 ```clojure
 (use :<base>)
+(use :<str>)
 
 (def fib (fn n
   (if (< n 2)
@@ -309,6 +310,8 @@ docker run --rm -it azer0s/hummus
 (for true
   (out "Hello world")
 )
+
+(str/concat "String functions go b" (str/repeat "r" 10))
 ```
 
 ## Exit the application
