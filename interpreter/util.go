@@ -116,6 +116,7 @@ func astListToParserNode(list ListNode) []parser.Node {
 
 	switch list.Values[0].Value.(string) {
 	case "def":
+		//TODO: Ensure types
 		return []parser.Node{
 			{
 				Type: parser.ACTION_DEF,
@@ -196,6 +197,7 @@ func astListToParserNode(list ListNode) []parser.Node {
 			},
 		}
 	case "fn":
+		//TODO: Ensure types
 		paramList := make([]parser.Node, 0)
 
 		for _, node := range list.Values[1].Value.(ListNode).Values[1:] {
@@ -232,6 +234,51 @@ func astListToParserNode(list ListNode) []parser.Node {
 
 		return []parser.Node{
 			fnDef,
+		}
+	case "for_iter":
+		//TODO: Ensure types
+		actionList := make([]parser.Node, 0)
+
+		for _, node := range list.Values[2:] {
+			actionList = append(actionList, astListToParserNode(node.Value.(ListNode))...)
+		}
+
+		forIter := []parser.Node{
+			{
+				Type:      parser.IDENTIFIER,
+				Arguments: nil,
+				Token: lexer.Token{
+					Value: list.Values[1].Value.(ListNode).Values[0].Value.(string),
+					Type:  lexer.IDENTIFIER,
+					Line:  0,
+				},
+			},
+			astListToParserNode(list.Values[1].Value.(ListNode).Values[1].Value.(ListNode))[0],
+		}
+
+		return []parser.Node{
+			{
+				Type:      parser.ACTION_FOR,
+				Arguments: append(forIter, actionList...),
+				Token:     lexer.Token{},
+			},
+		}
+	case "for_loop":
+		//TODO: Ensure types
+		actionList := make([]parser.Node, 0)
+
+		for _, node := range list.Values[2:] {
+			actionList = append(actionList, astListToParserNode(node.Value.(ListNode))...)
+		}
+
+		return []parser.Node{
+			{
+				Type: parser.ACTION_WHILE,
+				Arguments: append([]parser.Node{
+					astListToParserNode(list.Values[1].Value.(ListNode))[0],
+				}, actionList...),
+				Token: lexer.Token{},
+			},
 		}
 	case "identifier":
 		if list.Values[1].NodeType != NODETYPE_ATOM {
