@@ -35,14 +35,36 @@
   (' :string "Hello")
 ))
 
-(def namespace (macro prefix |defines|
-  (map defines (fn define
-    (' :def (str/concat prefix "/" (string (nth 1 define))) (nth 2 define))
-  ))
+(def returnForIter (macro
+  (' :for_iter (' :x (' :call :to (' :int 10))) (' :call :out (' :identifier :x)))
+))
+
+(def returnForLoop (macro
+  (' :for_loop (' :bool true) (' :call :out (' :string "Hello")))
+))
+
+(def namespace (macro |prefix| |defines|
+  (if (= (nth 0 defines) :call)
+    (' :def (str/concat (string (nth 1 prefix)) "/" (string (nth 1 defines))) (nth 2 defines))
+
+    (map defines (fn define
+      (' :def (str/concat (string (nth 1 prefix)) "/" (string (nth 1 define))) (nth 2 define))
+    ))
+  )
 ))
 
 (namespace test
-  (def foo (fn
+  (foo (fn x
+    (out x)
+  ))
+)
+
+(namespace test
+  (foo (fn
+    (out "Hello")
+  ))
+
+  (bar (fn
     (out "Hello")
   ))
 )

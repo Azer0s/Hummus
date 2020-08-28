@@ -1,6 +1,8 @@
 ;; Copyright (c) Ariel Simulevski
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
+(use :<base>)
+
 ;; str/concat Concats two or more strings
 ;; in:
 ;; * args .. the list of strings to concat
@@ -40,4 +42,22 @@
 ;; out: the converted string
 (def str/upper (fn arg
   (--system-do-strings! :upper arg)
+))
+
+;; str/repeat Repeats a string n times
+;; in:
+;; * arg .. the string to repeat
+;; * n .. the number of times to repeat the string
+;; out: the repeated string
+(def str/repeat (fn arg n
+  (reduce
+    (map
+      (.. 1 n)
+      (fn _ (identity arg))
+    )
+    (fn x acc
+      (str/concat acc x)
+    )
+    ""
+  )
 ))

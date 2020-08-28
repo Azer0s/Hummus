@@ -44,10 +44,8 @@ func parserNodeToAstList(node parser.Node) Node {
 		}
 
 		return NodeList(astList)
-
 	case parser.IDENTIFIER:
 		return NodeList([]Node{AtomNode("identifier"), AtomNode(node.Token.Value)})
-
 	case parser.LITERAL_FN:
 		paramList := []Node{AtomNode("parameters")}
 		for _, param := range node.Arguments[0].Arguments {
@@ -61,10 +59,8 @@ func parserNodeToAstList(node parser.Node) Node {
 		}
 
 		return NodeList(astList)
-
 	case parser.LITERAL_ATOM:
 		return NodeList([]Node{AtomNode("atom"), AtomNode(node.Token.Value)})
-
 	case parser.LITERAL_BOOL:
 		b, err := strconv.ParseBool(node.Token.Value)
 
@@ -73,7 +69,6 @@ func parserNodeToAstList(node parser.Node) Node {
 		}
 
 		return NodeList([]Node{AtomNode("bool"), BoolNode(b)})
-
 	case parser.LITERAL_FLOAT:
 		f, err := strconv.ParseFloat(node.Token.Value, 64)
 
@@ -82,7 +77,6 @@ func parserNodeToAstList(node parser.Node) Node {
 		}
 
 		return NodeList([]Node{AtomNode("float"), FloatNode(f)})
-
 	case parser.LITERAL_INT:
 		i, err := strconv.Atoi(node.Token.Value)
 
@@ -91,7 +85,6 @@ func parserNodeToAstList(node parser.Node) Node {
 		}
 
 		return NodeList([]Node{AtomNode("int"), IntNode(i)})
-
 	case parser.LITERAL_STRING:
 		return NodeList([]Node{AtomNode("string"), StringNode(node.Token.Value)})
 	}
@@ -122,6 +115,26 @@ func astListToParserNode(list ListNode) []parser.Node {
 	}
 
 	switch list.Values[0].Value.(string) {
+	case "def":
+		//TODO: Ensure types
+		return []parser.Node{
+			{
+				Type: parser.ACTION_DEF,
+				Arguments: []parser.Node{
+					{
+						Type:      parser.IDENTIFIER,
+						Arguments: nil,
+						Token: lexer.Token{
+							Value: list.Values[1].Value.(string),
+							Type:  lexer.IDENTIFIER,
+							Line:  0,
+						},
+					},
+					astListToParserNode(list.Values[2].Value.(ListNode))[0],
+				},
+				Token: lexer.Token{},
+			},
+		}
 	case "call":
 		args := make([]parser.Node, 0)
 
@@ -144,7 +157,6 @@ func astListToParserNode(list ListNode) []parser.Node {
 				},
 			},
 		}
-
 	case "if":
 		EnsureSingleType(&list.Values[1], 2, NODETYPE_LIST, "Macro if definition")
 		EnsureSingleType(&list.Values[2], 3, NODETYPE_LIST, "Macro if definition")
@@ -184,7 +196,90 @@ func astListToParserNode(list ListNode) []parser.Node {
 				Token: lexer.Token{},
 			},
 		}
+	case "fn":
+		//TODO: Ensure types
+		paramList := make([]parser.Node, 0)
 
+		for _, node := range list.Values[1].Value.(ListNode).Values[1:] {
+			paramList = append(paramList, parser.Node{
+				Type:      parser.IDENTIFIER,
+				Arguments: nil,
+				Token: lexer.Token{
+					Value: node.Value.(string),
+					Type:  lexer.IDENTIFIER,
+					Line:  0,
+				},
+			})
+		}
+
+		actionList := make([]parser.Node, 0)
+
+		for _, node := range list.Values[2:] {
+			actionList = append(actionList, astListToParserNode(node.Value.(ListNode))...)
+		}
+
+		fnDef := parser.Node{
+			Type: parser.LITERAL_FN,
+			Arguments: []parser.Node{
+				{
+					Type:      parser.PARAMETERS,
+					Arguments: paramList,
+					Token:     lexer.Token{},
+				},
+			},
+			Token: lexer.Token{},
+		}
+
+		fnDef.Arguments = append(fnDef.Arguments, actionList...)
+
+		return []parser.Node{
+			fnDef,
+		}
+	case "for_iter":
+		//TODO: Ensure types
+		actionList := make([]parser.Node, 0)
+
+		for _, node := range list.Values[2:] {
+			actionList = append(actionList, astListToParserNode(node.Value.(ListNode))...)
+		}
+
+		forIter := []parser.Node{
+			{
+				Type:      parser.IDENTIFIER,
+				Arguments: nil,
+				Token: lexer.Token{
+					Value: list.Values[1].Value.(ListNode).Values[0].Value.(string),
+					Type:  lexer.IDENTIFIER,
+					Line:  0,
+				},
+			},
+			astListToParserNode(list.Values[1].Value.(ListNode).Values[1].Value.(ListNode))[0],
+		}
+
+		return []parser.Node{
+			{
+				Type:      parser.ACTION_FOR,
+				Arguments: append(forIter, actionList...),
+				Token:     lexer.Token{},
+			},
+		}
+	case "for_loop":
+		//TODO: Ensure types
+		actionList := make([]parser.Node, 0)
+
+		for _, node := range list.Values[2:] {
+			actionList = append(actionList, astListToParserNode(node.Value.(ListNode))...)
+		}
+
+		return []parser.Node{
+			{
+				Type: parser.ACTION_WHILE,
+				Arguments: append([]parser.Node{
+					astListToParserNode(list.Values[1].Value.(ListNode))[0],
+				}, actionList...),
+				Token: lexer.Token{},
+			},
+		}
 	case "identifier":
 		if list.Values[1].NodeType != NODETYPE_ATOM {
 			panic("AST node in macro declared as identifier (atom), but isn't!")

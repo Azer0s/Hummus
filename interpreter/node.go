@@ -86,11 +86,13 @@ type StructDef struct {
 	Parameters []string
 }
 
+// MacroParameter parameter of a macro function
 type MacroParameter struct {
 	Parameter string
 	Literal   bool
 }
 
+// MacroDef definition of a macro function
 type MacroDef struct {
 	Parameters []MacroParameter
 	Body       []parser.Node

@@ -153,3 +153,5 @@ Temporary Items
 .idea/vcs.xml
 
 go.sum
+
+examples/
