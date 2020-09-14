@@ -27,6 +27,12 @@ docker build -t azer0s/hummus:latest .
 docker run --rm -it azer0s/hummus
 ```
 
+Or get the edge image:
+
+```bash
+docker run --rm -it azer0s/hummus:edge
+```
+
 ## Examples
 
 ### Variable assignment
