@@ -13,7 +13,7 @@
   - [x] Runner
   - [ ] Interpreter
   - [ ] Stdlib
-- [ ] `receive` timeout
+- [x] `receive` timeout
 - [ ] Documentation
   - [ ] Language
   - [ ] Stdlib

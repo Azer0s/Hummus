@@ -18,6 +18,7 @@ func TestRunFile(t *testing.T) {
 	runner.RunFile(path.Join(filename, "curry.hummus"))
 	runner.RunFile(path.Join(filename, "def_function.hummus"))
 	runner.RunFile(path.Join(filename, "def_sub.hummus"))
+	runner.RunFile(path.Join(filename, "/local_import/main.hummus"))
 	runner.RunFile(path.Join(filename, "fib.hummus"))
 	runner.RunFile(path.Join(filename, "free.hummus"))
 	runner.RunFile(path.Join(filename, "identity.hummus"))

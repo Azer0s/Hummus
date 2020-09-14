@@ -1,0 +1,7 @@
+(use :./test2 :local)
+
+(hello)
+
+(def hello2 (fn
+  (hello)
+))

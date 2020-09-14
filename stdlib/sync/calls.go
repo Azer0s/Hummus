@@ -125,6 +125,23 @@ func doReceive(variables *map[string]interpreter.Node) interpreter.Node {
 	return val
 }
 
+func doReceiveWithTimeout(variables *map[string]interpreter.Node, timeout interpreter.Node) interpreter.Node {
+	self := (*variables)[interpreter.SELF].Value.(int)
+
+	interpreter.EnsureSingleType(&timeout, 1, interpreter.NODETYPE_INT, CALL+" :receive-timeout")
+
+	channelMapMu.RLock()
+	channel := channelMap[self]
+	channelMapMu.RUnlock()
+
+	select {
+	case val := <-channel:
+		return val
+	case <-time.After(time.Duration(timeout.Value.(int)) * time.Millisecond):
+		return interpreter.Nothing
+	}
+}
+
 func doCleanup(p int, r interpreter.Node) {
 	channelParentMu.Lock()
 	delete(channelParent, p)
@@ -280,6 +297,8 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		return doSend(args[1], args[2])
 	case "receive":
 		return doReceive(variables)
+	case "receive-until":
+		return doReceiveWithTimeout(variables, args[1])
 	case "spawn":
 		return doSpawn(args[1], variables)
 	case "sleep":
