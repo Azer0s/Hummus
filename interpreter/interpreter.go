@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"crypto/md5"
 	"fmt"
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
@@ -44,6 +45,9 @@ func init() {
 	literalRe = re
 }
 
+var localFnsMu = &sync.RWMutex{}
+var localFns = make(map[string]Node, 0)
+
 var globalFnsMu = &sync.RWMutex{}
 var globalFns = make(map[string]Node, 0)
 
@@ -52,6 +56,9 @@ var nativeFns = make(map[string]func([]Node, *map[string]Node) Node, 0)
 
 var importsMu = &sync.RWMutex{}
 var imports = make([]string, 0)
+
+var localImportsMu = &sync.RWMutex{}
+var localImports = make([]string, 0) //we just do filename + importname
 
 var objectsMu = &sync.RWMutex{}
 var objects = make(map[int]interface{}, 0)
@@ -74,6 +81,36 @@ func importsHas(str string) bool {
 	return has
 }
 
+func localImportHash(importName, currentFile string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(importName+currentFile)))
+}
+
+func localImportsHas(currentFile string) func(str string) bool {
+	return func(str string) bool {
+		has := false
+		importHash := localImportHash(str, currentFile)
+
+		localImportsMu.RLock()
+		for _, a := range localImports {
+			if a == importHash {
+				has = true
+				break
+			}
+		}
+		localImportsMu.RUnlock()
+
+		return has
+	}
+}
+
+func loadLocalFns(key string, currentFile string) (Node, bool) {
+	localFnsMu.RLock()
+	val, ok := localFns[localImportHash(key, currentFile)]
+	localFnsMu.RUnlock()
+
+	return val, ok
+}
+
 func loadGlobalFns(key string) (Node, bool) {
 	globalFnsMu.RLock()
 	val, ok := globalFns[key]
@@ -86,6 +123,14 @@ func storeGlobalFns(key string, val Node) {
 	globalFnsMu.Lock()
 	globalFns[key] = val
 	globalFnsMu.Unlock()
+}
+
+func storeLocalFns(currentFile string) func(key string, val Node) {
+	return func(key string, val Node) {
+		localFnsMu.Lock()
+		localFns[localImportHash(key, currentFile)] = val
+		localFnsMu.Unlock()
+	}
 }
 
 func loadNativeFns(key string) (func([]Node, *map[string]Node) Node, bool) {
@@ -163,10 +208,13 @@ func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node 
 		node.Value = FnLiteral{
 			Parameters: parameters,
 			Body:       parserNode.Arguments[1:],
+			Context:    map[string]Node{EXEC_FILE: (*variables)[EXEC_FILE]},
 		}
 		break
 	case parser.IDENTIFIER:
 		if val, ok := (*variables)[parserNode.Token.Value]; ok {
+			node = val
+		} else if val, ok := loadLocalFns(parserNode.Token.Value, (*variables)[EXEC_FILE].Value.(string)); ok {
 			node = val
 		} else if val, ok := loadGlobalFns(parserNode.Token.Value); ok {
 			node = val
@@ -318,15 +366,7 @@ func doNativeUse(name, currentFile string, variables *map[string]Node) Node {
 	return Nothing
 }
 
-func doUse(node parser.Node, currentFile string, pid int, variables *map[string]Node) Node {
-	if node.Arguments[0].Type != parser.LITERAL_ATOM {
-		panic(fmt.Sprintf("\"use\" only accepts atoms as parameter! (line %d)", node.Token.Line))
-	}
-
-	if len(node.Arguments) == 2 && node.Arguments[1].Token.Value == "native" {
-		return doNativeUse(node.Arguments[0].Token.Value, currentFile, variables)
-	}
-
+func doFileUse(node parser.Node, currentFile string, pid int, hasImport func(importName string) bool, storeState func(key string, val Node), saveImportedFile func(file string)) Node {
 	stdlib, _ := regexp.Compile("<([^>]+)>")
 
 	file := node.Arguments[0].Token.Value
@@ -350,7 +390,7 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 		file = path.Join(dir, file+".hummus")
 	}
 
-	if importsHas(file) {
+	if hasImport(file) {
 		return Nothing
 	}
 
@@ -367,14 +407,36 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	_ = Run(parser.Parse(lexer.LexString(string(b))), &vars)
 
 	for k, v := range vars {
-		storeGlobalFns(k, v)
+		storeState(k, v)
 	}
 
-	importsMu.Lock()
-	imports = append(imports, file)
-	importsMu.Unlock()
+	saveImportedFile(file)
 
 	return Nothing
+}
+
+func doUse(node parser.Node, currentFile string, pid int, variables *map[string]Node) Node {
+	if node.Arguments[0].Type != parser.LITERAL_ATOM {
+		panic(fmt.Sprintf("\"use\" only accepts atoms as parameter! (line %d)", node.Token.Line))
+	}
+
+	if len(node.Arguments) == 2 && node.Arguments[1].Token.Value == "native" {
+		return doNativeUse(node.Arguments[0].Token.Value, currentFile, variables)
+	}
+
+	if len(node.Arguments) == 2 && node.Arguments[1].Token.Value == "local" {
+		return doFileUse(node, currentFile, pid, localImportsHas(currentFile), storeLocalFns(currentFile), func(file string) {
+			localImportsMu.Lock()
+			localImports = append(localImports, localImportHash(file, currentFile))
+			localImportsMu.Unlock()
+		})
+	}
+
+	return doFileUse(node, currentFile, pid, importsHas, storeGlobalFns, func(file string) {
+		importsMu.Lock()
+		imports = append(imports, file)
+		importsMu.Unlock()
+	})
 }
 
 func doFnCall(node parser.Node, val Node, variables *map[string]Node) Node {
@@ -528,6 +590,8 @@ func doType(node parser.Node, variables *map[string]Node) Node {
 
 func doCall(node parser.Node, variables *map[string]Node) Node {
 	if val, ok := (*variables)[node.Token.Value]; ok {
+		return DoVariableCall(node, val, variables)
+	} else if val, ok := loadLocalFns(node.Token.Value, (*variables)[EXEC_FILE].Value.(string)); ok {
 		return DoVariableCall(node, val, variables)
 	} else if val, ok := loadGlobalFns(node.Token.Value); ok {
 		return DoVariableCall(node, val, variables)

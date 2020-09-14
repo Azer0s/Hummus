@@ -33,6 +33,15 @@
   (--system-do-sync! :receive)
 ))
 
+;; receive-until Waits for a message to arrive
+;;               until a timeout
+;; in:
+;; * timeout .. the receive timeout in ms
+;; out: the message
+(def receive-until (fn timeout
+  (--system-do-sync! :receive-until timeout)
+))
+
 ;; die Kills the currently running process
 ;; in:
 ;; * val .. the kill message to send to

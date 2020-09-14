@@ -1,0 +1,5 @@
+(use :<base>)
+
+(def hello (fn
+  (out "Hello world")
+))
