@@ -33,9 +33,10 @@ func BuildProject() {
 	log.Tracef("Packages: %s", "["+strings.Join(settings.Packages, ", ")+"]")
 
 	createOutputFolder(path.Join(currentDir, settings.Output))
+	createLibFolder(path.Join(currentDir, "lib/"))
 	buildNativeLibs(currentDir, settings.Native, settings.Output)
 	copyFiles(settings.Native, settings.Exclude, settings.Output)
-	pullPackages(settings.Packages)
+	pullPackages(path.Join(currentDir, "lib/"), settings.Packages)
 
 	log.Info("Project built successfully!")
 }
@@ -57,6 +58,19 @@ func createOutputFolder(folder string) {
 
 	if err != nil {
 		log.Fatal(err.Error())
+	}
+}
+
+func createLibFolder(folder string) {
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		log.Warn("Lib folder does not exist! Creating...")
+		log.Debugf("Creating lib folder '%s'...", folder)
+
+		err := os.Mkdir(folder, os.ModePerm)
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 	}
 }
 
@@ -91,7 +105,7 @@ func copyFiles(nativeLibs []string, excludedFiles []string, outputFolder string)
 				return nil
 			}
 
-			if contains(nativeLibs, filePath) || contains(excludedFiles, filePath) || filePath == outputFolder || filePath == "project.json" {
+			if contains(nativeLibs, filePath) || contains(excludedFiles, filePath) || filePath == outputFolder || filePath == "project.json" || filePath == "lib" {
 				if !info.IsDir() {
 					log.Tracef("Skipping file %s", filePath)
 				} else {
@@ -121,8 +135,21 @@ func copyFiles(nativeLibs []string, excludedFiles []string, outputFolder string)
 	}
 }
 
-func pullPackages(packages []string) {
+func pullPackages(libFolder string, packages []string) {
 	log.Info("Pulling packages...")
+
+	for _, s := range packages {
+		log.Debugf("Pulling package %s...", s)
+
+		cmd := exec.Command("git", "clone", "https://" + s + ".git", libFolder)
+		cmd.
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		log.Trace(string(buff))
+	}
 }
 
 func contains(arr []string, str string) bool {
