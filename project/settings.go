@@ -2,16 +2,26 @@ package project
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 )
 
+type packageJson struct {
+	Repo string `json:"repo"`
+	At   string `json:"at"`
+}
+
 type projectJson struct {
-	Name     string   `json:"name"`
-	Packages []string `json:"packages"`
-	Output   string   `json:"output"`
-	Exclude  []string `json:"exclude"`
-	Native   []string `json:"native"`
-	Entry    string   `json:"entry"`
+	Name     string        `json:"name"`
+	Packages []packageJson `json:"packages"`
+	Output   string        `json:"output"`
+	Exclude  []string      `json:"exclude"`
+	Native   []string      `json:"native"`
+	Entry    string        `json:"entry"`
+}
+
+func (p *packageJson) String() string {
+	return fmt.Sprintf("{repo: \"%s\", at: \"%s\"}", p.Repo, p.At)
 }
 
 func readSettings(filename string) *projectJson {

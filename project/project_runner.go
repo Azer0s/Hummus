@@ -1,6 +1,7 @@
 package project
 
 import (
+	"github.com/Azer0s/Hummus/interpreter"
 	"github.com/Azer0s/Hummus/runner"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -20,6 +21,8 @@ func RunProject() {
 		log.Warn("Project was not built! Building...")
 		BuildProject()
 	}
+
+	interpreter.LibBasePath = path.Join(currentDir, "lib/")
 
 	runner.RunFile(path.Join(currentDir, settings.Output, settings.Entry))
 }

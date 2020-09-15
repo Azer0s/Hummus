@@ -165,7 +165,7 @@ func InitProject(projectName string) {
 
 	settings := projectJson{
 		Name:     projectName,
-		Packages: make([]string, 0),
+		Packages: make([]packageJson, 0),
 		Output:   "bin",
 		Exclude: []string{
 			".gitignore",

@@ -30,7 +30,13 @@ func BuildProject() {
 	log.Tracef("Output path: %s", settings.Output)
 	log.Tracef("Excluded files: %s", "["+strings.Join(settings.Exclude, ", ")+"]")
 	log.Tracef("Native files: %s", "["+strings.Join(settings.Native, ", ")+"]")
-	log.Tracef("Packages: %s", "["+strings.Join(settings.Packages, ", ")+"]")
+
+	packages := make([]string, 0)
+	for _, json := range settings.Packages {
+		packages = append(packages, json.String())
+	}
+
+	log.Tracef("Packages: %s", "["+strings.Join(packages, ", ")+"]")
 
 	createOutputFolder(path.Join(currentDir, settings.Output))
 	createLibFolder(path.Join(currentDir, "lib/"))
@@ -135,21 +141,43 @@ func copyFiles(nativeLibs []string, excludedFiles []string, outputFolder string)
 	}
 }
 
-func pullPackages(libFolder string, packages []string) {
+func pullPackages(libFolder string, packages []packageJson) {
 	log.Info("Pulling packages...")
 
 	for _, s := range packages {
 		log.Debugf("Pulling package %s...", s)
 
-		cmd := exec.Command("git", "clone", "https://" + s + ".git", libFolder)
-		cmd.
+		cmd := exec.Command("git", "clone", "https://"+s.Repo)
+		cmd.Dir = libFolder
+		err := cmd.Start()
 
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 
-		log.Trace(string(buff))
+		if s.At == "master" {
+			continue
+		}
+
+		cmd = exec.Command("git", "checkout", s.At)
+
+		repo := strings.Split(s.Repo, "/")
+		cmd.Dir = path.Join(libFolder, repo[len(repo)-1])
+
+		err = cmd.Start()
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		err = os.Rename(path.Join(libFolder, repo[len(repo)-1]), path.Join(libFolder, repo[len(repo)-1]+"@"+s.At))
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 	}
+
+	//TODO: Build packages recursively
 }
 
 func contains(arr []string, str string) bool {
