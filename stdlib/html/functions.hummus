@@ -28,21 +28,27 @@
     )
 
     ((fn
-      (def prop (if (= (len props) 0)
-        ({})
-        (if (= (type (nth 0 props)) :map)
-          (nth 0 props)
+      (def prop (if (= (type props) :map)
+        props
+        (if (= (len props) 0)
           ({})
-        )
-      ))
+          (if (= (type (nth 0 props)) :map)
+            (nth 0 props)
+            ({})
+          )
+        ))
+      )
 
-      (def body (if (= (len props) 0)
+      (def body (if (= (type props) :map)
         (nothing)
-        (if (= (type (nth 0 props)) :map)
-          (slice 1 :- props)
-          props
-        )
-      ))
+        (if (= (len props) 0)
+          (nothing)
+          (if (= (type (nth 0 props)) :map)
+            (slice 1 :- props)
+            props
+          )
+        ))
+      )
 
       (str/concat
         (html/tag-start tag prop)
