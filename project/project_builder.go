@@ -1,6 +1,7 @@
 package project
 
 import (
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+var builtPackages = make([]string, 0)
 
 func BuildProject() {
 	log.SetLevel(log.TraceLevel)
@@ -41,7 +44,7 @@ func BuildProject() {
 	createOutputFolder(path.Join(currentDir, settings.Output))
 	createLibFolder(path.Join(currentDir, "lib/"))
 	buildNativeLibs(currentDir, settings.Native, settings.Output)
-	copyFiles(settings.Native, settings.Exclude, settings.Output)
+	copyFiles(currentDir, settings.Native, settings.Exclude, settings.Output)
 	pullPackages(path.Join(currentDir, "lib/"), settings.Packages)
 
 	log.Info("Project built successfully!")
@@ -97,21 +100,43 @@ func buildNativeLibs(currentDir string, nativeLibs []string, outputFolder string
 	}
 }
 
-func copyFiles(nativeLibs []string, excludedFiles []string, outputFolder string) {
+func copyFiles(currentDir string, nativeLibs []string, excludedFiles []string, outputFolder string) {
 	log.Info("Copying files to output directory...")
 
-	err := filepath.Walk(".",
+	absoluteNativeLibs := make([]string, 0)
+	for _, lib := range nativeLibs {
+		absoluteNativeLibs = append(absoluteNativeLibs, path.Join(currentDir, lib))
+	}
+
+	absoluteExcludedFiles := make([]string, 0)
+	for _, file := range excludedFiles {
+		absoluteExcludedFiles = append(absoluteExcludedFiles, path.Join(currentDir, file))
+	}
+
+	err := filepath.Walk(currentDir,
 		func(filePath string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
 
-			if strings.Index(filePath, ".") == 0 {
-				log.Tracef("Skipping hidden file %s", filePath)
+			paths := strings.Split(filePath, "/")
+			if anyHidden(paths) {
+				if !info.IsDir() {
+					log.Tracef("Skipping hidden file %s", filePath)
+				} else {
+					log.Tracef("Skipping hidden directory %s/", filePath)
+				}
+
 				return nil
 			}
 
-			if contains(nativeLibs, filePath) || contains(excludedFiles, filePath) || filePath == outputFolder || filePath == "project.json" || filePath == "lib" {
+			if filePath == currentDir {
+				return nil
+			}
+
+			if contains(absoluteNativeLibs, filePath) || contains(absoluteExcludedFiles, filePath) ||
+				filePath == path.Join(currentDir, outputFolder) || filePath == path.Join(currentDir, "project.json") ||
+				filePath == path.Join(currentDir, "lib") {
 				if !info.IsDir() {
 					log.Tracef("Skipping file %s", filePath)
 				} else {
@@ -123,12 +148,28 @@ func copyFiles(nativeLibs []string, excludedFiles []string, outputFolder string)
 
 			log.Debugf("Copying %s", filePath)
 
+			relPath, err := filepath.Rel(currentDir, filePath)
+
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			if info.IsDir() {
+				err = os.Mkdir(path.Join(currentDir, outputFolder, relPath), os.ModePerm)
+
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				return nil
+			}
+
 			input, err := ioutil.ReadFile(filePath)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
 
-			err = ioutil.WriteFile(path.Join(outputFolder, filePath), input, 0644)
+			err = ioutil.WriteFile(path.Join(currentDir, outputFolder, relPath), input, os.ModePerm)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -145,24 +186,32 @@ func pullPackages(libFolder string, packages []packageJson) {
 	log.Info("Pulling packages...")
 
 	for _, s := range packages {
+		repoUrl := "https://" + s.Repo
+
+		if contains(builtPackages, repoUrl+"@"+s.At) {
+			continue
+		}
+
 		log.Debugf("Pulling package %s...", s)
 
-		cmd := exec.Command("git", "clone", "https://"+s.Repo)
-		cmd.Dir = libFolder
+		tmpFolder := strings.ReplaceAll(uuid.New().String(), "-", "")
+
+		cmd := exec.Command("git", "clone", repoUrl, path.Join(libFolder, tmpFolder))
 		err := cmd.Start()
 
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 
-		if s.At == "master" {
-			continue
+		err = cmd.Wait()
+
+		if err != nil {
+			log.Fatal(err.Error())
 		}
 
 		cmd = exec.Command("git", "checkout", s.At)
 
-		repo := strings.Split(s.Repo, "/")
-		cmd.Dir = path.Join(libFolder, repo[len(repo)-1])
+		cmd.Dir = path.Join(libFolder, tmpFolder)
 
 		err = cmd.Start()
 
@@ -170,14 +219,45 @@ func pullPackages(libFolder string, packages []packageJson) {
 			log.Fatal(err.Error())
 		}
 
-		err = os.Rename(path.Join(libFolder, repo[len(repo)-1]), path.Join(libFolder, repo[len(repo)-1]+"@"+s.At))
+		err = cmd.Wait()
 
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
+		libSettings := readSettings(path.Join(libFolder, tmpFolder, "project.json"))
+
+		name := libSettings.Name
+
+		if s.At != "master" {
+			name += "@" + s.At
+		}
+
+		err = os.Rename(path.Join(libFolder, tmpFolder), path.Join(libFolder, name))
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		builtPackages = append(builtPackages, repoUrl+"@"+s.At)
+
+		log.Infof("Building library %s...", name)
+
+		createOutputFolder(path.Join(libFolder, name, libSettings.Output))
+		buildNativeLibs(path.Join(libFolder, name), libSettings.Native, libSettings.Output)
+		copyFiles(path.Join(libFolder, name), libSettings.Native, libSettings.Exclude, libSettings.Output)
+		pullPackages(libFolder, libSettings.Packages)
+	}
+}
+
+func anyHidden(arr []string) bool {
+	for _, elem := range arr {
+		if len(elem) > 0 && elem[0] == '.' {
+			return true
+		}
 	}
 
-	//TODO: Build packages recursively
+	return false
 }
 
 func contains(arr []string, str string) bool {
