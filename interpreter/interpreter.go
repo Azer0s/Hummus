@@ -7,13 +7,11 @@ import (
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
 	"io/ioutil"
-	"os"
 	"path"
 	"path/filepath"
 	"plugin"
 	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -22,8 +20,6 @@ var BasePath string
 
 // LibBasePath path from which to import libraries
 var LibBasePath string
-
-var workingDir string
 
 //noinspection GoSnakeCaseUsage
 const (
@@ -51,14 +47,6 @@ func init() {
 	}
 
 	literalRe = re
-
-	wd, err := os.Getwd()
-
-	if err != nil {
-		panic(err)
-	}
-
-	workingDir = wd
 }
 
 var localFnsMu = &sync.RWMutex{}
@@ -459,7 +447,7 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 
 		node.Arguments[0].Token.Value, err = filepath.Rel(
 			filepath.Dir(currentFile),
-			path.Join(LibBasePath, node.Arguments[0].Token.Value[1:], settings["output"].(string), strings.TrimRight(settings["entry"].(string), ".hummus")))
+			path.Join(LibBasePath, node.Arguments[0].Token.Value[1:], settings["output"].(string), ReplaceEnd(settings["entry"].(string), ".hummus", "", 1)))
 
 		if err != nil {
 			panic(err)

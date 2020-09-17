@@ -1,6 +1,7 @@
 package project
 
 import (
+	"github.com/Azer0s/Hummus/interpreter"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -84,15 +85,21 @@ func createLibFolder(folder string) {
 }
 
 func buildNativeLibs(currentDir string, nativeLibs []string, outputFolder string) {
-	if len(nativeLibs) > 0 {
-		log.Info("Building native files...")
+	if !(len(nativeLibs) > 0) {
+		return
 	}
+
+	log.Info("Building native files...")
 
 	for _, lib := range nativeLibs {
 		log.Debugf("Building native file %s...", lib)
-		cmd := exec.Command("go", "build", "-buildmode=plugin", "-gcflags='all=-N -l'", "-o", path.Join(outputFolder, strings.Replace(lib, ".go", ".so", 1)), path.Join(currentDir, lib))
+		cmd := exec.Command("go", "build", "-buildmode=plugin", "-gcflags='all=-N -l'", "-o", path.Join(outputFolder, strings.ReplaceAll(lib, ".go", ".so")), path.Join(currentDir, lib))
 
-		err := cmd.Start()
+		buff, err := cmd.CombinedOutput()
+
+		if len(buff) > 0 {
+			log.Tracef(interpreter.ReplaceEnd(strings.ReplaceAll(string(buff), "\n", "; "), "; ", "", -1))
+		}
 
 		if err != nil {
 			log.Fatal(err.Error())
@@ -113,6 +120,11 @@ func copyFiles(currentDir string, nativeLibs []string, excludedFiles []string, o
 		absoluteExcludedFiles = append(absoluteExcludedFiles, path.Join(currentDir, file))
 	}
 
+	absoluteBuiltNativeLibs := make([]string, 0)
+	for _, lib := range nativeLibs{
+		absoluteBuiltNativeLibs = append(absoluteBuiltNativeLibs, path.Join(currentDir, outputFolder, strings.ReplaceAll(lib, ".go", ".so")))
+	}
+
 	err := filepath.Walk(currentDir,
 		func(filePath string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -131,6 +143,10 @@ func copyFiles(currentDir string, nativeLibs []string, excludedFiles []string, o
 			}
 
 			if filePath == currentDir {
+				return nil
+			}
+
+			if contains(absoluteBuiltNativeLibs, filePath) {
 				return nil
 			}
 
@@ -197,13 +213,11 @@ func pullPackages(libFolder string, packages []packageJson) {
 		tmpFolder := strings.ReplaceAll(uuid.New().String(), "-", "")
 
 		cmd := exec.Command("git", "clone", repoUrl, path.Join(libFolder, tmpFolder))
-		err := cmd.Start()
+		buff, err := cmd.CombinedOutput()
 
-		if err != nil {
-			log.Fatal(err.Error())
+		if len(buff) > 0 {
+			log.Tracef(interpreter.ReplaceEnd(strings.ReplaceAll(string(buff), "\n", "; "), "; ", "", -1))
 		}
-
-		err = cmd.Wait()
 
 		if err != nil {
 			log.Fatal(err.Error())
@@ -213,13 +227,11 @@ func pullPackages(libFolder string, packages []packageJson) {
 
 		cmd.Dir = path.Join(libFolder, tmpFolder)
 
-		err = cmd.Start()
+		buff, err = cmd.CombinedOutput()
 
-		if err != nil {
-			log.Fatal(err.Error())
+		if len(buff) > 0 {
+			log.Tracef(interpreter.ReplaceEnd(strings.ReplaceAll(string(buff), "\n", "; "), "; ", "", -1))
 		}
-
-		err = cmd.Wait()
 
 		if err != nil {
 			log.Fatal(err.Error())
