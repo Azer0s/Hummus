@@ -16,6 +16,14 @@ make all
 echo "export PATH=\"$(pwd)/bin:\$PATH"\" >> ~/.bashrc 
 ```
 
+### Creating a Hummus project
+
+```bash
+hummus init helloworld
+hummus build
+hummus run
+```
+
 ### Running on docker
 
 ```bash
