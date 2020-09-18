@@ -131,6 +131,7 @@ func gitAdd(filename, projectDir string) {
 	}
 }
 
+//InitProject initializes a Hummus project
 func InitProject(projectName string) {
 	currentDir, err := os.Getwd()
 

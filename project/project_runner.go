@@ -8,6 +8,7 @@ import (
 	"path"
 )
 
+//RunProject runs a Hummus project and builds it if it wasn't built before
 func RunProject() {
 	currentDir, err := os.Getwd()
 

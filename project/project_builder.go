@@ -27,6 +27,7 @@ func init() {
 	basePath = path.Join(path.Dir(p), "..")
 }
 
+//BuildProject builds a Hummus project
 func BuildProject() {
 	log.SetLevel(log.TraceLevel)
 
