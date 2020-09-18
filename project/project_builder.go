@@ -1,9 +1,11 @@
 package project
 
 import (
+	"encoding/json"
 	"github.com/Azer0s/Hummus/interpreter"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -13,6 +15,17 @@ import (
 )
 
 var builtPackages = make([]string, 0)
+var basePath string
+
+func init() {
+	p, err := os.Executable()
+
+	if err != nil {
+		panic(err)
+	}
+
+	basePath = path.Join(path.Dir(p), "..")
+}
 
 func BuildProject() {
 	log.SetLevel(log.TraceLevel)
@@ -33,11 +46,19 @@ func BuildProject() {
 	log.Tracef("Entry point: %s", settings.Entry)
 	log.Tracef("Output path: %s", settings.Output)
 	log.Tracef("Excluded files: %s", "["+strings.Join(settings.Exclude, ", ")+"]")
-	log.Tracef("Native files: %s", "["+strings.Join(settings.Native, ", ")+"]")
+
+	nativePackages := make([]string, 0)
+	for _, n := range settings.Native {
+		b, _ := json.Marshal(n)
+		nativePackages = append(nativePackages, string(b))
+	}
+
+	log.Tracef("Native files: %s", "["+strings.Join(nativePackages, ", ")+"]")
 
 	packages := make([]string, 0)
-	for _, json := range settings.Packages {
-		packages = append(packages, json.String())
+	for _, j := range settings.Packages {
+		b, _ := json.Marshal(j)
+		packages = append(packages, string(b))
 	}
 
 	log.Tracef("Packages: %s", "["+strings.Join(packages, ", ")+"]")
@@ -84,7 +105,7 @@ func createLibFolder(folder string) {
 	}
 }
 
-func buildNativeLibs(currentDir string, nativeLibs []string, outputFolder string) {
+func buildNativeLibs(currentDir string, nativeLibs []nativePackage, outputFolder string) {
 	if !(len(nativeLibs) > 0) {
 		return
 	}
@@ -92,8 +113,54 @@ func buildNativeLibs(currentDir string, nativeLibs []string, outputFolder string
 	log.Info("Building native files...")
 
 	for _, lib := range nativeLibs {
-		log.Debugf("Building native file %s...", lib)
-		cmd := exec.Command("go", "build", "-buildmode=plugin", "-gcflags='all=-N -l'", "-o", path.Join(outputFolder, strings.ReplaceAll(lib, ".go", ".so")), path.Join(currentDir, lib))
+		log.Debugf("Building native file %s...", lib.Out)
+
+		tmpFolder := path.Join(basePath, strings.ReplaceAll(uuid.New().String(), "-", ""))
+
+		log.Tracef("Creating temporary folder %s in Hummus root...", tmpFolder)
+
+		err := os.Mkdir(tmpFolder, os.ModePerm)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		//goland:noinspection ALL
+		defer func() {
+			log.Tracef("Removing temporary folder %s...", tmpFolder)
+			err = os.RemoveAll(tmpFolder)
+
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+		}()
+
+		targetFiles := make([]string, 0)
+
+		for _, file := range lib.Files {
+			target := path.Join(tmpFolder, file)
+
+			log.Tracef("Copying %s", file)
+
+			err = os.MkdirAll(path.Dir(target), os.ModePerm)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			err = copyFile(path.Join(currentDir, file), target)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			targetFiles = append(targetFiles, path.Join(path.Base(tmpFolder), file))
+		}
+
+		//HACK: Due do delve, his does not work in debug
+		cmd := exec.Command("go", "build", "-buildmode=plugin" /*, "-gcflags='all=-N -l'"*/, "-o", path.Join(path.Base(tmpFolder), lib.Out))
+		cmd.Args = append(cmd.Args, targetFiles...)
+
+		cmd.Dir = basePath
+
+		log.Tracef("Running \"%s\"...", cmd.String())
 
 		buff, err := cmd.CombinedOutput()
 
@@ -104,15 +171,32 @@ func buildNativeLibs(currentDir string, nativeLibs []string, outputFolder string
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
+		outputPath := path.Join(outputFolder, lib.Out)
+		err = os.MkdirAll(path.Dir(outputPath), os.ModePerm)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		object := path.Join(tmpFolder, lib.Out)
+
+		log.Tracef("Copying shared object (%s) to output path (%s)...", object, outputPath)
+
+		err = copyFile(object, outputPath)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 	}
 }
 
-func copyFiles(currentDir string, nativeLibs []string, excludedFiles []string, outputFolder string) {
+func copyFiles(currentDir string, nativeLibs []nativePackage, excludedFiles []string, outputFolder string) {
 	log.Info("Copying files to output directory...")
 
 	absoluteNativeLibs := make([]string, 0)
 	for _, lib := range nativeLibs {
-		absoluteNativeLibs = append(absoluteNativeLibs, path.Join(currentDir, lib))
+		for _, file := range lib.Files {
+			absoluteNativeLibs = append(absoluteNativeLibs, path.Join(currentDir, file))
+		}
 	}
 
 	absoluteExcludedFiles := make([]string, 0)
@@ -121,8 +205,8 @@ func copyFiles(currentDir string, nativeLibs []string, excludedFiles []string, o
 	}
 
 	absoluteBuiltNativeLibs := make([]string, 0)
-	for _, lib := range nativeLibs{
-		absoluteBuiltNativeLibs = append(absoluteBuiltNativeLibs, path.Join(currentDir, outputFolder, strings.ReplaceAll(lib, ".go", ".so")))
+	for _, lib := range nativeLibs {
+		absoluteBuiltNativeLibs = append(absoluteBuiltNativeLibs, path.Join(currentDir, outputFolder, strings.ReplaceAll(lib.Out, ".go", ".so")))
 	}
 
 	err := filepath.Walk(currentDir,
@@ -279,4 +363,24 @@ func contains(arr []string, str string) bool {
 		}
 	}
 	return false
+}
+
+func copyFile(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+	return out.Close()
 }

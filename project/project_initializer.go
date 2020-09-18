@@ -171,7 +171,7 @@ func InitProject(projectName string) {
 			".gitignore",
 			"README.md",
 		},
-		Native: make([]string, 0),
+		Native: make([]nativePackage, 0),
 		Entry:  "main.hummus",
 	}
 
