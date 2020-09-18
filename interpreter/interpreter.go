@@ -445,6 +445,9 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 			panic(err)
 		}
 
+		//TODO: Handle non-latest versions
+		//So something like (use :@bootstrap-hummus/c5bbf :local)
+
 		node.Arguments[0].Token.Value, err = filepath.Rel(
 			filepath.Dir(currentFile),
 			path.Join(LibBasePath, node.Arguments[0].Token.Value[1:], settings["output"].(string), ReplaceEnd(settings["entry"].(string), ".hummus", "", 1)))
