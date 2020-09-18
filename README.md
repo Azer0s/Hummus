@@ -11,13 +11,9 @@ cd Hummus
 
 ### Running locally
 
-`makefile` coming soon. Meanwhile, this will have to do. 🤷🏻‍♂️
-
 ```bash
-chmod +x ./scripts/prepare_release.sh
-./scripts/prepare_release.sh
-go build -o bin/hummus
-./bin/hummus
+make all
+echo "export PATH=\"$(pwd)/bin:\$PATH"\" >> ~/.bashrc 
 ```
 
 ### Running on docker

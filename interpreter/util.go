@@ -466,3 +466,17 @@ func EnsureSingleType(val *Node, nth int, nt NodeType, who string) {
 		panic(who + " expects " + nt.String() + " as the " + ordinalize(nth) + " argument!")
 	}
 }
+
+// ReplaceEnd replaces a substring in a string starting from the end
+func ReplaceEnd(s, old, new string, n int) string {
+	return Rev(strings.Replace(Rev(s), Rev(old), Rev(new), n))
+}
+
+// Rev reserves a string
+func Rev(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
+}

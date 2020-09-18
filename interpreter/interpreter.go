@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
@@ -16,6 +17,9 @@ import (
 
 // BasePath base path from which to import stdlib
 var BasePath string
+
+// LibBasePath path from which to import libraries
+var LibBasePath string
 
 //noinspection GoSnakeCaseUsage
 const (
@@ -422,6 +426,32 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 
 	if len(node.Arguments) == 2 && node.Arguments[1].Token.Value == "native" {
 		return doNativeUse(node.Arguments[0].Token.Value, currentFile, variables)
+	}
+
+	if node.Arguments[0].Token.Value[0] == '@' && LibBasePath != "" {
+		projectJson := path.Join(LibBasePath, node.Arguments[0].Token.Value[1:], "project.json")
+
+		b, err := ioutil.ReadFile(projectJson)
+
+		if err != nil {
+			panic(err)
+		}
+
+		settings := make(map[string]interface{})
+
+		err = json.Unmarshal(b, &settings)
+
+		if err != nil {
+			panic(err)
+		}
+
+		node.Arguments[0].Token.Value, err = filepath.Rel(
+			filepath.Dir(currentFile),
+			path.Join(LibBasePath, node.Arguments[0].Token.Value[1:], settings["output"].(string), ReplaceEnd(settings["entry"].(string), ".hummus", "", 1)))
+
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if len(node.Arguments) == 2 && node.Arguments[1].Token.Value == "local" {
