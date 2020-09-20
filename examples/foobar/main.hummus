@@ -1,0 +1,8 @@
+(use :<base>)
+(use :@bootstrap-hummus :local)
+(use :./calls.so :native)
+(use :./test/foo)
+
+(out "Hello, World!")
+(out (bootstrap/include))
+(nativeCall!)
