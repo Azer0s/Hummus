@@ -1,4 +1,4 @@
-name: Push edge image to docker
+name: Push edge images to docker
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Build and push Docker images
+      - name: Build and push base Docker image
         uses: docker/build-push-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -21,7 +21,7 @@ jobs:
           repository: azer0s/hummus
           tags: edge
 
-      - name: Build and push Docker images
+      - name: Build and push REPL Docker image
         uses: docker/build-push-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
