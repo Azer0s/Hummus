@@ -1,0 +1,21 @@
+{
+    "name": "foobar",
+    "packages": [
+	{
+	    "repo": "github.com/Azer0s/bootstrap-hummus",
+	    "at": "master"
+	}
+    ],
+    "output": "bin",
+    "exclude": [
+        ".gitignore",
+        "README.md"
+    ],
+    "native": [
+        {
+            "files": ["calls.go"],
+            "out": "calls.so"
+        }
+    ],
+    "entry": "main.hummus"
+}

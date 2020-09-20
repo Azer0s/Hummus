@@ -1,0 +1,5 @@
+FROM azer0s/hummus:edge
+WORKDIR /app
+COPY . .
+RUN hummus build
+ENTRYPOINT [ "hummus", "run"]
