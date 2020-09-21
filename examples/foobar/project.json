@@ -15,6 +15,10 @@
         {
             "files": ["calls.go"],
             "out": "calls.so"
+        },
+        {
+            "files": ["calls2/calls.go", "calls2/printer.go"],
+            "out": "calls2/calls.so"
         }
     ],
     "entry": "main.hummus"

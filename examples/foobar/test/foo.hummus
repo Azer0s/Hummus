@@ -1,1 +1,4 @@
+(use :../calls2/calls.so :native :local)
 (out "Hello from " EXEC-FILE)
+
+(calls2!)

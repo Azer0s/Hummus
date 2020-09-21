@@ -236,10 +236,15 @@ func copyFiles(currentDir string, nativeLibs []nativePackage, excludedFiles []st
 			}
 
 			relLibPath, err := filepath.Rel(path.Join(currentDir, "lib"), filePath)
+			relOutPath, err := filepath.Rel(path.Join(currentDir, outputFolder), filePath)
+
+			if filePath == path.Join(currentDir, outputFolder) || filePath == path.Join(currentDir, "lib") ||
+				!strings.Contains(relLibPath, "..") || !strings.Contains(relOutPath, "..") {
+				return nil
+			}
 
 			if contains(absoluteNativeLibs, filePath) || contains(absoluteExcludedFiles, filePath) ||
-				filePath == path.Join(currentDir, outputFolder) || filePath == path.Join(currentDir, "project.json") ||
-				filePath == path.Join(currentDir, "lib") || !strings.Contains(relLibPath, "..") {
+				filePath == path.Join(currentDir, "project.json") {
 				if !info.IsDir() {
 					log.Tracef("Skipping file %s", filePath)
 				} else {
@@ -261,6 +266,9 @@ func copyFiles(currentDir string, nativeLibs []nativePackage, excludedFiles []st
 				err = os.Mkdir(path.Join(currentDir, outputFolder, relPath), os.ModePerm)
 
 				if err != nil {
+					if os.IsExist(err) {
+						return nil
+					}
 					log.Fatal(err.Error())
 				}
 
