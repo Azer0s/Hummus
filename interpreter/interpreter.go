@@ -22,6 +22,8 @@ var BasePath string
 // LibBasePath path from which to import libraries
 var LibBasePath string
 
+type nativeFn func([]Node, *map[string]Node) Node
+
 //noinspection GoSnakeCaseUsage
 const (
 	// USE include function
@@ -66,13 +68,16 @@ var globalFnsMu = &sync.RWMutex{}
 var globalFns = make(map[string]Node, 0)
 
 var nativeFnsMu = &sync.RWMutex{}
-var nativeFns = make(map[string]func([]Node, *map[string]Node) Node, 0)
+var nativeFns = make(map[string]nativeFn, 0)
 
 var importsMu = &sync.RWMutex{}
 var imports = make([]string, 0)
 
 var localImportsMu = &sync.RWMutex{}
 var localImports = make([]string, 0) //we just do filename + importname
+
+var localNativeFnsMu = &sync.RWMutex{}
+var localNativeFns = make(map[string]nativeFn, 0)
 
 var objectsMu = &sync.RWMutex{}
 var objects = make(map[int]interface{}, 0)
@@ -117,10 +122,18 @@ func localImportsHas(currentFile string) func(str string) bool {
 	}
 }
 
-func loadLocalFns(key string, currentFile string) (Node, bool) {
+func loadLocalFns(key, currentFile string) (Node, bool) {
 	localFnsMu.RLock()
 	val, ok := localFns[localImportHash(key, currentFile)]
 	localFnsMu.RUnlock()
+
+	return val, ok
+}
+
+func loadLocalNativeFns(key, currentFile string) (nativeFn, bool) {
+	localNativeFnsMu.RLock()
+	val, ok := localNativeFns[localImportHash(key, currentFile)]
+	localNativeFnsMu.RUnlock()
 
 	return val, ok
 }
@@ -147,7 +160,15 @@ func storeLocalFns(currentFile string) func(key string, val Node) {
 	}
 }
 
-func loadNativeFns(key string) (func([]Node, *map[string]Node) Node, bool) {
+func storeLocalNativeFns(currentFile string) func(key string, val nativeFn) {
+	return func(key string, val nativeFn) {
+		localNativeFnsMu.Lock()
+		localNativeFns[localImportHash(key, currentFile)] = val
+		localNativeFnsMu.Unlock()
+	}
+}
+
+func loadNativeFns(key string) (nativeFn, bool) {
 	nativeFnsMu.RLock()
 	val, ok := nativeFns[key]
 	nativeFnsMu.RUnlock()
@@ -155,7 +176,7 @@ func loadNativeFns(key string) (func([]Node, *map[string]Node) Node, bool) {
 	return val, ok
 }
 
-func storeNativeFns(key string, val func([]Node, *map[string]Node) Node) {
+func storeNativeFns(key string, val nativeFn) {
 	nativeFnsMu.Lock()
 	nativeFns[key] = val
 	nativeFnsMu.Unlock()
@@ -333,7 +354,7 @@ func defineVariable(node parser.Node, variables *map[string]Node) Node {
 	return variable
 }
 
-func doNativeUse(name, currentFile string, variables *map[string]Node) Node {
+func doNativeUse(name, currentFile string, variables *map[string]Node, hasImport func(importName string) bool, storeNativeFn func(key string, val nativeFn), saveImportedFile func(file string)) Node {
 	dir, err := filepath.Abs(filepath.Dir(currentFile))
 
 	if err != nil {
@@ -342,7 +363,7 @@ func doNativeUse(name, currentFile string, variables *map[string]Node) Node {
 
 	file := path.Join(dir, name)
 
-	if importsHas(file) {
+	if hasImport(file) {
 		return Nothing
 	}
 
@@ -369,13 +390,11 @@ func doNativeUse(name, currentFile string, variables *map[string]Node) Node {
 	}
 
 	dName := *n.(*string)
-	dFn := fn.(func([]Node, *map[string]Node) Node)
+	dFn := fn.(nativeFn)
 
-	storeNativeFns(dName, dFn)
+	storeNativeFn(dName, dFn)
 
-	importsMu.Lock()
-	imports = append(imports, file)
-	importsMu.Unlock()
+	saveImportedFile(file)
 
 	return Nothing
 }
@@ -435,7 +454,21 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	}
 
 	if len(node.Arguments) == 2 && node.Arguments[1].Token.Value == "native" {
-		return doNativeUse(node.Arguments[0].Token.Value, currentFile, variables)
+		return doNativeUse(node.Arguments[0].Token.Value, currentFile, variables, importsHas, storeNativeFns, func(file string) {
+			importsMu.Lock()
+			imports = append(imports, file)
+			importsMu.Unlock()
+		})
+	}
+
+	if len(node.Arguments) == 3 &&
+		((node.Arguments[1].Token.Value == "native" && node.Arguments[2].Token.Value == "local") ||
+			(node.Arguments[1].Token.Value == "local" && node.Arguments[2].Token.Value == "native")) {
+		return doNativeUse(node.Arguments[0].Token.Value, currentFile, variables, localImportsHas(currentFile), storeLocalNativeFns(currentFile), func(file string) {
+			localImportsMu.Lock()
+			localImports = append(localImports, localImportHash(file, currentFile))
+			localImportsMu.Unlock()
+		})
 	}
 
 	if node.Arguments[0].Token.Value[0] == '@' && LibBasePath != "" {
@@ -639,10 +672,14 @@ func doType(node parser.Node, variables *map[string]Node) Node {
 }
 
 func doCall(node parser.Node, variables *map[string]Node) Node {
+	currentFile := (*variables)[EXEC_FILE].Value.(string)
 	if val, ok := (*variables)[node.Token.Value]; ok {
 		return DoVariableCall(node, val, variables)
-	} else if val, ok := loadLocalFns(node.Token.Value, (*variables)[EXEC_FILE].Value.(string)); ok {
+	} else if val, ok := loadLocalFns(node.Token.Value, currentFile); ok {
 		return DoVariableCall(node, val, variables)
+	} else if val, ok := loadLocalNativeFns(node.Token.Value, currentFile); ok {
+		args := resolve(node.Arguments, variables)
+		return val(args, variables)
 	} else if val, ok := loadGlobalFns(node.Token.Value); ok {
 		return DoVariableCall(node, val, variables)
 	} else if val, ok := loadNativeFns(node.Token.Value); ok {
