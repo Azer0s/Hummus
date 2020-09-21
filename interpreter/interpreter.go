@@ -390,7 +390,7 @@ func doNativeUse(name, currentFile string, variables *map[string]Node, hasImport
 	}
 
 	dName := *n.(*string)
-	dFn := fn.(nativeFn)
+	dFn := fn.(func([]Node, *map[string]Node) Node)
 
 	storeNativeFn(dName, dFn)
 
