@@ -20,7 +20,7 @@ echo "export PATH=\"$(pwd)/bin:\$PATH"\" >> ~/.bashrc
 
 ```bash
 hummus init helloworld
-hummus build
+cd helloworld
 hummus run
 ```
 
