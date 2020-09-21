@@ -12,6 +12,7 @@ import (
 	"plugin"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -38,6 +39,7 @@ const (
 )
 
 var literalRe *regexp.Regexp
+var libVersionRe *regexp.Regexp
 
 func init() {
 	re, err := regexp.Compile("\\|(\\w+)\\|")
@@ -47,6 +49,14 @@ func init() {
 	}
 
 	literalRe = re
+
+	re, err = regexp.Compile("^@([\\w-]+)/([\\w\\.-]+)$")
+
+	if err != nil {
+		panic(err)
+	}
+
+	libVersionRe = re
 }
 
 var localFnsMu = &sync.RWMutex{}
@@ -429,7 +439,17 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	}
 
 	if node.Arguments[0].Token.Value[0] == '@' && LibBasePath != "" {
-		projectJson := path.Join(LibBasePath, node.Arguments[0].Token.Value[1:], "project.json")
+		var projectJson string
+		var libPath string
+
+		if libVersionRe.MatchString(node.Arguments[0].Token.Value) {
+			groups := libVersionRe.FindStringSubmatch(node.Arguments[0].Token.Value)
+			libPath = groups[1] + "@" + strings.ReplaceAll(groups[2], ".", "_")
+			projectJson = path.Join(LibBasePath, libPath, "project.json")
+		} else {
+			libPath = node.Arguments[0].Token.Value[1:]
+			projectJson = path.Join(LibBasePath, libPath, "project.json")
+		}
 
 		b, err := ioutil.ReadFile(projectJson)
 
@@ -445,12 +465,9 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 			panic(err)
 		}
 
-		//TODO: Handle non-latest versions
-		//So something like (use :@bootstrap-hummus/c5bbf :local)
-
 		node.Arguments[0].Token.Value, err = filepath.Rel(
 			filepath.Dir(currentFile),
-			path.Join(LibBasePath, node.Arguments[0].Token.Value[1:], settings["output"].(string), ReplaceEnd(settings["entry"].(string), ".hummus", "", 1)))
+			path.Join(LibBasePath, libPath, settings["output"].(string), ReplaceEnd(settings["entry"].(string), ".hummus", "", 1)))
 
 		if err != nil {
 			panic(err)

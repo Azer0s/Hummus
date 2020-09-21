@@ -1,5 +1,11 @@
-FROM azer0s/hummus:edge
+FROM azer0s/hummus:edge as builder
 WORKDIR /app
 COPY . .
 RUN hummus build
+
+FROM alpine:latest
+COPY --from=builder /hummus /hummus
+COPY --from=builder /app /app
+WORKDIR /app
+ENV PATH="/hummus/bin:${PATH}"
 ENTRYPOINT [ "hummus", "run"]
