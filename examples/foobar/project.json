@@ -1,10 +1,10 @@
 {
     "name": "foobar",
     "packages": [
-	{
-	    "repo": "github.com/Azer0s/bootstrap-hummus",
-	    "at": "master"
-	}
+        {
+            "repo": "github.com/Azer0s/bootstrap-hummus",
+            "at": "cf6bd72"
+        }
     ],
     "output": "bin",
     "exclude": [

@@ -235,9 +235,11 @@ func copyFiles(currentDir string, nativeLibs []nativePackage, excludedFiles []st
 				return nil
 			}
 
+			relLibPath, err := filepath.Rel(path.Join(currentDir, "lib"), filePath)
+
 			if contains(absoluteNativeLibs, filePath) || contains(absoluteExcludedFiles, filePath) ||
 				filePath == path.Join(currentDir, outputFolder) || filePath == path.Join(currentDir, "project.json") ||
-				filePath == path.Join(currentDir, "lib") {
+				filePath == path.Join(currentDir, "lib") || !strings.Contains(relLibPath, "..") {
 				if !info.IsDir() {
 					log.Tracef("Skipping file %s", filePath)
 				} else {
@@ -293,7 +295,7 @@ func pullPackages(libFolder string, packages []packageJson) {
 			continue
 		}
 
-		log.Debugf("Pulling package %s...", s)
+		log.Debugf("Pulling package %s@%s...", s.Repo, s.At)
 
 		tmpFolder := strings.ReplaceAll(uuid.New().String(), "-", "")
 
@@ -327,13 +329,24 @@ func pullPackages(libFolder string, packages []packageJson) {
 		name := libSettings.Name
 
 		if s.At != "master" {
-			name += "@" + s.At
+			name += "@" + strings.ReplaceAll(s.At, ".", "_")
 		}
 
-		err = os.Rename(path.Join(libFolder, tmpFolder), path.Join(libFolder, name))
+		tmpPath := path.Join(libFolder, tmpFolder)
+		err = os.Rename(tmpPath, path.Join(libFolder, name))
 
 		if err != nil {
-			log.Fatal(err.Error())
+			if os.IsExist(err) {
+				log.Warnf("%s has already been pulled!", name)
+				log.Debugf("Deleting %s...", tmpPath)
+
+				_ = os.RemoveAll(tmpPath)
+
+				builtPackages = append(builtPackages, repoUrl+"@"+s.At)
+				continue
+			} else {
+				log.Fatal(err.Error())
+			}
 		}
 
 		builtPackages = append(builtPackages, repoUrl+"@"+s.At)

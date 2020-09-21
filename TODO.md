@@ -5,9 +5,9 @@
 - [x] Function composition
 - [x] Refactor debug stdlib to Go plugin
 - [x] Refactor base stdlib to Go plugin(s)
-- [ ] `hummus init project`
+- [x] `hummus init project`
 - [ ] `hummus get github.com/Azer0/kafka-hummus`
-- [ ] `hummus run`
+- [x] `hummus run`
 - [ ] Add tests
   - [x] Parser
   - [x] Runner

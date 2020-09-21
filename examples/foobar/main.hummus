@@ -1,5 +1,5 @@
 (use :<base>)
-(use :@bootstrap-hummus :local)
+(use :@bootstrap-hummus/cf6bd72 :local)
 (use :./calls.so :native)
 (use :./test/foo)
 
