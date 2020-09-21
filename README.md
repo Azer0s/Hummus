@@ -27,14 +27,14 @@ hummus run
 ### Running on docker
 
 ```bash
-docker build -t azer0s/hummus:latest .
-docker run --rm -it azer0s/hummus
+docker build -t azer0s/hummus:repl-latest -f repl.Dockerfile .
+docker run --rm -it azer0s/hummus:repl-latest
 ```
 
 Or get the edge image:
 
 ```bash
-docker run --rm -it azer0s/hummus:edge
+docker run --rm -it azer0s/hummus:repl-edge
 ```
 
 ## Examples
