@@ -696,28 +696,7 @@ func doType(node parser.Node, variables *map[string]Node) Node {
 	return AtomNode(args[0].NodeType.String())
 }
 
-func doCall(node parser.Node, variables *map[string]Node) Node {
-	currentFile := (*variables)[EXEC_FILE].Value.(string)
-	if val, ok := (*variables)[node.Token.Value]; ok {
-		return DoVariableCall(node, val, variables)
-	} else if val, ok := loadLocalFns(node.Token.Value, currentFile); ok {
-		return DoVariableCall(node, val, variables)
-	} else if val, ok := loadLocalNativeFns(node.Token.Value, currentFile); ok {
-		args := resolve(node.Arguments, variables)
-		return val(args, variables)
-	} else if val, ok := loadGlobalFns(node.Token.Value); ok {
-		return DoVariableCall(node, val, variables)
-	} else if val, ok := loadNativeFns(node.Token.Value); ok {
-		args := resolve(node.Arguments, variables)
-		return val(args, variables)
-	} else if node.Token.Type == lexer.ANONYMOUS_FN {
-		fn := getValueFromNode(node.Arguments[0], variables)
-
-		node.Arguments = node.Arguments[1:]
-
-		return DoVariableCall(node, fn, variables)
-	}
-
+func doSpecialCall(node parser.Node, variables *map[string]Node) Node {
 	switch node.Token.Value {
 	case USE:
 		return doUse(node, (*variables)[EXEC_FILE].Value.(string), (*variables)[SELF].Value.(int), variables)
@@ -745,6 +724,31 @@ func doCall(node parser.Node, variables *map[string]Node) Node {
 	default:
 		panic(fmt.Sprintf("Unknown function %s! (line %d)", node.Token.Value, node.Token.Line))
 	}
+}
+
+func doCall(node parser.Node, variables *map[string]Node) Node {
+	currentFile := (*variables)[EXEC_FILE].Value.(string)
+	if val, ok := (*variables)[node.Token.Value]; ok {
+		return DoVariableCall(node, val, variables)
+	} else if val, ok := loadLocalFns(node.Token.Value, currentFile); ok {
+		return DoVariableCall(node, val, variables)
+	} else if val, ok := loadLocalNativeFns(node.Token.Value, currentFile); ok {
+		args := resolve(node.Arguments, variables)
+		return val(args, variables)
+	} else if val, ok := loadGlobalFns(node.Token.Value); ok {
+		return DoVariableCall(node, val, variables)
+	} else if val, ok := loadNativeFns(node.Token.Value); ok {
+		args := resolve(node.Arguments, variables)
+		return val(args, variables)
+	} else if node.Token.Type == lexer.ANONYMOUS_FN {
+		fn := getValueFromNode(node.Arguments[0], variables)
+
+		node.Arguments = node.Arguments[1:]
+
+		return DoVariableCall(node, fn, variables)
+	}
+
+	return doSpecialCall(node, variables)
 }
 
 func doFree(node parser.Node, variables *map[string]Node) Node {
