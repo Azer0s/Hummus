@@ -212,80 +212,8 @@ func copyFiles(currentDir string, nativeLibs []nativePackage, excludedFiles []st
 
 	err := filepath.Walk(currentDir,
 		func(filePath string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			paths := strings.Split(filePath, "/")
-			if anyHidden(paths) {
-				if !info.IsDir() {
-					log.Tracef("Skipping hidden file %s", filePath)
-				} else {
-					log.Tracef("Skipping hidden directory %s/", filePath)
-				}
-
-				return nil
-			}
-
-			if filePath == currentDir {
-				return nil
-			}
-
-			if contains(absoluteBuiltNativeLibs, filePath) {
-				return nil
-			}
-
-			relLibPath, err := filepath.Rel(path.Join(currentDir, "lib"), filePath)
-			relOutPath, err := filepath.Rel(path.Join(currentDir, outputFolder), filePath)
-
-			if filePath == path.Join(currentDir, outputFolder) || filePath == path.Join(currentDir, "lib") ||
-				!strings.Contains(relLibPath, "..") || !strings.Contains(relOutPath, "..") {
-				return nil
-			}
-
-			if contains(absoluteNativeLibs, filePath) || contains(absoluteExcludedFiles, filePath) ||
-				filePath == path.Join(currentDir, "project.json") {
-				if !info.IsDir() {
-					log.Tracef("Skipping file %s", filePath)
-				} else {
-					log.Tracef("Skipping directory %s/", filePath)
-				}
-
-				return nil
-			}
-
-			log.Debugf("Copying %s", filePath)
-
-			relPath, err := filepath.Rel(currentDir, filePath)
-
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			if info.IsDir() {
-				err = os.Mkdir(path.Join(currentDir, outputFolder, relPath), os.ModePerm)
-
-				if err != nil {
-					if os.IsExist(err) {
-						return nil
-					}
-					log.Fatal(err.Error())
-				}
-
-				return nil
-			}
-
-			input, err := ioutil.ReadFile(filePath)
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = ioutil.WriteFile(path.Join(currentDir, outputFolder, relPath), input, os.ModePerm)
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			return nil
+			return walkerFunction(absoluteNativeLibs, absoluteExcludedFiles, absoluteBuiltNativeLibs,
+				outputFolder, currentDir, filePath, info, err)
 		})
 
 	if err != nil {
@@ -366,6 +294,84 @@ func pullPackages(libFolder string, packages []packageJson) {
 		copyFiles(path.Join(libFolder, name), libSettings.Native, libSettings.Exclude, libSettings.Output)
 		pullPackages(libFolder, libSettings.Packages)
 	}
+}
+
+func walkerFunction(absoluteNativeLibs, absoluteExcludedFiles, absoluteBuiltNativeLibs []string,
+	outputFolder, currentDir, filePath string, info os.FileInfo, err error) error {
+	if err != nil {
+		return err
+	}
+
+	paths := strings.Split(filePath, "/")
+	if anyHidden(paths) {
+		if !info.IsDir() {
+			log.Tracef("Skipping hidden file %s", filePath)
+		} else {
+			log.Tracef("Skipping hidden directory %s/", filePath)
+		}
+
+		return nil
+	}
+
+	if filePath == currentDir {
+		return nil
+	}
+
+	if contains(absoluteBuiltNativeLibs, filePath) {
+		return nil
+	}
+
+	relLibPath, err := filepath.Rel(path.Join(currentDir, "lib"), filePath)
+	relOutPath, err := filepath.Rel(path.Join(currentDir, outputFolder), filePath)
+
+	if filePath == path.Join(currentDir, outputFolder) || filePath == path.Join(currentDir, "lib") ||
+		!strings.Contains(relLibPath, "..") || !strings.Contains(relOutPath, "..") {
+		return nil
+	}
+
+	if contains(absoluteNativeLibs, filePath) || contains(absoluteExcludedFiles, filePath) ||
+		filePath == path.Join(currentDir, "project.json") {
+		if !info.IsDir() {
+			log.Tracef("Skipping file %s", filePath)
+		} else {
+			log.Tracef("Skipping directory %s/", filePath)
+		}
+
+		return nil
+	}
+
+	log.Debugf("Copying %s", filePath)
+
+	relPath, err := filepath.Rel(currentDir, filePath)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	if info.IsDir() {
+		err = os.Mkdir(path.Join(currentDir, outputFolder, relPath), os.ModePerm)
+
+		if err != nil {
+			if os.IsExist(err) {
+				return nil
+			}
+			log.Fatal(err.Error())
+		}
+
+		return nil
+	}
+
+	input, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = ioutil.WriteFile(path.Join(currentDir, outputFolder, relPath), input, os.ModePerm)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return nil
 }
 
 func anyHidden(arr []string) bool {

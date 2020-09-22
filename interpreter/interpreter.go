@@ -448,6 +448,25 @@ func doFileUse(node parser.Node, currentFile string, pid int, hasImport func(imp
 	return Nothing
 }
 
+func getLibPath(libImport string) (projectJson string, libPath string) {
+	if libVersionRe.MatchString(libImport) {
+		groups := libVersionRe.FindStringSubmatch(libImport)
+
+		if groups[2] != "master" {
+			libPath = groups[1] + "@" + strings.ReplaceAll(groups[2], ".", "_")
+			projectJson = path.Join(LibBasePath, libPath, "project.json")
+		} else {
+			libPath = groups[1]
+			projectJson = path.Join(LibBasePath, libPath, "project.json")
+		}
+		return
+	}
+
+	libPath = libImport[1:]
+	projectJson = path.Join(LibBasePath, libPath, "project.json")
+	return
+}
+
 func doUse(node parser.Node, currentFile string, pid int, variables *map[string]Node) Node {
 	if node.Arguments[0].Type != parser.LITERAL_ATOM {
 		panic(fmt.Sprintf("\"use\" only accepts atoms as parameter! (line %d)", node.Token.Line))
@@ -472,17 +491,7 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	}
 
 	if node.Arguments[0].Token.Value[0] == '@' && LibBasePath != "" {
-		var projectJson string
-		var libPath string
-
-		if libVersionRe.MatchString(node.Arguments[0].Token.Value) {
-			groups := libVersionRe.FindStringSubmatch(node.Arguments[0].Token.Value)
-			libPath = groups[1] + "@" + strings.ReplaceAll(groups[2], ".", "_")
-			projectJson = path.Join(LibBasePath, libPath, "project.json")
-		} else {
-			libPath = node.Arguments[0].Token.Value[1:]
-			projectJson = path.Join(LibBasePath, libPath, "project.json")
-		}
+		projectJson, libPath := getLibPath(node.Arguments[0].Token.Value)
 
 		b, err := ioutil.ReadFile(projectJson)
 
