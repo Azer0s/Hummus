@@ -205,6 +205,35 @@ func StoreObject(val interface{}) int {
 	return id
 }
 
+func getLiteralFn(parserNode parser.Node, variables *map[string]Node) (nodeType NodeType, nodeValue interface{}) {
+	nodeType = NODETYPE_FN
+
+	parameters := make([]string, 0)
+	for _, argument := range parserNode.Arguments[0].Arguments {
+		parameters = append(parameters, argument.Token.Value)
+	}
+
+	nodeValue = FnLiteral{
+		Parameters: parameters,
+		Body:       parserNode.Arguments[1:],
+		Context:    map[string]Node{EXEC_FILE: (*variables)[EXEC_FILE]},
+	}
+
+	return
+}
+
+func getIdentifier(parserNode parser.Node, variables *map[string]Node) Node {
+	if val, ok := (*variables)[parserNode.Token.Value]; ok {
+		return val
+	} else if val, ok := loadLocalFns(parserNode.Token.Value, (*variables)[EXEC_FILE].Value.(string)); ok {
+		return val
+	} else if val, ok := loadGlobalFns(parserNode.Token.Value); ok {
+		return val
+	}
+
+	panic(fmt.Sprintf("Unknown variable %s! (line %d)", parserNode.Token.Value, parserNode.Token.Line))
+}
+
 func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node Node) {
 	node = Nothing
 
@@ -233,29 +262,10 @@ func getValueFromNode(parserNode parser.Node, variables *map[string]Node) (node 
 		node.Value = parserNode.Token.Value
 		break
 	case parser.LITERAL_FN:
-		node.NodeType = NODETYPE_FN
-
-		parameters := make([]string, 0)
-		for _, argument := range parserNode.Arguments[0].Arguments {
-			parameters = append(parameters, argument.Token.Value)
-		}
-
-		node.Value = FnLiteral{
-			Parameters: parameters,
-			Body:       parserNode.Arguments[1:],
-			Context:    map[string]Node{EXEC_FILE: (*variables)[EXEC_FILE]},
-		}
+		node.NodeType, node.Value = getLiteralFn(parserNode, variables)
 		break
 	case parser.IDENTIFIER:
-		if val, ok := (*variables)[parserNode.Token.Value]; ok {
-			node = val
-		} else if val, ok := loadLocalFns(parserNode.Token.Value, (*variables)[EXEC_FILE].Value.(string)); ok {
-			node = val
-		} else if val, ok := loadGlobalFns(parserNode.Token.Value); ok {
-			node = val
-		} else {
-			panic(fmt.Sprintf("Unknown variable %s! (line %d)", parserNode.Token.Value, parserNode.Token.Line))
-		}
+		node = getIdentifier(parserNode, variables)
 		break
 	case parser.ACTION_CALL:
 		node = doCall(parserNode, variables)
@@ -467,6 +477,34 @@ func getLibPath(libImport string) (projectJson string, libPath string) {
 	return
 }
 
+func getLibEntryPath(libraryName, currentFile string) string {
+	projectJson, libPath := getLibPath(libraryName)
+
+	b, err := ioutil.ReadFile(projectJson)
+
+	if err != nil {
+		panic(err)
+	}
+
+	settings := make(map[string]interface{})
+
+	err = json.Unmarshal(b, &settings)
+
+	if err != nil {
+		panic(err)
+	}
+
+	p, err := filepath.Rel(
+		filepath.Dir(currentFile),
+		path.Join(LibBasePath, libPath, settings["output"].(string), ReplaceEnd(settings["entry"].(string), ".hummus", "", 1)))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return p
+}
+
 func doUse(node parser.Node, currentFile string, pid int, variables *map[string]Node) Node {
 	if node.Arguments[0].Type != parser.LITERAL_ATOM {
 		panic(fmt.Sprintf("\"use\" only accepts atoms as parameter! (line %d)", node.Token.Line))
@@ -491,29 +529,7 @@ func doUse(node parser.Node, currentFile string, pid int, variables *map[string]
 	}
 
 	if node.Arguments[0].Token.Value[0] == '@' && LibBasePath != "" {
-		projectJson, libPath := getLibPath(node.Arguments[0].Token.Value)
-
-		b, err := ioutil.ReadFile(projectJson)
-
-		if err != nil {
-			panic(err)
-		}
-
-		settings := make(map[string]interface{})
-
-		err = json.Unmarshal(b, &settings)
-
-		if err != nil {
-			panic(err)
-		}
-
-		node.Arguments[0].Token.Value, err = filepath.Rel(
-			filepath.Dir(currentFile),
-			path.Join(LibBasePath, libPath, settings["output"].(string), ReplaceEnd(settings["entry"].(string), ".hummus", "", 1)))
-
-		if err != nil {
-			panic(err)
-		}
+		node.Arguments[0].Token.Value = getLibEntryPath(node.Arguments[0].Token.Value, currentFile)
 	}
 
 	if len(node.Arguments) == 2 && node.Arguments[1].Token.Value == "local" {
