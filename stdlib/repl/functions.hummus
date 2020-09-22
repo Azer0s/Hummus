@@ -1,0 +1,46 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :<base>)
+
+;; repl/pull-lib Pull and build a library to the
+;;              local library folder
+;; in:
+;; * repo .. the repository URI of the library
+;; * at .. the branch or tag name to pull
+(def repl/pull-lib (fn repo at
+  (--system-do-repl! :pull-lib repo at)
+))
+
+;; repl/help Print the documentation of a function
+;; [macro]
+;; in:
+;; * |func| .. the function name (as identifier)
+(def repl/help (macro |func|
+  (--system-do-repl! :help (string (nth 1 func)))
+
+  (' :int 0)
+))
+
+;; repl/help-group Print the documentation of a function group
+;; [macro]
+;; in:
+;; * |group| .. the group name (as identifier)
+(def repl/help-group (macro |group|
+  (--system-do-repl! :help-group (string (nth 1 group)))
+
+  (' :int 0)
+))
+
+;; repl/help-ungrouped Print the documentation of all
+;;                    functions not in a function group
+(def repl/help-ungrouped (fn
+  (--system-do-repl! :help-ungrouped)
+))
+
+;; repl/search-fn Fuzzy searches for a function
+;; in:
+;; * func .. the function to search for
+(def repl/search-fn (fn func
+  (--system-do-repl! :search-fn func)
+))

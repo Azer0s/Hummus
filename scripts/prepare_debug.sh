@@ -42,3 +42,6 @@ rm bin/stdlib/random/calls.go
 
 go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/log/calls.so bin/stdlib/log/calls.go bin/stdlib/log/std_hook.go
 rm bin/stdlib/log/calls.go bin/stdlib/log/std_hook.go
+
+go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/repl/calls.so bin/stdlib/repl/calls.go
+rm bin/stdlib/repl/calls.go

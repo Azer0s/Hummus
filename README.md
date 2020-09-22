@@ -324,14 +324,16 @@ docker run --rm -it azer0s/hummus:repl-edge
 (str/concat "String functions go b" (str/repeat "r" 10))
 ```
 
+## Get help
+```clojure
+(use :<repl>)
+
+(repl/help log)
+```
+
 ## Exit the application
 ```clojure
 (exit)
-```
-
-## Get help
-```clojure
-(help)
 ```
 
 ## License

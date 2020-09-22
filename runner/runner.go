@@ -13,15 +13,6 @@ import (
 	"strings"
 )
 
-func printHelp() {
-	fmt.Println(`
-Hummus REPL v1.0
-
-(exit) .. Exits the REPL
-(help) .. Prints the help page
- `)
-}
-
 func checkClose(tokens []lexer.Token) bool {
 	buffer := 0
 
@@ -152,8 +143,6 @@ func doFailsafeRepl(term *terminal.Terminal, vars *map[string]interpreter.Node) 
 
 	if len(nodes) == 1 && nodes[0].Type == parser.ACTION_CALL && nodes[0].Token.Value == "exit" {
 		os.Exit(0)
-	} else if len(nodes) == 1 && nodes[0].Type == parser.ACTION_CALL && nodes[0].Token.Value == "help" {
-		printHelp()
 	} else {
 		fmt.Println(dumpRepl(interpreter.Run(nodes, vars)))
 	}
