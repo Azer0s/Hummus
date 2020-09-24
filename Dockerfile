@@ -11,3 +11,4 @@ RUN ./scripts/prepare_release.sh
 RUN go build -o bin/hummus
 WORKDIR /
 ENV PATH="/hummus/bin:${PATH}"
+ENTRYPOINT ["/hummus/bin/hummus"]
