@@ -79,8 +79,8 @@ func doPullLib(args []interpreter.Node) interpreter.Node {
 	return interpreter.Nothing
 }
 
-func doHelp(args []interpreter.Node) interpreter.Node {
-	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :help")
+func doInfo(args []interpreter.Node) interpreter.Node {
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :info")
 
 	functionName := args[1].Value.(string)
 	doc, ok := docMap[functionName]
@@ -94,8 +94,8 @@ func doHelp(args []interpreter.Node) interpreter.Node {
 	return interpreter.Nothing
 }
 
-func doHelpGroup(args []interpreter.Node) interpreter.Node {
-	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :help-group")
+func doInfoGroup(args []interpreter.Node) interpreter.Node {
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :info-group")
 
 	subName := args[1].Value.(string)
 	docs := make([]string, 0)
@@ -111,7 +111,7 @@ func doHelpGroup(args []interpreter.Node) interpreter.Node {
 	return interpreter.Nothing
 }
 
-func doHelpUngrouped() interpreter.Node {
+func doInfoUngrouped() interpreter.Node {
 	docs := make([]string, 0)
 
 	for name, doc := range docMap {
@@ -149,12 +149,12 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	switch mode {
 	case "pull-lib":
 		return doPullLib(args)
-	case "help":
-		return doHelp(args)
-	case "help-group":
-		return doHelpGroup(args)
-	case "help-ungrouped":
-		return doHelpUngrouped()
+	case "info":
+		return doInfo(args)
+	case "info-group":
+		return doInfoGroup(args)
+	case "info-ungrouped":
+		return doInfoUngrouped()
 	case "search-fn":
 		return doSearchFn(args)
 	default:

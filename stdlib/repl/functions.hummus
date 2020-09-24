@@ -12,30 +12,30 @@
   (--system-do-repl! :pull-lib repo at)
 ))
 
-;; repl/help Print the documentation of a function
+;; repl/info Print the documentation of a function
 ;; [macro]
 ;; in:
 ;; * |func| .. the function name (as identifier)
-(def repl/help (macro |func|
-  (--system-do-repl! :help (string (nth 1 func)))
+(def repl/info (macro |func|
+  (--system-do-repl! :info (string (nth 1 func)))
 
   (' :int 0)
 ))
 
-;; repl/help-group Print the documentation of a function group
+;; repl/info-group Print the documentation of a function group
 ;; [macro]
 ;; in:
 ;; * |group| .. the group name (as identifier)
-(def repl/help-group (macro |group|
-  (--system-do-repl! :help-group (string (nth 1 group)))
+(def repl/info-group (macro |group|
+  (--system-do-repl! :info-group (string (nth 1 group)))
 
   (' :int 0)
 ))
 
-;; repl/help-ungrouped Print the documentation of all
+;; repl/info-ungrouped Print the documentation of all
 ;;                    functions not in a function group
-(def repl/help-ungrouped (fn
-  (--system-do-repl! :help-ungrouped)
+(def repl/info-ungrouped (fn
+  (--system-do-repl! :info-ungrouped)
 ))
 
 ;; repl/search-fn Fuzzy searches for a function
