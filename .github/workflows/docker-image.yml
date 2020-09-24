@@ -16,5 +16,3 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag azer0s/hummus:$(date +%s)
-    - name: Build the Docker REPL image
-      run: docker build . --file repl.Dockerfile --tag azer0s/hummus:repl-$(date +%s)
