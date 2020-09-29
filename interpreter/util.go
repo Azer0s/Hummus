@@ -1,6 +1,10 @@
 package interpreter
 
 import (
+	"crypto/md5"
+	"encoding/binary"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
@@ -479,4 +483,33 @@ func Rev(s string) string {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 	return string(runes)
+}
+
+// Hash returns md5 hash taken from any object
+func Hash(node Node) (string, error) {
+	var toSum []byte
+
+	switch node.NodeType {
+	case NODETYPE_INT:
+		b := make([]byte, 4)
+		binary.LittleEndian.PutUint32(b, uint32(node.Value.(int)))
+		toSum = b[:]
+	case NODETYPE_FLOAT:
+		binary.BigEndian.PutUint64(toSum[:], math.Float64bits(node.Value.(float64)))
+	case NODETYPE_STRING:
+		toSum = []byte(node.Value.(string))
+	case NODETYPE_BOOL:
+		if node.Value.(bool) {
+			toSum = []byte{0x1}
+		} else {
+			toSum = []byte{0x0}
+		}
+	case NODETYPE_ATOM:
+		toSum = []byte(node.Value.(string))
+	default:
+		return "", errors.New("only primitives can be hashed")
+	}
+
+	sum := md5.Sum(toSum)
+	return hex.EncodeToString(sum[:]), nil
 }

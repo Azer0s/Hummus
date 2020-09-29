@@ -1,4 +1,5 @@
 ;; Copyright (c) Ariel Simulevski
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
-(use :./option/functions)
+(use :./internals/calls.so :native)
+(use :./internals/functions)

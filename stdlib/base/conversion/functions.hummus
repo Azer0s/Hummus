@@ -87,3 +87,11 @@
     false
   )
 ))
+
+;; # Get the md5 hashcode of a value
+;; in:
+;; * arg .. the value to hash
+;; out: the hashcode
+(def # (fn arg
+  (--system-do-convert! :hash arg)
+))

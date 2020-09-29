@@ -10,6 +10,7 @@
 
 (use :./base/collections)
 (use :./base/conversion)
+(use :./base/dict)
 (use :./base/enumerable)
 (use :./base/identity)
 (use :./base/io)

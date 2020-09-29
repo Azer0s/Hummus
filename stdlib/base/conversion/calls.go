@@ -47,6 +47,13 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	case "identity":
 		return args[1]
 
+	case "hash":
+		hash, err := interpreter.Hash(args[1])
+		if err != nil {
+			panic(err)
+		}
+		return interpreter.StringNode(hash)
+
 	default:
 		panic("Unrecognized mode")
 	}

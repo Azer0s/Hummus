@@ -1,0 +1,22 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+;; dict/put Adds/Replaces a value to a map by the hash value
+;;                        of the key and returns the new map
+;; in:
+;; * map .. the map to put value to
+;; * key .. the key to hash and put
+;; * val .. the value to put
+;; out: the new map
+(def dict/put (fn map key value
+  (map/put map (atom (# key)) value)
+))
+
+;; dict/get Gets a value from a map by the hash value of the key
+;; in:
+;; * map .. the map to put value to
+;; * key .. the key to get the value by
+;; out: the value
+(def dict/get (fn map key
+  ([] (atom (# key)) map)
+))

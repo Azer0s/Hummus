@@ -297,7 +297,14 @@ func accessMap(node parser.Node, variables *map[string]Node) Node {
 		panic(fmt.Sprintf("Second argument in map access must be a list! (line %d)", node.Arguments[0].Token.Line))
 	}
 
-	return args[1].Value.(MapNode).Values[args[0].Value.(string)]
+	m := args[1].Value.(MapNode).Values
+	key := args[0].Value.(string)
+
+	if val, ok := m[key]; ok {
+		return val
+	}
+
+	panic(fmt.Sprintf("Key %s not found in map!", key))
 }
 
 func createMap(node parser.Node, variables *map[string]Node) Node {
