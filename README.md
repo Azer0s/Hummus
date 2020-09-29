@@ -326,9 +326,9 @@ docker run --rm -it azer0s/hummus:edge
 
 ## Get help
 ```clojure
-(use :<repl>)
+(use :<internals>)
 
-(repl/help log)
+(hummus/info-group log)
 ```
 
 ## Exit the application
