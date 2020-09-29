@@ -43,5 +43,8 @@ rm bin/stdlib/random/calls.go
 go build -buildmode=plugin -o bin/stdlib/log/calls.so bin/stdlib/log/calls.go bin/stdlib/log/std_hook.go
 rm bin/stdlib/log/calls.go bin/stdlib/log/std_hook.go
 
-go build -buildmode=plugin -o bin/stdlib/repl/calls.so bin/stdlib/repl/calls.go
-rm bin/stdlib/repl/calls.go
+go build -buildmode=plugin -o bin/stdlib/internals/calls.so bin/stdlib/internals/calls.go
+rm bin/stdlib/internals/calls.go
+
+go build -buildmode=plugin -o bin/stdlib/json/calls.so bin/stdlib/json/calls.go
+rm bin/stdlib/json/calls.go

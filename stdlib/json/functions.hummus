@@ -1,0 +1,39 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :<option>)
+(use :<base/collections>)
+
+;; json/valid? Returns true if the input string is a valid JSON
+;; in:
+;; * str .. the string to check
+;; out: a bool value
+(def json/valid? (fn str
+  (--system-do-json! :valid str)
+))
+
+;; json/marshal Marshals a value to a JSON string
+;; in:
+;; * obj .. the list or map to marshal
+;; out: the serialized string
+(def json/marshal (fn obj
+  (--system-do-json! :marshal obj)
+))
+
+;; json/unmarshal Unmarshals a string to a list or map and
+;; returns an option
+;; in:
+;; * str .. the string to deserialize
+;; out: the unmarshaled list or map
+(def json/unmarshal (fn str
+  (--system-do-json! :unmarshal str)
+))
+
+;; json/unmarshal! Unmarshals a string to a list or map;
+;; returns (nothing) if there was an error
+;; in:
+;; * str .. the string to deserialize
+;; out: the unmarshaled list or map or nothing
+(def json/unmarshal! (fn str
+  (option/or_else (json/unmarshal str) (nothing))
+))

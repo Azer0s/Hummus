@@ -16,7 +16,7 @@ import (
 func main() {}
 
 // CALL string functions
-var CALL string = "--system-do-repl!"
+var CALL string = "--system-do-internals!"
 
 var docMap = make(map[string]string, 0)
 

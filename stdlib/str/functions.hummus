@@ -61,3 +61,12 @@
     ""
   )
 ))
+
+;; str/join Joins a list of strings with a delimiter
+;; in:
+;; * args .. the list to join
+;; * delim .. the delimiter to join the list elements with
+;; out: the joined string
+(def str/join (fn args delim
+  (--system-do-strings! :join args delim)
+))

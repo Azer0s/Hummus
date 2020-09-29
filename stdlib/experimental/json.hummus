@@ -1,0 +1,49 @@
+(use :<base>)
+(use :<pipe>)
+(use :<str>)
+
+(def experimental/json/switch ({}
+  (:float (fn x
+    (string x)
+  ))
+  (:int (fn x
+    (string x)
+  ))
+  (:bool (fn x
+    (string x)
+  ))
+  (:string (fn x
+    (str/concat "\"" x "\"")
+  ))
+  (:atom (fn x
+    (str/concat "\"" (string x) "\"")
+  ))
+  (:list (fn l
+    (str/concat "["
+      (str/join (map l (fn x
+        (experimental/json/do_marshal x)
+      )) ",")
+    "]")
+  ))
+  (:map (fn m
+    (def k (keys m))
+    (str/concat "{"
+      (str/join (map k (fn x
+        (str/concat "\"" (string x) "\":" (experimental/json/do_marshal ([] x m)))
+      )) ",")
+    "}")
+  ))
+))
+
+(def experimental/json/do_marshal (fn obj
+  (def func ([] (type obj) experimental/json/switch))
+  (func obj)
+))
+
+
+(def experimental/json/marshal (fn obj
+  (if (|| (= (type obj) :list) (= (type obj) :map))
+    (experimental/json/do_marshal obj)
+    (option/error! "")
+  )
+))

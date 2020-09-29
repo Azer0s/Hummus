@@ -5,6 +5,13 @@ import (
 	"github.com/Azer0s/Hummus/lexer"
 )
 
+const (
+	// EXEC_FILE current file
+	EXEC_FILE string = "EXEC-FILE"
+	// SELF current process id
+	SELF string = "self"
+)
+
 func next(i *int, current *lexer.Token, tokens []lexer.Token) {
 	*i += 1
 
@@ -397,6 +404,10 @@ func parseDef(i *int, current *lexer.Token, tokens []lexer.Token, canMacro bool)
 	next(i, current, tokens)
 
 	node.Arguments = append(node.Arguments, parseParameters(i, current, tokens)...)
+
+	if node.Arguments[0].Token.Value == SELF || node.Arguments[0].Token.Value == EXEC_FILE {
+		panic(fmt.Sprintf("Can't redefine %s!", node.Arguments[0].Token.Value))
+	}
 
 	if current.Type != lexer.OPEN_BRACE {
 		node.Arguments = append(node.Arguments, parseLiteral(*current))

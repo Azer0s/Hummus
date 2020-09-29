@@ -34,8 +34,8 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	case "nothing":
 		return interpreter.NodeList(make([]interpreter.Node, 0))
 
-	case "map-add":
-		return doMapAdd(args)
+	case "map-put":
+		return doMapPut(args)
 
 	case "list-add":
 		return doListAdd(args)
@@ -45,11 +45,16 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	}
 }
 
-func doMapAdd(args []interpreter.Node) interpreter.Node {
+func doMapPut(args []interpreter.Node) interpreter.Node {
 	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_MAP, CALL+" :map-add")
 	interpreter.EnsureType(&args, 2, interpreter.NODETYPE_ATOM, CALL+" :map-add")
 
-	m := args[1].Value.(interpreter.MapNode).Values
+	m := make(map[string]interpreter.Node)
+
+	for s, node := range args[1].Value.(interpreter.MapNode).Values {
+		m[s] = node
+	}
+
 	m[args[2].Value.(string)] = args[3]
 
 	return interpreter.NodeMap(m)

@@ -48,6 +48,17 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	case "upper":
 		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :upper")
 		return interpreter.StringNode(strings.ToUpper(args[1].Value.(string)))
+
+	case "join":
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_LIST, CALL+" :join")
+		interpreter.EnsureType(&args, 2, interpreter.NODETYPE_STRING, CALL+" :join")
+
+		l := make([]string, 0)
+		for _, value := range args[1].Value.(interpreter.ListNode).Values {
+			l = append(l, interpreter.DumpNode(value))
+		}
+
+		return interpreter.StringNode(strings.Join(l, args[2].Value.(string)))
 	default:
 		panic("Unrecognized mode")
 	}

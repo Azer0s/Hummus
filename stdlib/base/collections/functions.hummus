@@ -42,6 +42,12 @@
   (--system-do-collections! :list args)
 ))
 
+;; map Returns an empty map
+;; out: a map
+(def map (fn
+  ({})
+))
+
 ;; nothing Returns an empty list
 ;; out: a list
 (def nothing (fn
@@ -65,14 +71,14 @@
   (--system-do-collections! :exists map key)
 ))
 
-;; map/add Adds a value to a map and returns the new map
+;; map/put Adds/Replaces a value to a map and returns the new map
 ;; in:
-;; * map .. the map to add value to
-;; * key .. the key to add
-;; * val .. the value to add
+;; * map .. the map to put value to
+;; * key .. the key to put
+;; * val .. the value to put
 ;; out: the new map
-(def map/add (fn map key val
-  (--system-do-collections! :map-add map key val)
+(def map/put (fn map key val
+  (--system-do-collections! :map-put map key val)
 ))
 
 ;; list/add Adds a value to a list and returns the new list
