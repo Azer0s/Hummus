@@ -112,9 +112,8 @@ func doTopLevelUnmarshal(arg interpreter.Node) interpreter.Node {
 	err := json.Unmarshal([]byte(arg.Value.(string)), &v)
 
 	if err != nil {
-		fmt.Println(err.Error())
 		return interpreter.NodeMap(map[string]interpreter.Node{
-			"value": interpreter.Nothing,
+			"value": interpreter.StringNode(err.Error()),
 			"error": interpreter.BoolNode(true),
 		})
 	}
