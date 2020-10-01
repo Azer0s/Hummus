@@ -6,6 +6,8 @@ import (
 	"github.com/Azer0s/Hummus/parser"
 )
 
+func main() {}
+
 // CALL enumeration functions
 var CALL string = "--system-do-enumerate!"
 

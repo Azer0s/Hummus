@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+func main() {}
+
 // CALL string functions
 var CALL string = "--system-do-internals!"
 

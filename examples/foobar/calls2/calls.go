@@ -4,6 +4,8 @@ import (
 	"github.com/Azer0s/Hummus/interpreter"
 )
 
+func main() {}
+
 // CALL debug functions
 var CALL string = "calls2!"
 

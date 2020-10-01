@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+func main() {}
+
 // CALL conversion functions
 var CALL string = "--system-do-convert!"
 

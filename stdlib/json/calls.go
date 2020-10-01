@@ -7,6 +7,8 @@ import (
 	"reflect"
 )
 
+func main() {}
+
 // CALL HTTP server functions
 var CALL string = "--system-do-json!"
 

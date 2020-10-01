@@ -4,6 +4,8 @@ import (
 	"github.com/Azer0s/Hummus/interpreter"
 )
 
+func main() {}
+
 // CALL the built in value make system function
 var CALL string = "--system-do-collections!"
 

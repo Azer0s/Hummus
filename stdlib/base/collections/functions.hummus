@@ -42,9 +42,9 @@
   (--system-do-collections! :list args)
 ))
 
-;; map Returns an empty map
+;; map! Returns an empty map
 ;; out: a map
-(def map (fn
+(def map! (fn
   ({})
 ))
 
