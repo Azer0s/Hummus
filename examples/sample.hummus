@@ -1,13 +1,6 @@
-(def sample (fn func times r
-  (def rate (/ (+ r 0.0) times))
+(def sample (fn f times range
+  (def rate (/ (+ range 0.0) times))
   (map (.. 0 times) (fn x
-    (' x (* rate x))
-  ))
-))
-
-(def sample (fn func times r
-  (def rate (/ (+ r 0.0) times))
-  (map (.. 0 times) (fn x
-    (' x (func x))
+    (' (* rate x) (f (* rate x)))
   ))
 ))
