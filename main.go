@@ -4,7 +4,7 @@ import (
 	"github.com/Azer0s/Hummus/interpreter"
 	"github.com/Azer0s/Hummus/project"
 	"github.com/Azer0s/Hummus/runner"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path"
 )
@@ -33,9 +33,23 @@ func main() {
 		if os.Args[1] == "init" {
 			project.InitProject(os.Args[2])
 		} else if os.Args[1] == "build" {
-			project.BuildProject()
+			log.SetLevel(log.TraceLevel)
+
+			currentDir, err := os.Getwd()
+
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			project.BuildProject(currentDir)
 		} else if os.Args[1] == "run" {
-			project.RunProject()
+			currentDir, err := os.Getwd()
+
+			if err != nil {
+				panic(err)
+			}
+
+			project.RunProject(currentDir)
 		} else {
 			runner.RunFile(os.Args[1])
 		}

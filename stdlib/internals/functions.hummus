@@ -12,8 +12,19 @@
   (--system-do-internals! :pull-lib repo at)
 ))
 
-; TODO: hummus/build-project
-; TODO: hummus/run-project
+;; hummus/use-project Run and include project
+;; in:
+;; * path .. Path to the project (absolute or relative)
+(def hummus/use-project (fn path
+  (--system-do-internals! :use-project path)
+))
+
+;; hummus/use-project Build a project
+;; in:
+;; * path .. Path to the project (absolute or relative)
+(def hummus/build-project (fn path
+  (--system-do-internals! :build-project path)
+))
 
 ;; hummus/info Print the documentation of a function
 ;; [macro]

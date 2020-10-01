@@ -140,6 +140,23 @@ func doSearchFn(args []interpreter.Node) interpreter.Node {
 	return interpreter.Nothing
 }
 
+func getLocalPath(args []interpreter.Node) string {
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL + " :run-project")
+	p := args[1].Value.(string)
+
+	if !path.IsAbs(p) {
+		wd, err := os.Getwd()
+
+		if err != nil {
+			panic(err)
+		}
+
+		p = path.Join(wd, p)
+	}
+
+	return p
+}
+
 // DoSystemCall Hummus stdlib stub
 func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Node) interpreter.Node {
 	mode := args[0].Value.(string)
@@ -155,6 +172,12 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		return doInfoUngrouped()
 	case "search-fn":
 		return doSearchFn(args)
+	case "use-project":
+		project.RunProject(getLocalPath(args))
+		return interpreter.Nothing
+	case "build-project":
+		project.BuildProject(getLocalPath(args))
+		return interpreter.Nothing
 	default:
 		panic("Unrecognized mode")
 	}

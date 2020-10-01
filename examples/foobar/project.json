@@ -9,7 +9,8 @@
     "output": "bin",
     "exclude": [
         ".gitignore",
-        "README.md"
+        "README.md",
+        "dockerfile"
     ],
     "native": [
         {

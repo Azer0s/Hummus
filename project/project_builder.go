@@ -28,16 +28,8 @@ func init() {
 }
 
 //BuildProject builds a Hummus project
-func BuildProject() {
-	log.SetLevel(log.TraceLevel)
-
-	currentDir, err := os.Getwd()
-
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	settingsPath := path.Join(currentDir, "project.json")
+func BuildProject(projectDir string) {
+	settingsPath := path.Join(projectDir, "project.json")
 	log.Debugf("Reading project settings '%s'...", settingsPath)
 	settings := readSettings(settingsPath)
 
@@ -64,11 +56,11 @@ func BuildProject() {
 
 	log.Tracef("Packages: %s", "["+strings.Join(packages, ", ")+"]")
 
-	createOutputFolder(path.Join(currentDir, settings.Output))
-	createLibFolder(path.Join(currentDir, "lib/"))
-	buildNativeLibs(currentDir, settings.Native, settings.Output)
-	copyFiles(currentDir, settings.Native, settings.Exclude, settings.Output)
-	pullPackages(path.Join(currentDir, "lib/"), settings.Packages)
+	createOutputFolder(path.Join(projectDir, settings.Output))
+	createLibFolder(path.Join(projectDir, "lib/"))
+	buildNativeLibs(projectDir, settings.Native, settings.Output)
+	copyFiles(projectDir, settings.Native, settings.Exclude, settings.Output)
+	pullPackages(path.Join(projectDir, "lib/"), settings.Packages)
 
 	log.Info("Project built successfully!")
 }

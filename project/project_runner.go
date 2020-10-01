@@ -9,21 +9,15 @@ import (
 )
 
 //RunProject runs a Hummus project and builds it if it wasn't built before
-func RunProject() {
-	currentDir, err := os.Getwd()
+func RunProject(projectDir string) {
+	settings := readSettings(path.Join(projectDir, "project.json"))
 
-	if err != nil {
-		panic(err)
-	}
-
-	settings := readSettings(path.Join(currentDir, "project.json"))
-
-	if _, err := os.Stat(path.Join(currentDir, settings.Output)); os.IsNotExist(err) {
+	if _, err := os.Stat(path.Join(projectDir, settings.Output)); os.IsNotExist(err) {
 		log.Warn("Project was not built! Building...")
-		BuildProject()
+		BuildProject(projectDir)
 	}
 
-	interpreter.LibBasePath = path.Join(currentDir, "lib/")
+	interpreter.LibBasePath = path.Join(projectDir, "lib/")
 
-	runner.RunFile(path.Join(currentDir, settings.Output, settings.Entry))
+	runner.RunFile(path.Join(projectDir, settings.Output, settings.Entry))
 }
