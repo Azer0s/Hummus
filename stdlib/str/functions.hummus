@@ -70,3 +70,21 @@
 (def str/join (fn args delim
   (--system-do-strings! :join args delim)
 ))
+
+;; str/[] Explodes a string to a list of strings of length 1
+;; in:
+;; * arg .. the string to explode
+;; out: the exploded list
+(def str/[] (fn arg
+  (map (.. 0 (- (str/len arg) 1)) (fn x
+    (str/nth x arg)
+  ))
+))
+
+;; str/reverse Reverses a string
+;; in:
+;; * arg .. the string to reverse
+;; out: the reversed string
+(def str/reverse (fn arg
+  (str/join (reverse (str/[] arg)) "")
+))

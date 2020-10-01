@@ -5,8 +5,6 @@ import (
 	"regexp"
 )
 
-func main() {}
-
 // CALL concurrency functions
 var CALL string = "--system-do-regex!"
 

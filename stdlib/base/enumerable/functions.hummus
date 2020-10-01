@@ -48,6 +48,19 @@
   (--system-do-enumerate! :nth idx vals)
 ))
 
+;; reverse Reverse a list
+;; in:
+;; * vals .. the list to reverse
+;; out: the reversed list
+(def reverse (fn vals
+  (def l (len vals))
+
+  (if (= l 0)
+    (nothing)
+    (flatmap (nth (- l 1) vals) (reverse (slice 0 (- l 1) vals)))
+  )
+))
+
 ;; each Executes an action for each value
 ;; of a given list of values
 ;; in:

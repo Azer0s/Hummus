@@ -5,8 +5,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func main() {}
-
 // CALL string functions
 var CALL string = "--system-do-log!"
 

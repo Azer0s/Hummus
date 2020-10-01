@@ -7,8 +7,6 @@ import (
 	"github.com/Azer0s/Hummus/parser"
 )
 
-func main() {}
-
 // CALL function composition functions
 var CALL string = "--system-do-pipe!"
 

@@ -7,8 +7,6 @@ import (
 	"os"
 )
 
-func main() {}
-
 var reader = bufio.NewReader(os.Stdin)
 
 // CALL the built in io function
