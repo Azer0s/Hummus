@@ -2,6 +2,6 @@
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
 (def pipe/do (fn value fns
-  (def func (--system-do-pipe! :combine fns))
-  (func value)
+  (def _func (--system-do-pipe! :combine fns))
+  (_func value)
 ))

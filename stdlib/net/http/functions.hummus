@@ -8,8 +8,8 @@
 ;; * endpoint .. the endpoint
 ;; * func .. the handler function
 ;; out: 0
-(def http/handle (fn endpoint func
-  (--system-do-http! :handle endpoint func)
+(def http/handle (fn endpoint _func
+  (--system-do-http! :handle endpoint _func)
 ))
 
 ;; http/static Register a static endoint

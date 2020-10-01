@@ -19,8 +19,8 @@
 ;; log/create-hook Create a log hook
 ;; in:
 ;; * cb .. the hook callback
-(def log/create-hook (fn cb
-  (--system-do-log! :create-hook cb)
+(def log/create-hook (fn _cb
+  (--system-do-log! :create-hook _cb)
 ))
 
 ;; log/register-hook Create a log hook

@@ -8,9 +8,9 @@
 ;; in:
 ;; * func/1 .. the `map` execution function
 ;; out: the mapper function
-(def map.. (fn func
+(def map.. (fn _func
   (fn x
-    (map x func)
+    (map x _func)
   )
 ))
 
@@ -19,9 +19,9 @@
 ;; in:
 ;; * func/1 .. the `filter` execution function
 ;; out: the filter function
-(def filter.. (fn func
+(def filter.. (fn _func
   (fn x
-    (filter x func)
+    (filter x _func)
   )
 ))
 
@@ -32,9 +32,9 @@
 ;; * func/2 .. the `reduce` execution function
 ;; * init .. the initial value for `reduce`
 ;; out: the reducer function
-(def reduce.. (fn func init
+(def reduce.. (fn _func init
   (fn x
-    (reduce x func init)
+    (reduce x _func init)
   )
 ))
 
@@ -43,8 +43,8 @@
 ;; in:
 ;; * func/1 .. the `each` execution function
 ;; out: 0
-(def each.. (fn func
+(def each.. (fn _func
   (fn x
-    (each x func)
+    (each x _func)
   )
 ))

@@ -19,9 +19,9 @@
       (def pid (spawn (fn
        (receive)
 
-       (def func (nth i fns))
+       (def _func (nth i fns))
        (send runner ({}
-         (:value (func x))
+         (:value (_func x))
          (:worker (atom i))
        ))
       )))

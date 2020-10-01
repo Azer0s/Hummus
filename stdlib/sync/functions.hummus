@@ -14,8 +14,8 @@
 ;; in:
 ;; * func .. the function to spawn
 ;; out: the pid
-(def spawn (fn func
-  (--system-do-sync! :spawn func)
+(def spawn (fn _func
+  (--system-do-sync! :spawn _func)
 ))
 
 ;; send Sends a value to another process

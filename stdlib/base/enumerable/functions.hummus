@@ -68,8 +68,8 @@
 ;; * func/1 .. the action to execute for
 ;;           each value
 ;; out: 0
-(def each (fn vals func
-  (--system-do-enumerate! :each vals func)
+(def each (fn vals _func
+  (--system-do-enumerate! :each vals _func)
 ))
 
 ;; map Executes an action for each value
@@ -80,8 +80,8 @@
 ;; * func/1 .. the action to execute for
 ;;           each value
 ;; out: the new list
-(def map (fn vals func
-  (--system-do-enumerate! :map vals func)
+(def map (fn vals _func
+  (--system-do-enumerate! :map vals _func)
 ))
 
 ;; flatmap Flats a list of lists into a list
@@ -101,8 +101,8 @@
 ;; * func/1 .. the action to execute for
 ;;           each value
 ;; out: the new list
-(def filter (fn vals func
-  (--system-do-enumerate! :filter vals func)
+(def filter (fn vals _func
+  (--system-do-enumerate! :filter vals _func)
 ))
 
 ;; reduce Executes an action for each value
@@ -114,6 +114,6 @@
 ;;           each value
 ;; * init .. the initial value of the function
 ;; out: the final state
-(def reduce (fn vals func init
-  (--system-do-enumerate! :reduce vals func init)
+(def reduce (fn vals _func init
+  (--system-do-enumerate! :reduce vals _func init)
 ))

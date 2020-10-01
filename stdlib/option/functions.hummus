@@ -71,9 +71,9 @@
 ;; * opt .. the option map
 ;; * func/0 .. the alternative function
 ;; out: a value
-(def option/or_else_do (fn opt func
+(def option/or_else_do (fn opt _func
   (if (option/is_okay? opt)
     (:value opt)
-    (func)
+    (_func)
   )
 ))
