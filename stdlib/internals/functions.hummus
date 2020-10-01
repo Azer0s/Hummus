@@ -3,23 +3,23 @@
 
 (use :<base>)
 
-;; hummus/pull-lib Pull and build a library to the
+;; hummus/get-lib Pull and build a library to the
 ;;              local library folder
 ;; in:
 ;; * repo .. the repository URI of the library
 ;; * at .. the branch or tag name to pull
-(def hummus/pull-lib (fn repo at
-  (--system-do-internals! :pull-lib repo at)
+(def hummus/get-lib (fn repo at
+  (--system-do-internals! :get-lib repo (string at))
 ))
 
-;; hummus/use-project Run and include project
+;; hummus/run-project Run and include project
 ;; in:
 ;; * path .. Path to the project (absolute or relative)
-(def hummus/use-project (fn path
-  (--system-do-internals! :use-project path)
+(def hummus/run-project (fn path
+  (--system-do-internals! :run-project path)
 ))
 
-;; hummus/use-project Build a project
+;; hummus/build-project Build a project
 ;; in:
 ;; * path .. Path to the project (absolute or relative)
 (def hummus/build-project (fn path

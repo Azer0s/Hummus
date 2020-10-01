@@ -162,8 +162,6 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 	mode := args[0].Value.(string)
 
 	switch mode {
-	case "pull-lib":
-		return doPullLib(args)
 	case "info":
 		return doInfo(args)
 	case "info-group":
@@ -172,7 +170,9 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		return doInfoUngrouped()
 	case "search-fn":
 		return doSearchFn(args)
-	case "use-project":
+	case "get-lib":
+		return doPullLib(args)
+	case "run-project":
 		project.RunProject(getLocalPath(args))
 		return interpreter.Nothing
 	case "build-project":
