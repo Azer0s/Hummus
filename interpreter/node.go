@@ -14,6 +14,7 @@ type Node struct {
 	NodeType NodeType
 }
 
+//goland:noinspection ALL
 const (
 	// NODETYPE_INT int variable type
 	NODETYPE_INT NodeType = 0

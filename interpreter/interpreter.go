@@ -52,6 +52,7 @@ func init() {
 
 	literalRe = re
 
+	//goland:noinspection ALL
 	re, err = regexp.Compile("^@([\\w-]+)/([\\w\\.-]+)$")
 
 	if err != nil {

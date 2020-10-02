@@ -143,7 +143,7 @@ func doSearchFn(args []interpreter.Node) interpreter.Node {
 }
 
 func getLocalPath(args []interpreter.Node) string {
-	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL + " :run-project")
+	interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :run-project")
 	p := args[1].Value.(string)
 
 	if !path.IsAbs(p) {
