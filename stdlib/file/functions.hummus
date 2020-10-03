@@ -1,0 +1,37 @@
+(use :<option>)
+
+(def file/read-string (fn path
+  (--system-do-file! :read-string path)
+))
+
+(def file/read-string! (fn path
+  (option/or_else (--system-do-file! :read-string path) "")
+))
+
+(def file/read-bytes (fn path
+  (--system-do-file! :read-bytes path)
+))
+
+(def file/exists? (fn path
+  (--system-do-file! :exists path)
+))
+
+(def file/stats (fn path
+  (--system-do-file! :stats path)
+))
+
+(def file/create (fn path perm
+  (--system-do-file! :create path perm)
+))
+
+(def file/delete (fn path
+  (--system-do-file! :delete path)
+))
+
+(def file/write-string (fn path str perm
+  (--system-do-file! :write-string path str perm)
+))
+
+(def file/write-bytes (fn path bytes perm
+  (--system-do-file! :write-bytes path bytes perm)
+))

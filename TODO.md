@@ -30,7 +30,7 @@
     - [ ] LogFn
   - [ ] Math
   - [x] Log
-  - [ ] File
+  - [x] File
   - [ ] Dir
   - [ ] Bench
   - [ ] Sockets
@@ -38,7 +38,7 @@
     - [ ] UDP
   - [ ] Encode
     - [ ] Base64
-  - [ ] Json
+  - [x] Json
   - [ ] Date
   - [x] Random
   - [x] HTML

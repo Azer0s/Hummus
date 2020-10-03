@@ -1,0 +1,18 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(def bytes/from-string (fn str
+  (--system-do-bytes! :from-string str)
+))
+
+(def bytes/from-atoms (fn a
+  (--system-do-bytes! :from-atoms a)
+))
+
+(def bytes/to-string (fn bytes
+  (--system-do-bytes! :to-string bytes)
+))
+
+(def bytes/to-atoms (fn bytes
+  (--system-do-bytes! :to-atoms bytes)
+))
