@@ -9,7 +9,7 @@
   (--system-do-debug! :dump x)
 ))
 
-;; debug/dump Dumps the current variable state
+;; debug/dump_state Dumps the current variable state
 ;; to the console
 ;; out: 0
 (def debug/dump_state (fn

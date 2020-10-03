@@ -1,0 +1,5 @@
+;; Copyright (c) Ariel Simulevski
+;; Written by Ariel Simulevski <ariel@simulevski.at>
+
+(use :./file/calls.so :native)
+(use :./file/functions)

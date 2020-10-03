@@ -48,3 +48,9 @@ rm bin/stdlib/internals/calls.go
 
 go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/json/calls.so bin/stdlib/json/calls.go
 rm bin/stdlib/json/calls.go
+
+go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/bytes/calls.so bin/stdlib/bytes/calls.go
+rm bin/stdlib/bytes/calls.go
+
+go build -buildmode=plugin -gcflags='all=-N -l' -o bin/stdlib/file/calls.so bin/stdlib/file/calls.go
+rm bin/stdlib/file/calls.go
