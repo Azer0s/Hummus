@@ -26,7 +26,7 @@
   (--system-do-bytes! :to-string bytes)
 ))
 
-;; bytes/to-string Converts a byte array to a list
+;; bytes/to-atoms Converts a byte array to a list
 ;; of hex formatted atoms
 ;; in:
 ;; * bytes .. the pseudo ptr to the byte array

@@ -69,12 +69,11 @@
   (--system-do-file! :write-string path str perm)
 ))
 
-;; file/write-string Writes a byte array to a
+;; file/write-bytes Writes a byte array to a
 ;; file with permissions
 ;; in:
 ;; * path .. the file path
-;; * str .. the pseudo ptr to the byte array
-;;          to write
+;; * bytes .. the pseudo ptr to the byte array to write
 ;; * perm .. the file permissions
 ;; out: true if the write was successful
 (def file/write-bytes (fn path bytes perm
