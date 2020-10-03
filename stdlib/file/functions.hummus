@@ -1,37 +1,82 @@
 (use :<option>)
 
+;; file/read-string Read a file contents as string
+;; in:
+;; * path .. the file path
+;; out: an option with the file contents as string
 (def file/read-string (fn path
   (--system-do-file! :read-string path)
 ))
 
+;; file/read-string! Read a file contents as string
+;; in:
+;; * path .. the file path
+;; out: the file contents as string or an empty string
+;; if an error occurred
 (def file/read-string! (fn path
   (option/or_else (--system-do-file! :read-string path) "")
 ))
 
+;; file/read-bytes Read a file contents as a byte array
+;; in:
+;; * path .. the file path
+;; out: the pseudo ptr to the byte array
 (def file/read-bytes (fn path
   (--system-do-file! :read-bytes path)
 ))
 
+;; file/exists? Check if a file exists
+;; in:
+;; * path .. the file path
+;; out: true if the file exists
 (def file/exists? (fn path
   (--system-do-file! :exists path)
 ))
 
+;; file/stats Returns os stats for a file
+;; in:
+;; * path .. the file path
+;; out: a map with the file stats
 (def file/stats (fn path
   (--system-do-file! :stats path)
 ))
 
+;; file/create Creates a file with permissions
+;; in:
+;; * path .. the file path
+;; * perm .. the file permissions
+;; out: a map with the file stats
 (def file/create (fn path perm
   (--system-do-file! :create path perm)
 ))
 
+;; file/delete Deletes a file
+;; in:
+;; * path .. the file path
+;; out: true if the file was deleted successfully
 (def file/delete (fn path
   (--system-do-file! :delete path)
 ))
 
+;; file/write-string Writes a string to a file
+;; with permissions
+;; in:
+;; * path .. the file path
+;; * str .. the string to write
+;; * perm .. the file permissions
+;; out: true if the write was successful
 (def file/write-string (fn path str perm
   (--system-do-file! :write-string path str perm)
 ))
 
+;; file/write-string Writes a byte array to a
+;; file with permissions
+;; in:
+;; * path .. the file path
+;; * str .. the pseudo ptr to the byte array
+;;          to write
+;; * perm .. the file permissions
+;; out: true if the write was successful
 (def file/write-bytes (fn path bytes perm
   (--system-do-file! :write-bytes path bytes perm)
 ))

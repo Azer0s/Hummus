@@ -1,18 +1,36 @@
 ;; Copyright (c) Ariel Simulevski
 ;; Written by Ariel Simulevski <ariel@simulevski.at>
 
+;; bytes/from-string Creates a byte array from a string
+;; in:
+;; * str .. the string to convert to a byte array
+;; out: the pseudo ptr to the byte array
 (def bytes/from-string (fn str
   (--system-do-bytes! :from-string str)
 ))
 
+;; bytes/from-atoms Creates a byte array from a list
+;; of hex formatted atoms
+;; in:
+;; * a .. the list of atoms
+;; out: the pseudo ptr to the byte array
 (def bytes/from-atoms (fn a
   (--system-do-bytes! :from-atoms a)
 ))
 
+;; bytes/to-string Converts a byte array to a string
+;; in:
+;; * bytes .. the pseudo ptr to the byte array
+;; out: the converted string
 (def bytes/to-string (fn bytes
   (--system-do-bytes! :to-string bytes)
 ))
 
+;; bytes/to-string Converts a byte array to a list
+;; of hex formatted atoms
+;; in:
+;; * bytes .. the pseudo ptr to the byte array
+;; out: the list of atoms
 (def bytes/to-atoms (fn bytes
   (--system-do-bytes! :to-atoms bytes)
 ))
