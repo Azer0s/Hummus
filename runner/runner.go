@@ -5,13 +5,15 @@ import (
 	"github.com/Azer0s/Hummus/interpreter"
 	"github.com/Azer0s/Hummus/lexer"
 	"github.com/Azer0s/Hummus/parser"
-	"github.com/carmark/pseudo-terminal-go/terminal"
+	"github.com/peterh/liner"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 )
+
+var ReplFunctionNames []string
 
 func checkClose(tokens []lexer.Token) bool {
 	buffer := 0
@@ -98,7 +100,7 @@ func getParserType(tokenType lexer.TokenType) parser.NodeType {
 	return 0
 }
 
-func doFailsafeRepl(term *terminal.Terminal, vars *map[string]interpreter.Node) {
+func doFailsafeRepl(line *liner.State, vars *map[string]interpreter.Node) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Error:", r)
@@ -108,19 +110,20 @@ func doFailsafeRepl(term *terminal.Terminal, vars *map[string]interpreter.Node) 
 	text := ""
 	var tokens []lexer.Token
 
-	term.SetPrompt("=> ")
-
+	prompt := "=> "
 	for {
-		t, _ := term.ReadLine()
+		t, _ := line.Prompt(prompt)
 
 		text += t + "\n"
 		tokens = lexer.LexString(text)
+
+		line.AppendHistory(t)
 
 		if checkClose(tokens) {
 			break
 		}
 
-		term.SetPrompt(" ..")
+		prompt = " .."
 	}
 
 	var nodes []parser.Node
@@ -158,14 +161,62 @@ func RunRepl() {
 		panic(err)
 	}
 
-	term, err := terminal.NewWithStdInOut()
-	if err != nil {
-		panic(err)
-	}
-	defer term.ReleaseFromStdInOut()
+	interpreter.Run(parser.Parse(lexer.LexString("(use :<internals>)")), &vars)
+
+	line := liner.NewLiner()
+	defer func(line *liner.State) {
+		err := line.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(line)
+
+	line.SetTabCompletionStyle(liner.TabCircular)
+	line.SetCompleter(func(line string) []string {
+		if line == "" {
+			results := make([]string, 0)
+			for s := range vars {
+				results = append(results, s)
+			}
+			return results
+		}
+
+		originalLine := line
+
+		tokens := lexer.LexString(line)
+		line = tokens[len(tokens)-1].Value
+
+		functionResults := make([]string, 0)
+		for s := range vars {
+			if strings.HasPrefix(s, line) {
+				functionResults = append(functionResults, s)
+			}
+		}
+
+		for _, name := range ReplFunctionNames {
+			if strings.HasPrefix(name, line) {
+				functionResults = append(functionResults, name)
+			}
+		}
+
+		if strings.HasPrefix("exit", line) {
+			functionResults = append(functionResults, "exit")
+		}
+
+		lastIndex := strings.LastIndex(originalLine, line)
+		lineWithoutCompletion := originalLine[:lastIndex]
+		autoFillResults := make([]string, 0)
+		for _, result := range functionResults {
+			autoFillResults = append(autoFillResults, lineWithoutCompletion+result)
+		}
+
+		return autoFillResults
+	})
+
+	line.SetCtrlCAborts(true)
 
 	for {
-		doFailsafeRepl(term, &vars)
+		doFailsafeRepl(line, &vars)
 	}
 }
 

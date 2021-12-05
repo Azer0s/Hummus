@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Azer0s/Hummus/interpreter"
 	"github.com/Azer0s/Hummus/project"
+	"github.com/Azer0s/Hummus/runner"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
@@ -60,6 +61,13 @@ func Init(variables *map[string]interpreter.Node) {
 	if err != nil {
 		panic(err)
 	}
+
+	functionNames := make([]string, 0)
+	for functionName := range docMap {
+		functionNames = append(functionNames, functionName)
+	}
+
+	runner.ReplFunctionNames = functionNames
 
 	log.Info("Parsed stdlib documentation successfully!")
 }
