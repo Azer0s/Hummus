@@ -88,3 +88,12 @@
 (def str/reverse (fn arg
   (str/join (reverse (str/[] arg)) "")
 ))
+
+;; str/split Splits a string
+;; in:
+;; * str .. the string to split
+;; * delim .. the delimiter to split by
+;; out: the list of substrings
+(def str/split (fn str delim
+  (--system-do-strings! :split str delim)
+))

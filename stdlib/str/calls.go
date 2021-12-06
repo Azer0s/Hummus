@@ -59,6 +59,16 @@ func DoSystemCall(args []interpreter.Node, variables *map[string]interpreter.Nod
 		}
 
 		return interpreter.StringNode(strings.Join(l, args[2].Value.(string)))
+
+	case "split":
+		interpreter.EnsureType(&args, 1, interpreter.NODETYPE_STRING, CALL+" :split")
+		interpreter.EnsureType(&args, 2, interpreter.NODETYPE_STRING, CALL+" :split")
+		res := strings.Split(args[1].Value.(string), args[2].Value.(string))
+		nodes := make([]interpreter.Node, 0)
+		for _, re := range res {
+			nodes = append(nodes, interpreter.StringNode(re))
+		}
+		return interpreter.NodeList(nodes)
 	default:
 		panic("Unrecognized mode")
 	}

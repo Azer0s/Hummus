@@ -18,7 +18,7 @@
   (--system-do-io! :console-in "\n")
 ))
 
-;; clear Clears the console
+;; io/clear Clears the console
 ;; out: 0
 (def io/clear (fn
   (--system-do-io! :console-clear "\n")
